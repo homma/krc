@@ -11,7 +11,7 @@
 //----------------------------------------------------------------------
 
 #include <string.h>	// for strlen()
-#include <unistd.h>	// for sbrk()
+#include <stdlib.h>	// for malloc()
 #include <ctype.h>	// for isprint()
 #include <signal.h>     // for raise(), SIGINT
 
@@ -38,7 +38,7 @@ INIT_ARGSPACE(VOID)
       int NARGS=SPACE/5;        // Empirically, using edigits, with SPACE/6,
                                 // the argstack exhausts first. with /5, it
                                 // runs out of heap first.
-      ARGSPACE=(LIST *)sbrk(NARGS*sizeof(*ARGSPACE));
+      ARGSPACE=(LIST *)malloc(NARGS*sizeof(*ARGSPACE));
       IF ARGSPACE==(void *)-1 DO SPACE_ERROR("Cannot allocate argument stack");
       ARGMAX=ARGSPACE+NARGS-1;
    }
