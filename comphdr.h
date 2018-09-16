@@ -29,12 +29,12 @@ extern ATOM	THE_ID;                         // BASES
 extern WORD	THE_NUM, THE_DECIMALS;		// DECIMALS are never used
 extern WORD	EXPFLAG, ERRORFLAG, EQNFLAG;
 extern TOKEN	MISSEDTOK;
-extern WORD CASECONV(WORD CH);
+extern WORD caseconv(WORD CH);
 extern WORD	COMMENTFLAG;
 // SUPPRESSPROMPTS();  //EMAS COMMAND
 extern LIST	FILECOMMANDS;
 extern BOOL	LEGACY;
-extern void	WRITETOKEN(TOKEN T);
+extern void	writetoken(TOKEN T);
 
 // KRC EXPRESSION REPRESENTATIONS
 // THE INTERNAL REPRESENTATIONS OF EXPRESSIONS IS AS FOLLOWS
@@ -129,14 +129,14 @@ typedef enum {
 //COMPILER GLOBALS
 
 // DEFINED IN KRC_LEX
-extern void	READLINE(void);
+extern void	readline(void);
 extern BOOL	HAVE(TOKEN);
 extern WORD	HAVEID(void);
 extern void	SYNTAX(void);
 extern void	CHECK(TOKEN);
 extern WORD	HAVECONST(void);
-extern WORD	HAVENUM(void);
-extern void	SYNTAX_ERROR(char *);
+extern WORD	havenum(void);
+extern void	syntax_error(char *);
 
 // DEFINED IN KRC_COMPILER
 extern void INIT_CODEV(void);

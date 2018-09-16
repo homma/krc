@@ -169,7 +169,7 @@ PRINTEXP(LIST E, WORD N)    // N IS THE PRIORITY LEVEL
          THEN {  WRCH('\'');
 		 TEST TL(E)==(LIST)LENGTH_OP THEN WRCH('#'); OR
 		 TEST TL(E)==(LIST)NOT_OP THEN WRCH('\\'); OR
-		 WRITETOKEN(INFIXNAMEVEC[(WORD)TL(E)]);
+		 writetoken(INFIXNAMEVEC[(WORD)TL(E)]);
 		 WRCH('\''); }  OR
          TEST ISLISTEXP(E)
          THEN {  WRCH('[');
@@ -183,13 +183,13 @@ PRINTEXP(LIST E, WORD N)    // N IS THE PRIORITY LEVEL
          THEN {  //CONTINUED RELATIONS
                  PRINTEXP(HD(TL(HD(TL(E)))),4);
                  WRCH(' ');
-                 WRITETOKEN(INFIXNAMEVEC[(WORD)HD(HD(TL(E)))]);
+                 writetoken(INFIXNAMEVEC[(WORD)HD(HD(TL(E)))]);
                  WRCH(' ');
                  PRINTEXP(TL(TL(E)),2);  } OR
          TEST ISINFIX(OP) && INFIXPRIOVEC[(WORD)OP]>=N
          THEN {  PRINTEXP(HD(TL(E)),LEFTPREC((OPERATOR)OP));
                  UNLESS OP==(LIST)COLON_OP DO WRCH(' '); //DOT.OP should be spaced, DT 2015
-                 WRITETOKEN(INFIXNAMEVEC[(WORD)OP]);
+                 writetoken(INFIXNAMEVEC[(WORD)OP]);
                  UNLESS OP==(LIST)COLON_OP DO WRCH(' ');
                  PRINTEXP(TL(TL(E)),RIGHTPREC((OPERATOR)OP));  }
           OR {  WRCH('(');
@@ -712,7 +712,7 @@ LIST FORMAL()
            DO {  P=CONS((TOKEN)COLON_OP,CONS(HD(PLIST),P));
                  PLIST=TL(PLIST);  } //NOW THEY ARE IN CORRECT ORDER
            RESULTIS P;  } OR
-   TEST HAVE((TOKEN)'-') && HAVENUM()
+   TEST HAVE((TOKEN)'-') && havenum()
    THEN {  THE_NUM = -THE_NUM;
            RESULTIS STONUM(THE_NUM);  }
    OR {  SYNTAX(); //MISSING identifier|constant|(|[

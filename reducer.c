@@ -139,7 +139,7 @@ char *
 SCASECONV(char *S)
 {  static char T[80+1];
    char *p=S, *q=T;
-   while (*p) *q++ = CASECONV(*p++);
+   while (*p) *q++ = caseconv(*p++);
    *q = '\0';
    RESULTIS T;  }
 

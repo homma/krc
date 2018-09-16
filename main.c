@@ -169,7 +169,7 @@ GO()
 	 TEST EXPFLAG THEN EVALUATION(); OR
 	   WRITES("-e takes an expression followed by ? or !\n");
 	 IF ERRORFLAG
-         DO SYNTAX_ERROR("malformed expression after -e\n");
+         DO syntax_error("malformed expression after -e\n");
       }
       UNTIL SIGNOFF DO COMMAND();
       QUITCOM();
@@ -177,7 +177,7 @@ GO()
    }
 
 
-// PARSELINE: A version of READLINE that gets its input from a string
+// PARSELINE: A version of readline that gets its input from a string
 
 static char *input_line;
 
@@ -200,12 +200,12 @@ str_UNRDCH(int c)
    RESULTIS c;
 }
 
-// SAME AS READLINE, BUT GETS ITS INPUT FROM A C STRING
+// SAME AS readline, BUT GETS ITS INPUT FROM A C STRING
 STATIC VOID
 PARSELINE(char *line)
 {  input_line=line;
    _RDCH=str_RDCH, _UNRDCH=str_UNRDCH;
-   READLINE();
+   readline();
    _RDCH=bcpl_RDCH, _UNRDCH=bcpl_UNRDCH;
 }
 
@@ -526,7 +526,7 @@ COMMAND()
       }
 #else
       IF !QUIET DO PROMPT(prompt); // ON EMAS PROMPTS REMAIN IN EFFECT UNTIL CANCELLED
-      READLINE();
+      readline();
       IF HAVE(EOL) DO RETURN //IGNORE BLANK LINES
       SUPPRESSPROMPTS();  // CANCEL PROMPT (IN CASE COMMAND READS DATA)
 #endif
@@ -552,7 +552,7 @@ COMMAND()
       TEST COMMENTFLAG>0 THEN COMMENT(); OR
       TEST EQNFLAG THEN NEWEQUATION();
       OR EVALUATION();
-      IF ERRORFLAG DO SYNTAX_ERROR("**syntax error**\n");
+      IF ERRORFLAG DO syntax_error("**syntax error**\n");
    }
 
 STATIC BOOL
@@ -717,7 +717,7 @@ GETFILE(char *FILENAME)
       SELECTINPUT(IN);
    {  int line=0; //to locate line number of error in file
       do{line++;
-         READLINE();
+         readline();
 	 IF ferror(IN) DO {
 	    ERRORFLAG=TRUE;
 	    BREAK;
@@ -730,7 +730,7 @@ GETFILE(char *FILENAME)
                 COMMENT(); }
          OR NEWEQUATION();
          IF ERRORFLAG
-         DO { SYNTAX_ERROR("**syntax error in file ");
+         DO { syntax_error("**syntax error in file ");
               WRITEF("%s at line %d\n",FILENAME,line); }
       } REPEAT
       ENDREAD();
@@ -902,7 +902,7 @@ SUBST(LIST Z,LIST A)
 STATIC VOID
 NEWEQUATION()
    {  WORD EQNO = -1;
-      IF HAVENUM()
+      IF havenum()
       DO {  EQNO=100*THE_NUM+THE_DECIMALS;
             CHECK((TOKEN)')');  }
    {  LIST X=EQUATION();
@@ -1047,10 +1047,10 @@ REORDERCOM()
    TEST HAVEID() && HD(TOKENS)!=EOL
    THEN {  LIST NOS = NIL;
            WORD MAX = NO_OF_EQNS(THE_ID);
-           WHILE HAVENUM()
+           WHILE havenum()
            DO {  WORD A=THE_NUM;
                  WORD B = HAVE(DOTDOT_SY) ?
-                         HAVENUM()? THE_NUM : MAX :  A;
+                         havenum()? THE_NUM : MAX :  A;
 		 WORD I;
                  FOR (I=A; I<=B; I++)
                     IF !MEMBER(NOS,(LIST)I) && 1<=I && I<=MAX
@@ -1154,10 +1154,10 @@ DELETECOM()
                  DLIST=CONS(CONS((LIST)A,(LIST)B),DLIST);  } OR
          {  WORD MAX = NO_OF_EQNS(THE_ID);
             LIST NLIST = NIL;
-            WHILE HAVENUM()
+            WHILE havenum()
             DO {  WORD A = THE_NUM;
                   WORD B = HAVE(DOTDOT_SY) ?
-                          HAVENUM()?THE_NUM:MAX : A;
+                          havenum()?THE_NUM:MAX : A;
 		  WORD I;
                   FOR (I=A; I<=B; I++)
                      NLIST=CONS((LIST)I,NLIST);
