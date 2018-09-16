@@ -158,9 +158,9 @@ static TOKEN readtoken(void) {
         return CONS(CONST, STONUM(THE_NUM));
     }
 #else
-    if (isdigit(CH)
-        ) {
+    if (isdigit(CH)) {
         THE_NUM = 0;
+
         while (isdigit(CH)) {
             THE_NUM = THE_NUM * 10 + CH - '0';
             if (THE_NUM < 0) {
@@ -169,9 +169,11 @@ static TOKEN readtoken(void) {
             }
             CH = (*_RDCH)();
         }
+
         if (CH != EOF) {
             (*_UNRDCH) (CH);
         }
+
         return CONS((TOKEN) CONST, STONUM(THE_NUM));
     }
 #endif
