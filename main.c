@@ -498,13 +498,13 @@ HELPCOM()
 { struct stat buf;
   char strbuf[BUFLEN+1],*topic;
   int local=stat("krclib",&buf)==0,r;
-  TEST HAVE(EOL)
+  TEST have(EOL)
   THEN { TEST local
          THEN r=system(HELPLOCAL "menu");
          OR r=system(HELP "menu");
          RETURN }
   topic = haveid()?PRINTNAME(THE_ID):NULL;
-  UNLESS topic && HAVE(EOL)
+  UNLESS topic && have(EOL)
   DO { WRITES("/h What? `/h' for options\n");
        RETURN }
   strncpy(strbuf,local?HELPLOCAL:HELP,BUFLEN);
@@ -519,7 +519,7 @@ COMMAND()
       char *line=linenoise(QUIET ? "" : prompt);
       if (line && line[0] == '\0') return;      // Otherwise the interpreter exits
       PARSELINE(line);                          // Handles NULL->EOF OK
-      IF HAVE(EOL) DO { free(line); RETURN }   //IGNORE BLANK LINES
+      IF have(EOL) DO { free(line); RETURN }   //IGNORE BLANK LINES
       if (line) {
          linenoiseHistoryAdd(line);
          free(line);
@@ -527,15 +527,15 @@ COMMAND()
 #else
       IF !QUIET DO PROMPT(prompt); // ON EMAS PROMPTS REMAIN IN EFFECT UNTIL CANCELLED
       readline();
-      IF HAVE(EOL) DO RETURN //IGNORE BLANK LINES
+      IF have(EOL) DO RETURN //IGNORE BLANK LINES
       SUPPRESSPROMPTS();  // CANCEL PROMPT (IN CASE COMMAND READS DATA)
 #endif
-      TEST HAVE((TOKEN)EOF)
+      TEST have((TOKEN)EOF)
       THEN SIGNOFF=TRUE; OR
-      TEST HAVE((TOKEN)'/')
-      THEN TEST HAVE(EOL)
+      TEST have((TOKEN)'/')
+      THEN TEST have(EOL)
            THEN DISPLAYALL(FALSE); OR
-           // TEST HAVE((TOKEN)'@') && HAVE(EOL)
+           // TEST have((TOKEN)'@') && have(EOL)
            // THEN LISTPM(); OR  //FOR DEBUGGING THE SYSTEM
            {  LIST P=COMMANDS;
               TEST haveid()
@@ -558,7 +558,7 @@ COMMAND()
 STATIC BOOL
 STARTDISPLAYCOM()
 { LIST HOLD=TOKENS;
-  WORD  R=haveid() && (HAVE(EOL) || HAVE((TOKEN)DOTDOT_SY));
+  WORD  R=haveid() && (have(EOL) || have((TOKEN)DOTDOT_SY));
   TOKENS=HOLD;
   RESULTIS R;
 }
@@ -566,20 +566,20 @@ STARTDISPLAYCOM()
 STATIC VOID
 DISPLAYCOM()
 {  TEST haveid()
-   THEN TEST HAVE(EOL)
+   THEN TEST have(EOL)
         THEN DISPLAY(THE_ID,TRUE,FALSE); OR
-        TEST HAVE((TOKEN)DOTDOT_SY)
+        TEST have((TOKEN)DOTDOT_SY)
         THEN {  ATOM A = THE_ID; LIST X=NIL;
-                ATOM B = HAVE(EOL) ? (ATOM)EOL :	// BUG?
-                        haveid() && HAVE(EOL) ? THE_ID :
+                ATOM B = have(EOL) ? (ATOM)EOL :	// BUG?
+                        haveid() && have(EOL) ? THE_ID :
                         0;
-                TEST B==0 THEN SYNTAX();
+                TEST B==0 THEN syntax();
                 OR X=EXTRACT(A,B);
                 UNTIL X==NIL
                 DO {  DISPLAY((ATOM)HD(X),FALSE,FALSE);
                       X=TL(X);  }  } //could insert extra line here between groups
-        OR SYNTAX();
-   OR SYNTAX();
+        OR syntax();
+   OR syntax();
 }
 
 STATIC VOID
@@ -603,7 +603,7 @@ PRIMITIVE(ATOM A)
 
 STATIC VOID
 QUITCOM()
-   {  IF TOKENS!=NIL DO CHECK(EOL);
+   {  IF TOKENS!=NIL DO check(EOL);
       IF ERRORFLAG DO RETURN
       IF MAKESURE()
       DO { WRITES("krc logout\n");
@@ -665,20 +665,20 @@ SAVECOM()
 
 STATIC VOID
 FILENAME()
-{  TEST HAVE(EOL)
+{  TEST have(EOL)
    THEN TEST LASTFILE==0
-        THEN {  WRITES("(No file set)\n") ; SYNTAX();  }
+        THEN {  WRITES("(No file set)\n") ; syntax();  }
         OR THE_ID=LASTFILE;
-   OR TEST haveid() && HAVE(EOL)
+   OR TEST haveid() && have(EOL)
       THEN LASTFILE=THE_ID;
-      OR {  IF haveconst() && HAVE(EOL) && !ISNUM(THE_CONST)
+      OR {  IF haveconst() && have(EOL) && !ISNUM(THE_CONST)
             DO WRITES("(Warning - quotation marks no longer expected around filenames in file commands - DT, Nov 81)\n");
-            SYNTAX(); }
+            syntax(); }
 }
 
 STATIC VOID
 FILECOM()
-{  TEST HAVE(EOL)
+{  TEST have(EOL)
    THEN TEST LASTFILE==0
         THEN WRITES("No files used\n");
         OR WRITEF("File = %s\n",PRINTNAME(LASTFILE));
@@ -722,7 +722,7 @@ GETFILE(char *FILENAME)
 	    ERRORFLAG=TRUE;
 	    BREAK;
          }
-         IF HAVE(EOL) DO LOOP;  
+         IF have(EOL) DO LOOP;  
          IF HD(TOKENS)==ENDSTREAMCH
          DO BREAK
          TEST COMMENTFLAG
@@ -755,7 +755,7 @@ LISTCOM()
 
 STATIC VOID
 NAMESCOM()
-   {  CHECK(EOL);
+   {  check(EOL);
       IF ERRORFLAG DO RETURN
       TEST SCRIPT==NIL
       THEN DISPLAYALL(FALSE);
@@ -787,7 +787,7 @@ ISDEFINED(ATOM X)
 
 STATIC VOID
 LIBCOM()
-   {  CHECK(EOL);
+   {  check(EOL);
       IF ERRORFLAG DO RETURN
       TEST LIBSCRIPT==NIL
       THEN WRITES("library = empty\n");
@@ -795,7 +795,7 @@ LIBCOM()
  
 STATIC VOID
 CLEARCOM()
-   {  CHECK(EOL);
+   {  check(EOL);
       IF ERRORFLAG DO RETURN
       CLEARMEMORY();  }
 
@@ -818,7 +818,7 @@ SCRIPTLIST(LIST S)
 
 STATIC VOID
 OPENLIBCOM()
-   {  CHECK(EOL);
+   {  check(EOL);
       IF ERRORFLAG DO RETURN
       SAVED=SCRIPT==NIL;
       SCRIPT=APPEND(SCRIPT,LIBSCRIPT);
@@ -829,14 +829,14 @@ STATIC VOID
 RENAMECOM()
    {  LIST X=NIL,Y=NIL,Z=NIL;
       WHILE haveid() DO X=CONS((LIST)THE_ID,X);
-      CHECK((TOKEN)',');
+      check((TOKEN)',');
       WHILE haveid() DO Y=CONS((LIST)THE_ID,Y);
-      CHECK(EOL);
+      check(EOL);
       IF ERRORFLAG DO RETURN
       {  //FIRST CHECK LISTS ARE OF SAME LENGTH
          LIST X1=X,Y1=Y;
          UNTIL X1==NIL||Y1==NIL DO Z=CONS(CONS(HD(X1),HD(Y1)),Z),X1=TL(X1),Y1=TL(Y1);
-         UNLESS X1==NIL && Y1==NIL && Z!=NIL DO { SYNTAX(); RETURN  }  }
+         UNLESS X1==NIL && Y1==NIL && Z!=NIL DO { syntax(); RETURN  }  }
       {  // NOW CHECK LEGALITY OF RENAME
          LIST Z1=Z,POSTDEFS=NIL,DUPS=NIL;
          UNTIL Z1==NIL
@@ -904,7 +904,7 @@ NEWEQUATION()
    {  WORD EQNO = -1;
       IF havenum()
       DO {  EQNO=100*THE_NUM+THE_DECIMALS;
-            CHECK((TOKEN)')');  }
+            check((TOKEN)')');  }
    {  LIST X=EQUATION();
       IF ERRORFLAG DO RETURN
    {  ATOM SUBJECT=(ATOM)HD(X);
@@ -1005,9 +1005,9 @@ EVALUATION()
    {  LIST CODE=EXP();
       WORD CH=(WORD)HD(TOKENS);
       LIST E=0;  //STATIC SO INVISIBLE TO GARBAGE COLLECTOR
-      UNLESS HAVE((TOKEN)'!') DO CHECK((TOKEN)'?');
+      UNLESS have((TOKEN)'!') DO check((TOKEN)'?');
       IF ERRORFLAG DO RETURN;
-      CHECK(EOL);
+      check(EOL);
       IF ATOBJECT DO {  PRINTOB(CODE) ; NEWLINE();  }
       E=BUILDEXP(CODE);
       IF ATCOUNT DO RESETGCSTATS();
@@ -1049,7 +1049,7 @@ REORDERCOM()
            WORD MAX = NO_OF_EQNS(THE_ID);
            WHILE havenum()
            DO {  WORD A=THE_NUM;
-                 WORD B = HAVE(DOTDOT_SY) ?
+                 WORD B = have(DOTDOT_SY) ?
                          havenum()? THE_NUM : MAX :  A;
 		 WORD I;
                  FOR (I=A; I<=B; I++)
@@ -1057,7 +1057,7 @@ REORDERCOM()
                     DO NOS=CONS((LIST)I,NOS);
                     //NOS OUT OF RANGE ARE SILENTLY IGNORED
               }
-           CHECK(EOL);
+           check(EOL);
            IF ERRORFLAG DO RETURN
            IF VAL(THE_ID)==NIL
            DO {  DISPLAY(THE_ID,FALSE,FALSE);
@@ -1083,25 +1083,25 @@ REORDERCOM()
            SAVED=FALSE;
            CLEARMEMORY();
         }  } 
-   OR SYNTAX();
+   OR syntax();
 }
 
 STATIC VOID
 SCRIPTREORDER()
    {  LIST R=NIL;
       WHILE haveid()
-      DO TEST HAVE(DOTDOT_SY)
+      DO TEST have(DOTDOT_SY)
          THEN {  ATOM A=THE_ID, B=0; LIST X=NIL;
                  TEST haveid() THEN B=THE_ID; OR
                  IF HD(TOKENS)==EOL DO B=(ATOM)EOL;
-                 TEST B==0 THEN SYNTAX(); OR X=EXTRACT(A,B);
-                 IF X==NIL DO SYNTAX();
+                 TEST B==0 THEN syntax(); OR X=EXTRACT(A,B);
+                 IF X==NIL DO syntax();
                  R=SHUNT(X,R);  }
          OR TEST MEMBER(SCRIPT,(LIST)THE_ID)
             THEN R=CONS((LIST)THE_ID,R);
             OR {  WRITEF("\"%s\" not in script\n",PRINTNAME(THE_ID));
-                  SYNTAX();  }
-      CHECK(EOL);
+                  syntax();  }
+      check(EOL);
       IF ERRORFLAG DO RETURN
    {  LIST R1 = NIL;
       UNTIL TL(R)==NIL
@@ -1146,17 +1146,17 @@ STATIC VOID
 DELETECOM()
    {  LIST DLIST = NIL;
       WHILE haveid()
-      DO TEST HAVE(DOTDOT_SY)
+      DO TEST have(DOTDOT_SY)
          THEN {  ATOM A=THE_ID, B=(ATOM)EOL;
                  TEST haveid()
                  THEN B=THE_ID; OR
-                 UNLESS HD(TOKENS)==EOL DO SYNTAX();
+                 UNLESS HD(TOKENS)==EOL DO syntax();
                  DLIST=CONS(CONS((LIST)A,(LIST)B),DLIST);  } OR
          {  WORD MAX = NO_OF_EQNS(THE_ID);
             LIST NLIST = NIL;
             WHILE havenum()
             DO {  WORD A = THE_NUM;
-                  WORD B = HAVE(DOTDOT_SY) ?
+                  WORD B = have(DOTDOT_SY) ?
                           havenum()?THE_NUM:MAX : A;
 		  WORD I;
                   FOR (I=A; I<=B; I++)
@@ -1164,7 +1164,7 @@ DELETECOM()
                }
             DLIST=CONS(CONS((LIST)THE_ID,NLIST),DLIST);
          }
-      CHECK(EOL);
+      check(EOL);
       IF ERRORFLAG DO RETURN
    {  WORD DELS = 0;
       IF DLIST==NIL   //DELETE ALL

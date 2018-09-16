@@ -476,20 +476,20 @@ EQUATION()      //RETURNS A TRIPLE: CONS(SUBJECT,CONS(NARGS,EQN))
            WHILE ISCONS(SUBJECT)
            DO SUBJECT=HD(SUBJECT),NARGS=NARGS+1;
         }
-   OR {  SYNTAX(), WRITES("missing LHS\n");
+   OR {  syntax(), WRITES("missing LHS\n");
          RESULTIS NIL;  }
    COMPILELHS(LHS,NARGS);
 {  LIST CODE=COLLECTCODE();
-   CHECK((TOKEN)'=');
+   check((TOKEN)'=');
    EXPR(0);
    PLANT0(STOP_C);
 {  LIST EXPCODE=COLLECTCODE();
-   TEST HAVE((TOKEN)',') //CHANGE FROM EMAS/KRC TO ALLOW GUARDED SIMPLE DEF
+   TEST have((TOKEN)',') //CHANGE FROM EMAS/KRC TO ALLOW GUARDED SIMPLE DEF
    THEN {  EXPR(0);
            PLANT0(IF_C);
            CODE=APPEND(CODE,APPEND(COLLECTCODE(),EXPCODE));  }
    OR CODE=APPEND(CODE,EXPCODE);
-   UNLESS HD(TOKENS)==ENDSTREAMCH DO CHECK(EOL);
+   UNLESS HD(TOKENS)==ENDSTREAMCH DO check(EOL);
    UNLESS ERRORFLAG DO LASTLHS=LHS;
    IF NARGS==0 DO LHS=0;//IN THIS CASE THE LHS FIELD IS USED TO REMEMBER
        //THE VALUE OF THE VARIABLE - 0 MEANS NOT YET SET
@@ -498,22 +498,22 @@ EQUATION()      //RETURNS A TRIPLE: CONS(SUBJECT,CONS(NARGS,EQN))
 
 STATIC VOID
 EXPR(WORD N)  //N IS THE PRIORITY LEVEL
-   {  TEST N<=3 &&(HAVE((TOKEN)'\\') || HAVE((TOKEN)'~'))
+   {  TEST N<=3 &&(have((TOKEN)'\\') || have((TOKEN)'~'))
       THEN {  PLANT1(LOAD_C,(LIST)NOT_OP);
               EXPR(3);
               PLANT0(APPLY_C);  } OR
-      TEST N<=5 && HAVE((TOKEN)'+') THEN EXPR(5); OR
-      TEST N<=5 && HAVE((TOKEN)'-')
+      TEST N<=5 && have((TOKEN)'+') THEN EXPR(5); OR
+      TEST N<=5 && have((TOKEN)'-')
       THEN {  PLANT1(LOAD_C,(LIST)NEG_OP);
               EXPR(5);
               PLANT0(APPLY_C);  } OR
-      TEST HAVE((TOKEN)'#')
+      TEST have((TOKEN)'#')
       THEN {  PLANT1(LOAD_C,(LIST)LENGTH_OP);
               COMBN();
               PLANT0(APPLY_C);  } OR
       TEST STARTSIMPLE(HD(TOKENS))
       THEN COMBN();
-      OR { SYNTAX(); RETURN }
+      OR { syntax(); RETURN }
    {  OPERATOR OP=MKINFIX(HD(TOKENS));
       WHILE DIPRIO(OP)>=N
       DO {  WORD I, AND_COUNT=0; //FOR CONTINUED RELATIONS
@@ -559,29 +559,29 @@ SIMPLE()
    THEN COMPILENAME(THE_ID); OR
    TEST haveconst()
    THEN PLANT1(LOAD_C,(LIST)INTERNALISE(THE_CONST)); OR
-   TEST HAVE((TOKEN)'(')
-   THEN {  EXPR(0); CHECK((TOKEN)')');  } OR
-   TEST HAVE((TOKEN)'[')
-   THEN TEST HAVE((TOKEN)']')
+   TEST have((TOKEN)'(')
+   THEN {  EXPR(0); check((TOKEN)')');  } OR
+   TEST have((TOKEN)'[')
+   THEN TEST have((TOKEN)']')
         THEN PLANT1(LOAD_C,NIL);
         OR {  WORD N=1;
               EXPR(0);
-              IF HAVE((TOKEN)',')
+              IF have((TOKEN)',')
               DO {  EXPR(0);
                     N=N+1;  }
-              TEST HAVE(DOTDOT_SY)
+              TEST have(DOTDOT_SY)
               THEN {  TEST HD(TOKENS)==(TOKEN)']'
                       THEN PLANT1(LOAD_C,INFINITY);
                       OR EXPR(0);
                       IF N==2 DO PLANT0(APPLY_C);
                       PLANT1(APPLYINFIX_C,
 			 (LIST)(N==1 ? DOTDOT_OP : COMMADOTDOT_OP));  } // OK
-              OR {  WHILE HAVE((TOKEN)',')
+              OR {  WHILE have((TOKEN)',')
                     DO {  EXPR(0);
                           N=N+1;  }
                     PLANT1(FORMLIST_C,(LIST)N);  } // OK
-              CHECK((TOKEN)']');  } OR
-    TEST HAVE((TOKEN)'{')  // ZF EXPRESSIONS	BUG?
+              check((TOKEN)']');  } OR
+    TEST have((TOKEN)'{')  // ZF EXPRESSIONS	BUG?
     THEN {  WORD N = 0;
             LIST HOLD = TOKENS;
             PERFORM_ALPHA_CONVERSIONS();
@@ -589,21 +589,21 @@ SIMPLE()
             //TEST HD(TOKENS)==BACKARROW_SY  //IMPLICIT ZF BODY
                       //NO LONGER LEGAL
             //THEN TOKENS=HOLD; OR
-            CHECK((TOKEN)';');
-            do N = N + QUALIFIER(); REPEATWHILE(HAVE((TOKEN)';'));
+            check((TOKEN)';');
+            do N = N + QUALIFIER(); REPEATWHILE(have((TOKEN)';'));
             PLANT1(FORMZF_C,(LIST)N); // OK
-            CHECK((TOKEN)'}'); }  OR
-   TEST HAVE((TOKEN)'\'') //OPERATOR DENOTATION
-   THEN {  TEST HAVE((TOKEN)'#') THEN PLANT1(LOAD_C,(LIST)LENGTH_OP); OR
-	   TEST HAVE((TOKEN)'\\') || HAVE((TOKEN)'~') THEN PLANT1(LOAD_C,(LIST)NOT_OP);
+            check((TOKEN)'}'); }  OR
+   TEST have((TOKEN)'\'') //OPERATOR DENOTATION
+   THEN {  TEST have((TOKEN)'#') THEN PLANT1(LOAD_C,(LIST)LENGTH_OP); OR
+	   TEST have((TOKEN)'\\') || have((TOKEN)'~') THEN PLANT1(LOAD_C,(LIST)NOT_OP);
            OR {  OPERATOR OP=MKINFIX((TOKEN)(HD(TOKENS)));
                  TEST ISINFIX((LIST)OP) THEN TOKENS=TL(TOKENS);
-                 OR SYNTAX(); //MISSING INFIX OR PREFIX OPERATOR
+                 OR syntax(); //MISSING INFIX OR PREFIX OPERATOR
                  PLANT1(LOAD_C,(LIST)QUOTE_OP);
                  PLANT1(LOAD_C,(LIST)OP);
                  PLANT0(APPLY_C); }
-           CHECK((TOKEN)'\'');  }
-   OR SYNTAX(); //MISSING identifier|constant|(|[|{
+           check((TOKEN)'\'');  }
+   OR syntax(); //MISSING identifier|constant|(|[|{
 }
 
 STATIC VOID
@@ -624,8 +624,8 @@ QUALIFIER()
               haveid();
               PLANT1(LOAD_C,(LIST)THE_ID);
               N = N+1;
-           } REPEATWHILE(HAVE((TOKEN)','));
-           CHECK(BACKARROW_SY);
+           } REPEATWHILE(have((TOKEN)','));
+           check(BACKARROW_SY);
            EXPR(0);
            PLANT1(APPLYINFIX_C,(LIST)GENERATOR);
            IF N>1 DO PLANT1(CONT_GENERATOR_C,(LIST)(N-1)); // OK
@@ -698,24 +698,24 @@ STATIC
 LIST FORMAL()
 {  TEST haveid() THEN RESULTIS (LIST)THE_ID; OR
    TEST haveconst() THEN RESULTIS INTERNALISE(THE_CONST); OR
-   TEST HAVE((TOKEN)'(')
+   TEST have((TOKEN)'(')
    THEN {  LIST P=PATTERN();
-           CHECK((TOKEN)')');
+           check((TOKEN)')');
            RESULTIS P;  } OR
-   TEST HAVE((TOKEN)'[')
+   TEST have((TOKEN)'[')
    THEN {  LIST PLIST=NIL,P=NIL;
-           IF HAVE((TOKEN)']') DO RESULTIS NIL;
+           IF have((TOKEN)']') DO RESULTIS NIL;
            do PLIST=CONS(PATTERN(),PLIST);
-           REPEATWHILE(HAVE((TOKEN)','));  //NOTE THEY ARE IN REVERSE ORDER
-           CHECK((TOKEN)']');
+           REPEATWHILE(have((TOKEN)','));  //NOTE THEY ARE IN REVERSE ORDER
+           check((TOKEN)']');
            UNTIL PLIST==NIL
            DO {  P=CONS((TOKEN)COLON_OP,CONS(HD(PLIST),P));
                  PLIST=TL(PLIST);  } //NOW THEY ARE IN CORRECT ORDER
            RESULTIS P;  } OR
-   TEST HAVE((TOKEN)'-') && havenum()
+   TEST have((TOKEN)'-') && havenum()
    THEN {  THE_NUM = -THE_NUM;
            RESULTIS STONUM(THE_NUM);  }
-   OR {  SYNTAX(); //MISSING identifier|constant|(|[
+   OR {  syntax(); //MISSING identifier|constant|(|[
          RESULTIS NIL;
 }  }
 
@@ -728,7 +728,7 @@ INTERNALISE(LIST VAL)
 STATIC LIST
 PATTERN()
 {  LIST P=FORMAL();
-   IF HAVE((TOKEN)':')
+   IF have((TOKEN)':')
    DO P=CONS((LIST)COLON_OP,CONS(P,PATTERN()));
    RESULTIS P;  }
 

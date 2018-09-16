@@ -62,19 +62,29 @@ void readline() {
 
         do {
             T = readtoken();
+
             // GCC
             * P = CONS((LIST) T, NIL);
             P = &(TL(*P));
-        } while (!(T == (TOKEN) EOL || T == (TOKEN) ENDSTREAMCH ||
+
+        } while (!(T == (TOKEN) EOL ||
+                   T == (TOKEN) ENDSTREAMCH ||
                    T == (TOKEN) BADTOKEN));
-            // ignore first line of Unix script file
-            if (HD(TOKENS) == (LIST) '#' && ISCONS(TL(TOKENS)) &&
-                HD(TL(TOKENS)) == (LIST) '!')
+
+        // ignore first line of Unix script file
+        if (HD(TOKENS) == (LIST) '#' &&
+            ISCONS(TL(TOKENS)) &&
+            HD(TL(TOKENS)) == (LIST) '!') {
             continue;
-        if (T == (TOKEN) EOL || T == (TOKEN) ENDSTREAMCH)
+        }
+
+        if (T == (TOKEN) EOL || T == (TOKEN) ENDSTREAMCH) {
             return;
+        }
+
         bcpl_WRITES("Closing quote missing - line ignored\n");
         ERRORFLAG = TRUE;
+
         return;
     } while (1);
 }
@@ -270,7 +280,7 @@ static TOKEN readtoken(void) {
                 fprintf(bcpl_OUTPUT, "%s :- ...", PRINTNAME((ATOM) SUBJECT)),
                     bcpl_WRITES(" missing \";\"\n");
                 COMMENTFLAG--;
-                SYNTAX();
+                syntax();
             } else {
                 C = CONS((LIST) PACKBUFFER(), C);
             }
@@ -356,7 +366,7 @@ static WORD read_decimals(void) {
             }
 
             while (!(D == ')')) {
-                SYNTAX();
+                syntax();
             }
 
             (*_UNRDCH)(D);
@@ -427,7 +437,7 @@ void writetoken(TOKEN T) {
     }
 }
 
-BOOL HAVE(TOKEN T) {
+BOOL have(TOKEN T) {
     if (TOKENS == NIL || HD(TOKENS) != T) {
         return FALSE;
     }
@@ -436,8 +446,8 @@ BOOL HAVE(TOKEN T) {
     return TRUE;
 }
 
-void CHECK(TOKEN T) {
-    if (HAVE(T)) {
+void check(TOKEN T) {
+    if (have(T)) {
         return;
     }
 
@@ -448,7 +458,7 @@ void CHECK(TOKEN T) {
     }
 }
 
-void SYNTAX() {
+void syntax() {
     ERRORFLAG = TRUE;
 }
 
