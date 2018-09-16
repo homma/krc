@@ -503,7 +503,7 @@ HELPCOM()
          THEN r=system(HELPLOCAL "menu");
          OR r=system(HELP "menu");
          RETURN }
-  topic = HAVEID()?PRINTNAME(THE_ID):NULL;
+  topic = haveid()?PRINTNAME(THE_ID):NULL;
   UNLESS topic && HAVE(EOL)
   DO { WRITES("/h What? `/h' for options\n");
        RETURN }
@@ -538,7 +538,7 @@ COMMAND()
            // TEST HAVE((TOKEN)'@') && HAVE(EOL)
            // THEN LISTPM(); OR  //FOR DEBUGGING THE SYSTEM
            {  LIST P=COMMANDS;
-              TEST HAVEID()
+              TEST haveid()
               THEN THE_ID=MKATOM(SCASECONV(PRINTNAME(THE_ID)));
                  //ALWAYS ACCEPT COMMANDS IN EITHER CASE
               OR P=NIL;
@@ -558,20 +558,20 @@ COMMAND()
 STATIC BOOL
 STARTDISPLAYCOM()
 { LIST HOLD=TOKENS;
-  WORD  R=HAVEID() && (HAVE(EOL) || HAVE((TOKEN)DOTDOT_SY));
+  WORD  R=haveid() && (HAVE(EOL) || HAVE((TOKEN)DOTDOT_SY));
   TOKENS=HOLD;
   RESULTIS R;
 }
 
 STATIC VOID
 DISPLAYCOM()
-{  TEST HAVEID()
+{  TEST haveid()
    THEN TEST HAVE(EOL)
         THEN DISPLAY(THE_ID,TRUE,FALSE); OR
         TEST HAVE((TOKEN)DOTDOT_SY)
         THEN {  ATOM A = THE_ID; LIST X=NIL;
                 ATOM B = HAVE(EOL) ? (ATOM)EOL :	// BUG?
-                        HAVEID() && HAVE(EOL) ? THE_ID :
+                        haveid() && HAVE(EOL) ? THE_ID :
                         0;
                 TEST B==0 THEN SYNTAX();
                 OR X=EXTRACT(A,B);
@@ -669,7 +669,7 @@ FILENAME()
    THEN TEST LASTFILE==0
         THEN {  WRITES("(No file set)\n") ; SYNTAX();  }
         OR THE_ID=LASTFILE;
-   OR TEST HAVEID() && HAVE(EOL)
+   OR TEST haveid() && HAVE(EOL)
       THEN LASTFILE=THE_ID;
       OR {  IF haveconst() && HAVE(EOL) && !ISNUM(THE_CONST)
             DO WRITES("(Warning - quotation marks no longer expected around filenames in file commands - DT, Nov 81)\n");
@@ -828,9 +828,9 @@ OPENLIBCOM()
 STATIC VOID
 RENAMECOM()
    {  LIST X=NIL,Y=NIL,Z=NIL;
-      WHILE HAVEID() DO X=CONS((LIST)THE_ID,X);
+      WHILE haveid() DO X=CONS((LIST)THE_ID,X);
       CHECK((TOKEN)',');
-      WHILE HAVEID() DO Y=CONS((LIST)THE_ID,Y);
+      WHILE haveid() DO Y=CONS((LIST)THE_ID,Y);
       CHECK(EOL);
       IF ERRORFLAG DO RETURN
       {  //FIRST CHECK LISTS ARE OF SAME LENGTH
@@ -1044,7 +1044,7 @@ STATIC VOID
 REORDERCOM()
 {  TEST ISID(HD(TOKENS)) && (ISID(HD(TL(TOKENS))) || HD(TL(TOKENS))==(LIST)DOTDOT_SY)
    THEN SCRIPTREORDER(); OR
-   TEST HAVEID() && HD(TOKENS)!=EOL
+   TEST haveid() && HD(TOKENS)!=EOL
    THEN {  LIST NOS = NIL;
            WORD MAX = NO_OF_EQNS(THE_ID);
            WHILE havenum()
@@ -1089,10 +1089,10 @@ REORDERCOM()
 STATIC VOID
 SCRIPTREORDER()
    {  LIST R=NIL;
-      WHILE HAVEID()
+      WHILE haveid()
       DO TEST HAVE(DOTDOT_SY)
          THEN {  ATOM A=THE_ID, B=0; LIST X=NIL;
-                 TEST HAVEID() THEN B=THE_ID; OR
+                 TEST haveid() THEN B=THE_ID; OR
                  IF HD(TOKENS)==EOL DO B=(ATOM)EOL;
                  TEST B==0 THEN SYNTAX(); OR X=EXTRACT(A,B);
                  IF X==NIL DO SYNTAX();
@@ -1145,10 +1145,10 @@ EXTRACT(ATOM A, ATOM B)         //RETURNS A SEGMENT OF THE SCRIPT
 STATIC VOID
 DELETECOM()
    {  LIST DLIST = NIL;
-      WHILE HAVEID()
+      WHILE haveid()
       DO TEST HAVE(DOTDOT_SY)
          THEN {  ATOM A=THE_ID, B=(ATOM)EOL;
-                 TEST HAVEID()
+                 TEST haveid()
                  THEN B=THE_ID; OR
                  UNLESS HD(TOKENS)==EOL DO SYNTAX();
                  DLIST=CONS(CONS((LIST)A,(LIST)B),DLIST);  } OR

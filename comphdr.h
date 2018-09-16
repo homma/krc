@@ -131,7 +131,7 @@ typedef enum {
 // DEFINED IN KRC_LEX
 extern void	readline(void);
 extern BOOL	HAVE(TOKEN);
-extern WORD	HAVEID(void);
+extern WORD	haveid(void);
 extern void	SYNTAX(void);
 extern void	CHECK(TOKEN);
 extern WORD	haveconst(void);

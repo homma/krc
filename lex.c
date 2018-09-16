@@ -452,7 +452,7 @@ void SYNTAX() {
     ERRORFLAG = TRUE;
 }
 
-WORD HAVEID() {
+WORD haveid() {
     while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
         return FALSE;
     }
