@@ -1,4 +1,4 @@
-KRC(1)			    General Commands Manual			KRC(1)
+KRC(1)									KRC(1)
 
 
 
@@ -116,12 +116,12 @@ COMMANDS
 	      If no names are supplied, it deletes the whole script (beware!).
 
        /delete name part(s)
-	      Deletes  the numbered equations from the definition of name.  To
-	      delete the comment, enter an empty comment for  the  same  name,
+	      Deletes the numbered equations from the definition of name.   To
+	      delete  the  comment,  enter an empty comment for the same name,
 	      for example "foo:-;"
 
        /reorder name name(s)
-	      Place  the  definitions  of  one or more names immediately after
+	      Place the definitions of one or  more  names  immediately  after
 	      those for the first mentioned name, in the order shown.
 
        /reorder name part(s)
@@ -133,14 +133,14 @@ COMMANDS
 	      Sorts the script's definitions into alphabetical order.
 
        /rename from,to
-	      Change the name `from' into `to', in all the places where it  is
+	      Change  the name `from' into `to', in all the places where it is
 	      used in the script; from and to can both be lists of names sepa-
 	      rated by spaces, in which case the first name in from is changed
-	      to  the  first name in to and so on. This allows you to swap two
+	      to the first name in to and so on. This allows you to  swap  two
 	      or more names in the script without losing any of them.
 
        /save filename
-	      Saves the script in the named file.  If filename is omitted,  it
+	      Saves  the script in the named file.  If filename is omitted, it
 	      saves to the last filename mentioned.
 
        /get filename
@@ -153,11 +153,11 @@ COMMANDS
 	      Changes the default filename.
 
        /list filename
-	      Lists the contents of a disk file, like Unix's  "cat"  or  DOS's
-	      "type"  commands.  If the filename is omitted, it reads from the
+	      Lists  the  contents  of a disk file, like Unix's "cat" or DOS's
+	      "type" commands.	If the filename is omitted, it reads from  the
 	      last filename mentioned.
 
-       /dir   List the filenames in the  current  directory  or  folder,  like
+       /dir   List  the  filenames  in	the  current directory or folder, like
 	      Unix's "ls" or DOS's "dir" commands.
 
        /names Displays the names defined in the script.
@@ -165,20 +165,20 @@ COMMANDS
        /lib   Displays the names defined in the prelude.
 
        /openlib
-	      Allows  you  to  modify the definitions of the prelude (they are
-	      normally write-protected).  Any changes are made to the copy  of
-	      the  definitions held in memory during the session - only if you
+	      Allows you to modify the definitions of the  prelude  (they  are
+	      normally	write-protected).  Any changes are made to the copy of
+	      the definitions held in memory during the session - only if  you
 	      use /save (filename) do they get written to a file.
 
-       /clear Clear all memo fields.  When a simple definition in  the	script
-	      is  expanded i.e. one like foo = STUFF, the value is stored in a
-	      memo field for foo so STUFF need not be evaluated  again.  These
-	      are  cleared  automatically when any definition in the script is
+       /clear Clear  all  memo fields.	When a simple definition in the script
+	      is expanded i.e. one like foo = STUFF, the value is stored in  a
+	      memo  field  for foo so STUFF need not be evaluated again. These
+	      are cleared automatically when any definition in the  script  is
 	      changed.
 
        /count Turns on reduction counting.
 
-       /gc    Enables the printing of memory usage  information  each  time  a
+       /gc    Enables  the  printing  of  memory usage information each time a
 	      garbage collection happens.
 
        /reset Turns off reduction counting, garbage collection information and
@@ -189,32 +189,32 @@ COMMANDS
        /help  Prints a list of help topics. Shorthand: /h
 
        /help topic
-	      Displays the relevant helpfile, using the UNIX  command  `less'.
+	      Displays	the  relevant helpfile, using the UNIX command `less'.
 	      This allows you to move backwards (type `b') in the file as well
-	      as forwards (type SPACE, or ENTER to move forward one line at  a
-	      time),  type  `q' to quit.  Say `man 1 less' on the UNIX command
+	      as  forwards (type SPACE, or ENTER to move forward one line at a
+	      time), type `q' to quit.	Say `man 1 less' on the  UNIX  command
 	      line for more details.
 
        These last commands are for use in debugging the system:
 
        /object
-	      Displays the internal representation of each  expression	before
+	      Displays	the  internal representation of each expression before
 	      evaluating it.
 
-       /lpm   The  "List  Post	Mortem"  displays  the	KRC machine's internal
+       /lpm   The "List Post  Mortem"  displays  the  KRC  machine's  internal
 	      state.
 
 EXPRESSION EVALUATION
-       An expression is a mathematical formula denoting a value.  For  details
-       of  what  can be in an expression see later sections: IDENTIFIERS, DATA
-       TYPES, OPERATORS and ZF EXPRESSIONS.  To evaluate an  expression  in  a
-       KRC  session  and  print  the result on the screen, type the expression
+       An  expression  is a mathematical formula denoting a value. For details
+       of what can be in an expression see later sections:  IDENTIFIERS,  DATA
+       TYPES,  OPERATORS  and  ZF EXPRESSIONS.	To evaluate an expression in a
+       KRC session and print the result on the	screen,  type  the  expression
        followed by `?'.
 
        For example, you could type 2+2? to obtain 4.
 
-       If the value is a data structure it is printed as you would  enter  it,
-       with  quote marks around strings, square brackets around lists and com-
+       If  the	value is a data structure it is printed as you would enter it,
+       with quote marks around strings, square brackets around lists and  com-
        mas between list elements.  For example (`++' joins lists together):
 
 	   krc> [1..3]++["...\n"]++[2*2]?
@@ -232,34 +232,34 @@ EXPRESSION EVALUATION
 	   4
 
        `!' prints strings without quotes, obeying any control characters, num-
-       bers are printed in the usual way and with  lists  `!'  scans  left  to
+       bers  are  printed  in  the  usual way and with lists `!' scans left to
        right, recursively scanning any sublists encountered, printing only the
-       atoms (numbers and strings).   The  effect  is  as  if  the  data  were
+       atoms  (numbers	and  strings).	 The  effect  is  as  if the data were
        squashed flat and joined up into a single string (although `!' does not
        actually use any additional string space).
 
-       As a general guide `?' (print values to show structure)	is  used  when
-       developing  and	testing  functions  and `!' (flat-print) for the final
-       output of a program where you want to control layout.   Note  that  `?'
+       As  a  general  guide `?' (print values to show structure) is used when
+       developing and testing functions and `!'  (flat-print)  for  the  final
+       output  of  a  program where you want to control layout.  Note that `?'
        adds a trailing newline while `!' doesn't.
 
-       The  reader  may  find it helpful to study the function show defined in
+       The reader may find it helpful to study the function  show  defined  in
        the prelude;
 	      x?
        is actually equivalent to show x : ["\n"]!
 
-       Reminder: For KRC to print the value of an expression it must  be  fol-
+       Reminder:  For  KRC to print the value of an expression it must be fol-
        lowed by `?' or `!'.
 
 THE SCRIPT: COMMENTS AND EQUATIONS
-       A  KRC  script  consists of a sequence of definitions, each of which is
+       A KRC script consists of a sequence of definitions, each  of  which  is
        composed of an optional comment followed by one or more equations.  The
-       order  of  the definitions has no significance as they are all in scope
-       throughout the script, but the order of the equations within a  defini-
+       order of the definitions has no significance as they are all  in  scope
+       throughout  the script, but the order of the equations within a defini-
        tion may affect its meaning, as they are tried in the order written.
 
-       A  comment  is  the name, of a function or other data item, followed by
-       the two characters ":-" followed by any number of  lines  of  text  and
+       A comment is the name, of a function or other data  item,  followed  by
+       the  two  characters  ":-"  followed by any number of lines of text and
        terminated by the first semicolon ";".
 	   flub :- here is some text
 		   ... explaining "flub";
@@ -268,32 +268,32 @@ THE SCRIPT: COMMENTS AND EQUATIONS
 	      LHS = expression
        or
 	      LHS = expression, guard
-       where  LHS  ("left  hand side") is a name optionally followed by formal
-       parameters and expression describes the value which the lhs assumes  in
+       where LHS ("left hand side") is a name optionally  followed  by	formal
+       parameters  and expression describes the value which the lhs assumes in
        this case.
 
-       The  optional  guard  is a Boolean (i.e. truth-valued) expression which
-       determines if the equation is applicable. If  the  guard  evaluates  to
+       The optional guard is a Boolean (i.e.  truth-valued)  expression  which
+       determines  if  the  equation  is applicable. If the guard evaluates to
        "TRUE" the equation is used, otherwise it is not.
 
        Note that equations are written one per line (no terminating semicolons
        needed, or allowed).  Examples
 	      radix = 10
 	      girls = ["susan","jill","pandora"]
-       are simple definitions.	A simple definition has just  a  name  as  its
+       are  simple  definitions.   A  simple definition has just a name as its
        LHS.
 
        We can define a function by introducing a formal parameter
 	      sq n = n * n
        The formal parameter `n' is a local variable of the equation.  Any name
        can be used as a formal parameter, it does not have to be a single let-
-       ter.   However name clashes, like using `sq' as a formal parameter when
-       it is also a top-level name, are best avoided (occurences of  the  name
+       ter.  However name clashes, like using `sq' as a formal parameter  when
+       it  is  also a top-level name, are best avoided (occurences of the name
        on the right of the equation will refer to the formal parameter).
 
-       Names  which  appear  at  the  head  of an LHS, which to this point are
-       `radix', `girls' and `sq', are known as top-level names	and  have  the
-       whole  script  as  their scope, as do the names defined in the prelude.
+       Names which appear at the head of an  LHS,  which  to  this  point  are
+       `radix',  `girls'  and  `sq', are known as top-level names and have the
+       whole script as their scope, as do the names defined  in  the  prelude.
        (The scope of a name is the region of text in which it can be used with
        the same meaning.)
 
@@ -303,72 +303,72 @@ THE SCRIPT: COMMENTS AND EQUATIONS
 	      sqdiff 2 3
        not sqdiff(2,3) as you would in some other programming languages.
 
-       More  complex  function	definitions may require several equations, for
+       More complex function definitions may require  several  equations,  for
        example
 	      fac 0 = 1
 	      fac n = n * fac(n-1)
-       defines a factorial function which can then be  used,  for  example  by
+       defines	a  factorial  function	which can then be used, for example by
        writing
 	      fac 10?
-       Note  the  use of a constant, 0, as formal parameter in the first equa-
+       Note the use of a constant, 0, as formal parameter in the  first  equa-
        tion.  This is one way to do case analysis.
 
-       Guards can also be used to do case analysis.  A safer version of  `fac'
+       Guards  can also be used to do case analysis.  A safer version of `fac'
        would be:
 	      fac n = 1, n <= 0
 		    = n * fac(n-1)
        Here we use a guard, `n <= 0', to stop `fac' going into a loop on nega-
-       tive numbers.  Entering an equation with no left hand side  means  that
+       tive  numbers.	Entering an equation with no left hand side means that
        the LHS is the same as in the line previously entered.
 
-       We  have  seen  that a formal parameter can be a name or a literal con-
-       stant.  It can also be a pattern to match list  structure  as  in  this
+       We have seen that a formal parameter can be a name or  a  literal  con-
+       stant.	It  can  also  be a pattern to match list structure as in this
        example - `rotor' carries out a simple rotation on lists of length 3.
 	      rotor [a,b,c] = [b,c,a]
 
-       To  match  lists  of unknown length we use a pattern involving `:', for
-       example the functions `hd', `tl', which return the first element  of  a
-       list,  and  the	remainder  of  the list without the first element, are
+       To match lists of unknown length we use a pattern  involving  `:',  for
+       example	the  functions `hd', `tl', which return the first element of a
+       list, and the remainder of the list  without  the  first  element,  are
        defined
 	      hd (a:x) = a
 	      tl (a:x) = x
 
-       Another example is this function which copies lists of length  <=2  and
+       Another	example  is this function which copies lists of length <=2 and
        extracts the first 2 elements of lists with length >2.
 	      take2 [] = []
 	      take2 [a] = [a]
 	      take2 (a:b:x) = [a,b]
        Note that ':' is right associative so `a:b:x' means `a:(b:x)'.
 
-       In  summary, an LHS consists of the name being defined followed by zero
+       In summary, an LHS consists of the name being defined followed by  zero
        or more formal parameters.  Each formal parameter can be
 	      a name like x or height
 	      a literal number or string like 3 or "bill"
 	      a pattern like [p,q,r] or (a : x)
-	      where any of the p, q, r, a, x could themselves be a name,  lit-
+	      where  any of the p, q, r, a, x could themselves be a name, lit-
 	      eral or pattern.
-       Names  introduced  by  formal  parameters  are local to the equation in
+       Names introduced by formal parameters are  local  to  the  equation  in
        which they appear.
 
-       An equation with one or more patterns  in  its  LHS  applies  when  the
+       An  equation  with  one	or  more  patterns in its LHS applies when the
        actual parameters of a function invocation match the corresponding for-
-       mal parameters; that is they have the same list	structure  and,  where
+       mal  parameters;  that  is they have the same list structure and, where
        the pattern contains a literal, the values are equal.  If there is also
        a guard, that must evaluate to "TRUE".
 
-       Where a definition has more than one equation they must	all  have  the
+       Where  a  definition  has more than one equation they must all have the
        same number of formal parameters.  Notwithstanding this, it is possible
-       in KRC to define functions which take a variable number	of  arguments,
+       in  KRC	to define functions which take a variable number of arguments,
        because the right hand sides can be of varying type. (Terminology - the
        actual parameters of a function are also called its arguments.)
 
        KRC supports the interactive development of scripts.
 
-       To enter definitions in the script during a session you simply type  in
-       the  equations and comments at the prompt, one at a time.  You can then
-       enter expressions to test your definitions and edit them (i.e.  delete,
-       reorder	etc)  using the COMMANDS listed earlier and re-enter equations
-       as needed.  The line editing facilities provided by "linenoise"	and/or
+       To  enter definitions in the script during a session you simply type in
+       the equations and comments at the prompt, one at a time.  You can  then
+       enter  expressions to test your definitions and edit them (i.e. delete,
+       reorder etc) using the COMMANDS listed earlier and  re-enter  equations
+       as  needed.  The line editing facilities provided by "linenoise" and/or
        the use of a mouse to cut and paste make this task relatively easy.
 
        If you enter an equation with the same LHS and guard as an existing one
@@ -376,15 +376,15 @@ THE SCRIPT: COMMENTS AND EQUATIONS
        on the same name.  To delete a comment enter an empty replacement
 	      name :-;
 
-       Another	way of proceeding is to use an editor to create the script and
-       then start a krc session with it as  the  file.	 The  KRC  system  was
+       Another way of proceeding is to use an editor to create the script  and
+       then  start  a  krc  session  with  it as the file.  The KRC system was
        designed to allow it to be used without a separate editor (back in 1980
-       screen editors like vi and emacs were not widely available as they  are
+       screen  editors like vi and emacs were not widely available as they are
        now).
 
 IDENTIFIERS
-       The  names  used  in scripts and expressions are built from A-Z a-z 0-9
-       underscore (_) and apostrophe ('), start with a letter and  can	be  of
+       The names used in scripts and expressions are built from  A-Z  a-z  0-9
+       underscore  (_)	and  apostrophe ('), start with a letter and can be of
        any length.  Case is significant, so X and x are different identifiers.
        Note that KRC has no reserved words.
 
@@ -392,21 +392,21 @@ DATA TYPES
        KRC has four data types: numbers, strings, lists and functions.
 
        The four types of value have the same "civil rights" - any value can be
-       (i)  named,  (ii) included in a list, (iii) passed to a function as its
+       (i) named, (ii) included in a list, (iii) passed to a function  as  its
        argument, (iv) returned by a function as result.
 
-       There is no static type system -  values  of  different	types  can  be
-       freely  mixed,  for  example  as  elements of a list and a function can
-       accept arguments of more than one type and return results of  different
-       types  for  different inputs.  Type errors, e.g. trying to multiply two
-       strings, are detected at run time.  Languages of  this  kind  (LISP  is
-       another	example) are often called `typeless', but dynamically typed is
+       There  is  no  static  type  system  - values of different types can be
+       freely mixed, for example as elements of a  list  and  a  function  can
+       accept  arguments of more than one type and return results of different
+       types for different inputs.  Type errors, e.g. trying to  multiply  two
+       strings,  are  detected	at  run time.  Languages of this kind (LISP is
+       another example) are often called `typeless', but dynamically typed  is
        more accurate.
 
-       A value can be tested by the four functions `number', `string',	`list'
-       and  `function'	and  returns  "TRUE" for one of these, "FALSE" for the
-       others. There is also a function `char'	which  recognises  strings  of
-       length  1  and a function `bool' which reconises the strings "TRUE" and
+       A  value can be tested by the four functions `number', `string', `list'
+       and `function' and returns "TRUE" for one of  these,  "FALSE"  for  the
+       others.	There  is  also  a function `char' which recognises strings of
+       length 1 and a function `bool' which recognises the strings "TRUE"  and
        "FALSE".
 
        Numbers are integers (whole numbers, positive, negative and zero) writ-
@@ -415,20 +415,20 @@ DATA TYPES
        Strings are sequences of characters enclosed in double quotes, e.g.
 	      "cattle" "oh my!"
 
-       Control	characters  are  written using `\', e.g. "\n" is newline.  The
+       Control characters are written using `\', e.g. "\n"  is	newline.   The
        escape conventions are as in C
 	      \a (bell) \b (backspace) \f (formfeed) \n (newline) \r (carriage
 	      return) \t (tab) \v (vertical tab) \\ (backslash) \' \"
        and numeric character codes
 	      \ddd (up to three decimal digits).
-       KRC  character  codes are in the range 0-255 (of which 0-127 are ascii,
+       KRC character codes are in the range 0-255 (of which 0-127  are	ascii,
        the meaning of codes above 127 depends on the locale).
 
-       Note the strings "TRUE", "FALSE" are used as truthvalues, there	is  no
+       Note  the  strings "TRUE", "FALSE" are used as truthvalues, there is no
        separate Boolean type.
 
        KRC has no separate type `character' distinct from `string'.  A charac-
-       ter is just a string of length 1, e.g. "a" (you cannot  write  this  as
+       ter  is	just  a string of length 1, e.g. "a" (you cannot write this as
        'a', that would not be recognised).
 
        The prelude function `explode' converts a string into a list of charac-
@@ -436,17 +436,17 @@ DATA TYPES
 	      krc> explode "hello"?
 	      ["h","e","l","l","o"]
 
-       KRC treats strings as atomic; they are stored uniquely in packed  form.
-       Strings	can be tested for equality or order without unpacking them but
+       KRC  treats strings as atomic; they are stored uniquely in packed form.
+       Strings can be tested for equality or order without unpacking them  but
        to access the internal structure you must use `explode'.
 
        There is a function `implode' which compresses a list of strings into a
-       single  string,	but  this is less often needed.  Processing of textual
-       data is typically done on lists of characters (or sometimes trees)  and
-       given  `!'  there  is  no need to convert the result back into a single
+       single string, but this is less often needed.   Processing  of  textual
+       data  is typically done on lists of characters (or sometimes trees) and
+       given `!' there is no need to convert the result  back  into  a	single
        string before printing.
 
-       Lists are written using square brackets and  commas  between  elements,
+       Lists  are  written  using square brackets and commas between elements,
        e.g. [1,2,3,"eric"].  Note the empty list, [] and singletons, e.g. [3].
 
        An important operation on lists is `:' which prefixes an element to the
@@ -676,58 +676,58 @@ ZF EXPRESSIONS
 THE PRELUDE
        When KRC is started it first loads the prelude, a library  of  standard
        definitions,  most  of  which  are in KRC but some are in machine code,
-       including functions to access the operating system (e.g. read, write).
+       including functions to access the operating system (e.g. read,  write).
 
-       To list the names defined in the currently loaded prelude during a  KRC
+       To  list the names defined in the currently loaded prelude during a KRC
        session, type
 	      /lib
        You can inspect any of the definitions by typing the name, e.g.
 	      map
-       Each  has an comment explaining what it does, in addition to its defin-
+       Each has an comment explaining what it does, in addition to its	defin-
        ing equations.
 
-       The standard prelude is usually	at  /usr/lib/krc/prelude  but  may  be
-       placed  elsewhere  by  the installer. To view the standard prelude in a
+       The  standard  prelude  is  usually  at /usr/lib/krc/prelude but may be
+       placed elsewhere by the installer. To view the standard	prelude  in  a
        KRC session, say "/help prelude".
 
-       Another library in place of the standard prelude can  be  specified  on
-       the  command  line  when  KRC  is invoked by the option -l lib.	If you
+       Another	library  in  place of the standard prelude can be specified on
+       the command line when KRC is invoked by the  option  -l	lib.   If  you
        invoke KRC with option -n, no prelude is loaded.
 
-       If KRC is invoked with option -L, a legacy prelude is used in place  of
+       If  KRC is invoked with option -L, a legacy prelude is used in place of
        the standard one. To view this in a KRC session, say "/help lib1981".
 
        Note that without a prelude you cannot use ZF expressions, whose imple-
-       mentation requires interleave nor can you use the `--' operator,  which
+       mentation  requires interleave nor can you use the `--' operator, which
        requires the function listdiff.
 
 LINE EDITING AND ESCAPE TO UNIX SHELL
        Line editing: if KRC is compiled with the "linenoise" module, the arrow
-       keys and other keys can be used to scroll back and forth through  lines
-       typed  in  a  KRC session, to edit and resubmit them.  For a summary of
+       keys  and other keys can be used to scroll back and forth through lines
+       typed in a KRC session, to edit and resubmit them.  For	a  summary  of
        available key bindings, with and without "linenoise", say /help keys in
        a KRC session.
 
-       Escape  to  Unix  shell:  type Ctrl-Z to suspend KRC and return to Unix
+       Escape to Unix shell: type Ctrl-Z to suspend KRC  and  return  to  Unix
        command line, say fg to resume the KRC session.
 
 MAKING UNIX COMMANDS
-       You can write a Unix command in KRC by  making  its  script  executable
-       through	the  "magic  string"  mechanism. To do this, add a line as the
+       You  can  write	a  Unix command in KRC by making its script executable
+       through the "magic string" mechanism. To do this, add  a  line  as  the
        start of the script, of the form:
 	      #! /usr/bin/krc -e expression!
-       where expression is to be evaluated when the program is run.  This  can
-       be  a  KRC expression of any complexity, terminated by `?' if its value
+       where  expression is to be evaluated when the program is run.  This can
+       be a KRC expression of any complexity, terminated by `?' if  its  value
        is to be shown with its structure or `!' if it is to be flat-printed.
 
-       Other flags such as "-l lib" for an alternative prelude, "-h size"  for
+       Other  flags such as "-l lib" for an alternative prelude, "-h size" for
        a larger heap, can precede "-e".
 
-       The  name  by  which the script is called, followed by the command-line
-       arguments that the user supplies when it is run, are placed in  a  list
+       The name by which the script is called, followed  by  the  command-line
+       arguments  that	the user supplies when it is run, are placed in a list
        of strings called "argv".
 
-       Example:  A  simple  command to display the contents of files.  Put the
+       Example: A simple command to display the contents of  files.   Put  the
        following 2 lines in a file called "list".
 	       #! /usr/bin/krc -e main!
 	       main = map read (tl argv)
@@ -737,43 +737,43 @@ MAKING UNIX COMMANDS
 	       ./list list
        will display the contents of the file itself.
 
-       Any KRC script can be made executable by placing a  "magic  string"  at
-       the  start.   When  used as the script in an interactive KRC session an
-       initial line in `#!'  is treated as  a  comment	and  ignored;  it  has
-       effect  only  if  the  file is invoked as a command on the Unix command
+       Any  KRC  script  can be made executable by placing a "magic string" at
+       the start.  When used as the script in an interactive  KRC  session  an
+       initial	line  in  `#!'	 is  treated  as a comment and ignored; it has
+       effect only if the file is invoked as a command	on  the  Unix  command
        line.
 
 LANGUAGE CHANGES
-       The KRC language described here is as David Turner designed  it	around
+       The  KRC  language described here is as David Turner designed it around
        1980, except for the following changes.
 
-       The  base  for indexing lists has been changed from 1 to 0.  The option
+       The base for indexing lists has been changed from 1 to 0.   The	option
        -z reverts to lists being indexed from 1 (this may be needed for legacy
        KRC scripts dating from the 1980's).
 
-       A  revised  prelude has been provided, with some more efficient defini-
-       tions (e.g. reverse, sort) and a more modern collection	of  functions.
+       A revised prelude has been provided, with some more  efficient  defini-
+       tions  (e.g.  reverse, sort) and a more modern collection of functions.
        A legacy prelude from 1981 is also available (option -L).
 
        Escape characters in strings, "\n" etc., as in C, have been added.  KRC
        as originally designed used instead names for special characters: nl np
-       quote  tab  vt,	these  remain  in  the	prelude.   Example: instead of
+       quote tab vt,  these  remain  in  the  prelude.	 Example:  instead  of
        "123\tgo\n" you can say ["123",tab,"go",nl] to get the same effect with
        ``!''.
 
-       A  distinction has been introduced between `=', definitional equals and
+       A distinction has been introduced between `=', definitional equals  and
        `==' the equality test (KRC originally used `=' for both).
 
        In-line comments, from "||" to end of line, have been added, thus
 		      || this is a comment
-       these don't fit	very  naturally  with  KRC's  model   of   interactive
-       script  development   as  they  are  discarded  when  entered  during a
-       session.  But the facility is useful for  scripts  prepared   with   an
-       editor	as it allows comments on individual equations and on the whole
+       these  don't  fit  very	naturally  with  KRC's	model  of  interactive
+       script development  as  they  are  discarded  when  entered   during  a
+       session.   But  the  facility  is useful for scripts prepared  with  an
+       editor  as it allows comments on individual equations and on the  whole
        script.
 
 LEGACY SYNTAX
-       With option -z these alternative operator forms are accepted  and  con-
+       With  option  -z these alternative operator forms are accepted and con-
        verted to their standard variants:
 	      ~  as a synonym for \ (prefix not)
 	      ~= as a synonym for \= (not-equals)
@@ -784,23 +784,23 @@ LIMITATIONS
 	      feb = 29, leap_year
 		  = 28
        fails with strange error when leap_year="FALSE".  The language as orig-
-       inally defined did not allow guards with simple definitions, only  with
-       functions.   The  syntactic restriction has been removed but the corre-
+       inally  defined did not allow guards with simple definitions, only with
+       functions.  The syntactic restriction has been removed but  the	corre-
        sponding semantics still needs fixing.
 
-       The length of a string limited to 255 characters.  The  space  used  by
-       strings	created during a session is never freed, mitigated only by the
-       fact that multiple copies of the same string  are  shared.  This  means
-       that  programs which create a lot of temporary strings as part of their
+       The  length  of	a string limited to 255 characters.  The space used by
+       strings created during a session is never freed, mitigated only by  the
+       fact  that  multiple  copies  of the same string are shared. This means
+       that programs which create a lot of temporary strings as part of  their
        operation will soon run out of the space in which strings, identifiers,
-       file  names  and  comments are stored.  Note, however, that KRC's ``!''
+       file names and comments are stored.  Note, however,  that  KRC's  ``!''
        output mode removes much of the need to create temporary strings.
 
-       Numbers are limited in range to	that  of  the  underlying  processor's
+       Numbers	are  limited  in  range  to that of the underlying processor's
        machine word, i.e. they are signed 32-bit or 64-bit integers.  Calcula-
        tions which exceed this range cause a run-time error.
 
-       If linenoise is enabled, multiline comments cannot be entered  interac-
+       If  linenoise is enabled, multiline comments cannot be entered interac-
        tively in a KRC session.
 
 FILES
@@ -810,14 +810,14 @@ FILES
        /usr/lib/krc/lib1981
 	      A legacy prelude dating from 1981 (invoked by option -L).
 
-       KRC  looks  for	the  prelude  first  in  ./krclib  if present, then in
+       KRC looks for the  prelude  first  in  ./krclib	if  present,  then  in
        /usr/lib/krc (this may be changed by the installer).
 
 SEE ALSO
        http://krc-lang.org/
 	      The KRC home page.
 
-       Recursion Equations as a Programming Language, D.  A.  Turner,  January
+       Recursion  Equations  as  a Programming Language, D. A. Turner, January
        1982
 	      This  includes  an overview of the KRC language and can be found
 	      at the above website.
