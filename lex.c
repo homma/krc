@@ -40,7 +40,7 @@ void
 READLINE()
 {  do
    {  LIST *P=&TOKENS;
-      WRITES(emas_PROMPT);
+      bcpl_WRITES(emas_PROMPT);
       TOKEN T=0;
       MISSING=0;
       TOKENS=NIL;
@@ -58,7 +58,7 @@ READLINE()
       if ( HD(TOKENS)==(LIST)'#' && ISCONS(TL(TOKENS)) &&
          HD(TL(TOKENS))==(LIST)'!' ) continue;
       if ( T==(TOKEN)EOL || T==(TOKEN)ENDSTREAMCH ) return;
-      WRITES("Closing quote missing - line ignored\n");
+      bcpl_WRITES("Closing quote missing - line ignored\n");
       ERRORFLAG=TRUE; return;
    } while(1);
 }
@@ -69,19 +69,19 @@ static TOKEN
 READTOKEN(void)
 // TOKEN ::= CHAR | <CERTAIN DIGRAPHS, REPRESENTED BY NOS ABOVE 256> |
 //          | CONS(IDENT,ATOM) | CONS(CONST,<ATOM|NUM>)
-{  WORD CH=RDCH();
-   while ( (CH==' '||CH=='\t') ) CH=RDCH();
+{  WORD CH=(*_RDCH)();
+   while ( (CH==' '||CH=='\t') ) CH=(*_RDCH)();
    if ( CH=='\n' ) return (TOKEN)EOL;
    if ( CH==EOF  ) return (TOKEN)ENDSTREAMCH;
    if ( ('a'<=CH && CH<='z') || ('A'<=CH && CH<='Z')
       // || (CH=='_' && PEEKALPHA()) //expt to allow _ID, discontinued
 	|| (EXPECTFILE && !isspace(CH))
    ) {do{  BUFCH(CH);
-            CH=RDCH();
+            CH=(*_RDCH)();
          } while ( ('a'<=CH&&CH<='z') || ('A'<=CH&&CH<='Z') ||
 			isdigit(CH)||CH=='\''||CH=='_'||
 			(EXPECTFILE && !isspace(CH)));
-         UNRDCH(CH);
+         (*_UNRDCH)(CH);
       {  LIST X=(LIST)PACKBUFFER();
          if ( TOKENS!=NIL && HD(TOKENS)==(TOKEN)'/' &&
 	     TL(TOKENS)==NIL && MEMBER(FILECOMMANDS,X)
@@ -96,10 +96,10 @@ READTOKEN(void)
    ) {  if ( CH=='.'
          ) {  THE_NUM==0;
                  TERMINATOR=='.';  }
-         else {  UNRDCH(CH) ; THE_NUM=READN();  }
+         else {  (*_UNRDCH)(CH) ; THE_NUM=bcpl_READN();  }
          if ( TOKENS==NIL && TERMINATOR=='.'  //LINE NUMBERS (ONLY) ARE
          ) THE_DECIMALS==READ_DECIMALS();  //ALLOWED A DECIMAL PART
-         else UNRDCH(CH);
+         else (*_UNRDCH)(CH);
          return CONS(CONST,STONUM(THE_NUM)); }
 #else
    if ( isdigit(CH)
@@ -107,18 +107,18 @@ READTOKEN(void)
          while( isdigit(CH)
          ) {  THE_NUM = THE_NUM * 10 + CH - '0';
                if ( THE_NUM < 0
-               ) {  WRITES("\n**integer overflow**\n");
+               ) {  bcpl_WRITES("\n**integer overflow**\n");
                      ESCAPETONEXTCOMMAND();  }
-	       CH = RDCH();  }
-         if ( CH != EOF ) UNRDCH(CH);
+	       CH = (*_RDCH)();  }
+         if ( CH != EOF ) (*_UNRDCH)(CH);
          return CONS((TOKEN)CONST,STONUM(THE_NUM)); }
 #endif
    if ( CH=='"'
    ) {  ATOM A;
-         CH=RDCH();
+         CH=(*_RDCH)();
          while(! (CH=='"'||CH=='\n'||CH==EOF)
          ) {  if ( CH=='\\' //add C escape chars, DT 2015
-               ) { CH=RDCH();
+               ) { CH=(*_RDCH)();
                       switch(CH)
                       { case 'a': BUFCH('\a'); break;
                         case 'b': BUFCH('\b'); break;
@@ -133,42 +133,42 @@ READTOKEN(void)
                         case '\n': return (TOKEN)BADTOKEN;
                         default: if ( '0'<=CH&&CH<='9'
                                  ) { int i=3,n=CH-'0',n1;
-                                      CH=RDCH();
+                                      CH=(*_RDCH)();
                                       while ( --i && '0'<=CH&&CH<='9' && (n1=10*n+CH-'0')<256
-                                      ) n=n1, CH=RDCH();
+                                      ) n=n1, CH=(*_RDCH)();
                                       BUFCH(n);
-                                      UNRDCH(CH); }
+                                      (*_UNRDCH)(CH); }
                     } }
                else BUFCH(CH);
-               CH=RDCH();  }
+               CH=(*_RDCH)();  }
          A=PACKBUFFER();
          return CH!='"' ? (TOKEN)BADTOKEN : CONS(CONST,(LIST)A);  }
-{  WORD CH2=RDCH();
+{  WORD CH2=(*_RDCH)();
    if ( CH==':' && CH2=='-' && TOKENS!=NIL && ISCONS(HD(TOKENS)) &&
       HD(HD(TOKENS))==IDENT && TL(TOKENS)==NIL
    ) {  LIST C=NIL;
          LIST SUBJECT=TL(HD(TOKENS));
          COMMENTFLAG=1;
          //SUPPRESSPROMPTS(); FIXME
-         CH=RDCH();
-         while ( CH=='\n' ) COMMENTFLAG++,CH=RDCH(); //IGNORE BLANK LINES
+         CH=(*_RDCH)();
+         while ( CH=='\n' ) COMMENTFLAG++,CH=(*_RDCH)(); //IGNORE BLANK LINES
          if ( SKIPCOMMENTS  //option -s
          ) { while(!( CH==';' || CH==EOF
               )) { if ( CH=='\n' ) COMMENTFLAG++;
-                   CH=RDCH(); }
+                   CH=(*_RDCH)(); }
               return NIL; }
          if ( CH==';' ) return NIL;
          while(!( CH==';' || CH==EOF
          )) if ( CH=='\n'
             ) {  C=CONS((LIST)PACKBUFFER(),C);
                     do { COMMENTFLAG++;
-                         CH=RDCH(); } while (CH=='\n');
+                         CH=(*_RDCH)(); } while (CH=='\n');
                                     //IGNORE BLANK LINES
                  }
-            else {  BUFCH(CH); CH=RDCH();  }
+            else {  BUFCH(CH); CH=(*_RDCH)();  }
          if ( CH==EOF
-         ) { WRITEF("%s :- ...",PRINTNAME((ATOM)SUBJECT)),
-	        WRITES(" missing \";\"\n");
+         ) { fprintf(bcpl_OUTPUT, "%s :- ...",PRINTNAME((ATOM)SUBJECT)),
+	        bcpl_WRITES(" missing \";\"\n");
 	        COMMENTFLAG--;
 	        SYNTAX(); }
          else C=CONS((LIST)PACKBUFFER(),C);
@@ -180,7 +180,7 @@ READTOKEN(void)
          if ( CH=='*' ) return STARSTAR_SY;
          if ( CH=='=' ) return EQ_SY; // ADDED DT 2015
          if ( CH=='|' ) // COMMENT TO END OF LINE (NEW)
-         do{ CH=RDCH();
+         do{ CH=(*_RDCH)();
              if ( CH=='\n' ) return EOL;
              if ( CH==EOF  ) return ENDSTREAMCH;
          } while(1);
@@ -191,7 +191,7 @@ READTOKEN(void)
          if ( CH=='<' ) return LE_SY;
          if ( NOTCH(CH) ) return NE_SY;
       }
-   UNRDCH(CH2);
+   (*_UNRDCH)(CH2);
    if ( CH=='?'||CH=='!' ) EXPFLAG=TRUE;
    if ( CH=='=' && !LEGACY ) EQNFLAG=TRUE;
    return (TOKEN)(NOTCH(CH) ? '\\' : CH);  // GCC WARNING EXPECTED
@@ -206,8 +206,8 @@ CASECONV(WORD CH)
 #ifdef DECIMALS
 WORD
 PEEKDIGIT()
-{  WORD CH=RDCH();
-   UNRDCH(CH);
+{  WORD CH=(*_RDCH)();
+   (*_UNRDCH)(CH);
    return (isdigit(CH));
 }
 
@@ -215,12 +215,12 @@ static WORD
 READ_DECIMALS(void)         //RETURNS VALUE IN HUNDREDTHS
 {  WORD N=0,F=10,D;
    do {
-      D=RDCH()-'0';
+      D=(*_RDCH)()-'0';
       while(! (0<=D && D<=9)
       ) {  D=D+'0';
-            while ( D==' ' ) D=RDCH();
+            while ( D==' ' ) D=(*_RDCH)();
             while(!( D==')' )) SYNTAX();
-            UNRDCH(D);
+            (*_UNRDCH)(D);
             return N;  }
       N=N+F*D; //NOTE THAT DECIMAL PLACES AFTER THE 2ND WILL HAVE NO
       F=F/10;  //EFFECT ON THE ANSWER
@@ -230,34 +230,34 @@ READ_DECIMALS(void)         //RETURNS VALUE IN HUNDREDTHS
 
 static WORD
 PEEKALPHA()
-{  WORD CH=RDCH();
-   UNRDCH(CH);
+{  WORD CH=(*_RDCH)();
+   (*_UNRDCH)(CH);
    return (('a'<=CH && CH<='z') || ('A'<=CH && CH<='Z'));
 }
 
 void
 WRITETOKEN(TOKEN T)
-{  if ( T<(TOKEN)256 && T>(TOKEN)32 ) WRCH((WORD)T); OR
+{  if ( T<(TOKEN)256 && T>(TOKEN)32 ) (*_WRCH)((WORD)T); OR
    switch( (WORD)T )
-   {  case (WORD)'\n':   WRITES("newline"); break;
-      case (WORD)PLUSPLUS_SY: WRITES("++"); break;
-      case (WORD)DASHDASH_SY: WRITES("--"); break;
-      case (WORD)STARSTAR_SY: WRITES("**"); break;
-      case (WORD)GE_SY:       WRITES(">="); break;
-      case (WORD)LE_SY:       WRITES("<="); break;
-      case (WORD)NE_SY:       WRITES("\\="); break;
-      case (WORD)EQ_SY:       WRITES("=="); break; 
-      case (WORD)BACKARROW_SY: WRITES("<-"); break;
-      case (WORD)DOTDOT_SY: WRITES(".."); break;
+   {  case (WORD)'\n':   bcpl_WRITES("newline"); break;
+      case (WORD)PLUSPLUS_SY: bcpl_WRITES("++"); break;
+      case (WORD)DASHDASH_SY: bcpl_WRITES("--"); break;
+      case (WORD)STARSTAR_SY: bcpl_WRITES("**"); break;
+      case (WORD)GE_SY:       bcpl_WRITES(">="); break;
+      case (WORD)LE_SY:       bcpl_WRITES("<="); break;
+      case (WORD)NE_SY:       bcpl_WRITES("\\="); break;
+      case (WORD)EQ_SY:       bcpl_WRITES("=="); break; 
+      case (WORD)BACKARROW_SY: bcpl_WRITES("<-"); break;
+      case (WORD)DOTDOT_SY: bcpl_WRITES(".."); break;
       default: if ( !(ISCONS(T) && (HD(T)==IDENT || HD(T)==CONST))
-	       ) WRITEF("<UNKNOWN TOKEN<%p>>",T); OR
+	       ) fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>",T); OR
 	       if ( HD(T)==IDENT
-	       ) WRITES(PRINTNAME((ATOM)(
+	       ) bcpl_WRITES(PRINTNAME((ATOM)(
 			ISCONS(TL(T)) && HD(TL(T))==(LIST)ALPHA
 				 ? TL(TL(T)) : TL(T)))); OR
 	       if ( ISNUM(TL(T))
-	       ) WRITEN(GETNUM(TL(T)));
-	       else WRITEF("\"%s\"",PRINTNAME((ATOM)TL(T)));
+	       ) bcpl_WRITEN(GETNUM(TL(T)));
+	       else fprintf(bcpl_OUTPUT, "\"%s\"",PRINTNAME((ATOM)TL(T)));
 }  }
 
 BOOL
@@ -303,10 +303,10 @@ HAVENUM()
 void
 SYNTAX_ERROR(char *message) //syntax error diagnosis (needs refining)
 {  if ( ISCONS(TOKENS) && HD(TOKENS)!=BADTOKEN //unclosed string quotes
-   ) { WRITES("**unexpected `"),WRITETOKEN(HD(TOKENS)),WRCH('\'');
+   ) { bcpl_WRITES("**unexpected `"),WRITETOKEN(HD(TOKENS)),(*_WRCH)('\'');
         if ( MISSING && MISSING!=EOL && MISSING!=(TOKEN)';' && MISSING!=(TOKEN)'\''
-        ) { WRITES(", missing `"),WRITETOKEN(MISSING),WRCH('\'');
-             if ( MISSING==(TOKEN)'?' ) WRITES(" or `!'"); }
-        WRCH('\n'); }
-   WRITES(message);
+        ) { bcpl_WRITES(", missing `"),WRITETOKEN(MISSING),(*_WRCH)('\'');
+             if ( MISSING==(TOKEN)'?' ) bcpl_WRITES(" or `!'"); }
+        (*_WRCH)('\n'); }
+   bcpl_WRITES(message);
 }
