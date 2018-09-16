@@ -238,18 +238,18 @@ PEEKALPHA()
 void
 WRITETOKEN(TOKEN T)
 {  if ( T<(TOKEN)256 && T>(TOKEN)32 ) WRCH((WORD)T); OR
-   switch( (WORD)T INTO
-   {  CASE (WORD)'\n':   WRITES("newline"); ENDCASE
-      CASE (WORD)PLUSPLUS_SY: WRITES("++"); ENDCASE
-      CASE (WORD)DASHDASH_SY: WRITES("--"); ENDCASE
-      CASE (WORD)STARSTAR_SY: WRITES("**"); ENDCASE
-      CASE (WORD)GE_SY:       WRITES(">="); ENDCASE
-      CASE (WORD)LE_SY:       WRITES("<="); ENDCASE
-      CASE (WORD)NE_SY:       WRITES("\\="); ENDCASE
-      CASE (WORD)EQ_SY:       WRITES("=="); ENDCASE 
-      CASE (WORD)BACKARROW_SY: WRITES("<-"); ENDCASE
-      CASE (WORD)DOTDOT_SY: WRITES(".."); ENDCASE
-      DEFAULT: if ( !(ISCONS(T) && (HD(T)==IDENT || HD(T)==CONST))
+   switch( (WORD)T )
+   {  case (WORD)'\n':   WRITES("newline"); break;
+      case (WORD)PLUSPLUS_SY: WRITES("++"); break;
+      case (WORD)DASHDASH_SY: WRITES("--"); break;
+      case (WORD)STARSTAR_SY: WRITES("**"); break;
+      case (WORD)GE_SY:       WRITES(">="); break;
+      case (WORD)LE_SY:       WRITES("<="); break;
+      case (WORD)NE_SY:       WRITES("\\="); break;
+      case (WORD)EQ_SY:       WRITES("=="); break; 
+      case (WORD)BACKARROW_SY: WRITES("<-"); break;
+      case (WORD)DOTDOT_SY: WRITES(".."); break;
+      default: if ( !(ISCONS(T) && (HD(T)==IDENT || HD(T)==CONST))
 	       ) WRITEF("<UNKNOWN TOKEN<%p>>",T); OR
 	       if ( HD(T)==IDENT
 	       ) WRITES(PRINTNAME((ATOM)(
