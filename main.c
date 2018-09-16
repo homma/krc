@@ -671,7 +671,7 @@ FILENAME()
         OR THE_ID=LASTFILE;
    OR TEST HAVEID() && HAVE(EOL)
       THEN LASTFILE=THE_ID;
-      OR {  IF HAVECONST() && HAVE(EOL) && !ISNUM(THE_CONST)
+      OR {  IF haveconst() && HAVE(EOL) && !ISNUM(THE_CONST)
             DO WRITES("(Warning - quotation marks no longer expected around filenames in file commands - DT, Nov 81)\n");
             SYNTAX(); }
 }

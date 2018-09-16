@@ -463,7 +463,7 @@ WORD HAVEID() {
     return TRUE;
 }
 
-WORD HAVECONST() {
+WORD haveconst() {
     while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
         return FALSE;
     }

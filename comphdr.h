@@ -134,7 +134,7 @@ extern BOOL	HAVE(TOKEN);
 extern WORD	HAVEID(void);
 extern void	SYNTAX(void);
 extern void	CHECK(TOKEN);
-extern WORD	HAVECONST(void);
+extern WORD	haveconst(void);
 extern WORD	havenum(void);
 extern void	syntax_error(char *);
 
