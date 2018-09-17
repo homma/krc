@@ -1038,10 +1038,11 @@ static void PLANT2(INSTRUCTION OP, LIST A, LIST B) {
   CODEV = CONS(B, CODEV);
 }
 
-static LIST COLLECTCODE() // FLUSHES THE CODE BUFFER
-{
+// flushes the code buffer
+static LIST COLLECTCODE() {
   LIST TMP = CODEV;
   CODEV = NIL;
+
   return REVERSE(TMP);
 }
 
@@ -1052,6 +1053,7 @@ void COMPILER_BASES(void (*F)(LIST *)) {
 
   F(&CODEV);
   // ENVP indexes the last used element and starts as -1.
-  for (I = 0; I <= ENVP; I++)
+  for (I = 0; I <= ENVP; I++) {
     F(&ENV[I]);
+  }
 }
