@@ -96,8 +96,7 @@ static WORD DIPRIO(OPERATOR OP) { return OP == -1 ? -1 : INFIXPRIOVEC[OP]; }
 
 // takes a token , returns an operator
 // else -1 if t not the name of an infix
-static OPERATOR MKINFIX(TOKEN T)
-{
+static OPERATOR MKINFIX(TOKEN T) {
   WORD I = 1;
   if (T == (TOKEN)'=') {
     // legacy, accept "=" for "=="
@@ -116,8 +115,7 @@ static OPERATOR MKINFIX(TOKEN T)
 }
 
 // n is the priority level
-void PRINTEXP(LIST E, WORD N)
-{
+void PRINTEXP(LIST E, WORD N) {
   if (E == NIL) {
     bcpl_WRITES("[]");
   } else if (ISATOM(E)) {
@@ -202,8 +200,7 @@ void PRINTEXP(LIST E, WORD N)
         (*_WRCH)(']');
       } else if (OP == (LIST)AND_OP && N <= 3 && ROTATE(E) &&
                  ISRELATION(HD(TL(E))) &&
-                 ISRELATION_BEGINNING(TL(TL(HD(TL(E)))),
-                                      TL(TL(E)))) {
+                 ISRELATION_BEGINNING(TL(TL(HD(TL(E)))), TL(TL(E)))) {
         // continued relations
         PRINTEXP(HD(TL(HD(TL(E)))), 4);
         (*_WRCH)(' ');
@@ -313,8 +310,7 @@ static WORD RIGHTPREC(OPERATOR OP) {
 
 // puts nested and's into rightist form to ensure
 // detection of continued relations
-static BOOL ROTATE(LIST E)
-{
+static BOOL ROTATE(LIST E) {
   while (ISCONS(HD(TL(E))) && HD(HD(TL(E))) == (LIST)AND_OP) {
     LIST X = TL(HD(TL(E))), C = TL(TL(E));
     LIST A = HD(X), B = TL(X);
@@ -327,8 +323,7 @@ static BOOL ROTATE(LIST E)
 
 // the val field of each user defined name
 // contains - cons(cons(nargs,comment),<list of eqns>)
-void DISPLAY(ATOM ID, BOOL WITHNOS, BOOL DOUBLESPACING)
-{
+void DISPLAY(ATOM ID, BOOL WITHNOS, BOOL DOUBLESPACING) {
   if (VAL(ID) == NIL) {
     fprintf(bcpl_OUTPUT, "\"%s\" - not defined\n", PRINTNAME(ID));
     return;
@@ -381,8 +376,7 @@ void DISPLAY(ATOM ID, BOOL WITHNOS, BOOL DOUBLESPACING)
 static void SHCH(WORD CH) { TRUEWRCH(' '); }
 
 // equation decoder
-void DISPLAYEQN(ATOM ID, WORD NARGS, LIST EQN)
-{
+void DISPLAYEQN(ATOM ID, WORD NARGS, LIST EQN) {
   LIST LHS = HD(EQN), CODE = TL(EQN);
 
   if (NARGS == 0) {
@@ -534,8 +528,7 @@ static BOOL PARMY(LIST X) {
 }
 
 // removes one complete instruction from C
-static LIST REST(LIST C)
-{
+static LIST REST(LIST C) {
   LIST X = HD(C);
   C = TL(C);
 
@@ -553,8 +546,7 @@ static LIST REST(LIST C)
 }
 
 // list subtraction
-static LIST SUBTRACT(LIST X, LIST Y)
-{
+static LIST SUBTRACT(LIST X, LIST Y) {
   LIST Z = NIL;
 
   while (!(X == Y)) {
@@ -568,8 +560,7 @@ static LIST SUBTRACT(LIST X, LIST Y)
 // called whenever the definiendum is subject of a
 // display,reorder or (partial)delete command - has the effect of
 // restoring the standard line numbering
-void REMOVELINENO(LIST EQN)
-{
+void REMOVELINENO(LIST EQN) {
   if (HD(TL(EQN)) == (LIST)LINENO_C) {
     TL(EQN) = TL(TL(TL(EQN)));
   }
@@ -585,8 +576,7 @@ LIST EXP() {
 }
 
 // returns a triple: cons(subject,cons(nargs,eqn))
-LIST EQUATION()
-{
+LIST EQUATION() {
   LIST SUBJECT = 0, LHS = 0;
   WORD NARGS = 0;
   INIT_CODEV();
@@ -644,8 +634,7 @@ LIST EQUATION()
 }
 
 // N is the priority level
-static void EXPR(WORD N)
-{
+static void EXPR(WORD N) {
   if (N <= 3 && (have((TOKEN)'\\') || have((TOKEN)'~'))) {
     PLANT1(LOAD_C, (LIST)NOT_OP);
     EXPR(3);
@@ -677,8 +666,7 @@ static void EXPR(WORD N)
         return;
       }
 
-      while (ISRELOP((LIST)OP) &&
-             ISRELOP((LIST)MKINFIX(HD(TOKENS)))) {
+      while (ISRELOP((LIST)OP) && ISRELOP((LIST)MKINFIX(HD(TOKENS)))) {
         // continued relations
         AND_COUNT = AND_COUNT + 1;
         PLANT1(CONTINUE_INFIX_C, (LIST)OP);
@@ -749,17 +737,18 @@ static void SIMPLE() {
 
         PLANT1(APPLYINFIX_C, (LIST)(N == 1 ? DOTDOT_OP : COMMADOTDOT_OP));
 
-      // OK
+        // OK
       } else {
         while (have((TOKEN)',')) {
           EXPR(0);
           N = N + 1;
         }
         PLANT1(FORMLIST_C, (LIST)N);
-      // OK
+        // OK
       }
       check((TOKEN)']');
-    } else if (have((TOKEN)'{')) {
+    }
+  else if (have((TOKEN)'{')) {
     // ZF expressions bug?
     WORD N = 0;
     LIST HOLD = TOKENS;
@@ -841,8 +830,7 @@ static WORD QUALIFIER() {
 
 // also recognises the "such that" bar and converts it to ';'
 // to distinguish it from "or"
-static void PERFORM_ALPHA_CONVERSIONS()
-{
+static void PERFORM_ALPHA_CONVERSIONS() {
   LIST P = TOKENS;
   while (!(HD(P) == (TOKEN)'}' || HD(P) == (TOKEN)']' || HD(P) == EOL)) {
     if (HD(P) == (TOKEN)'[' || HD(P) == (TOKEN)'{') {
@@ -889,7 +877,8 @@ static void ALPHA_CONVERT(LIST VAR, LIST P) {
   }
 
   EDGE = T;
-  while (!(HD(EDGE) == (TOKEN)'}' || HD(EDGE) == (TOKEN)']' || HD(EDGE) == EOL)) {
+  while (
+      !(HD(EDGE) == (TOKEN)'}' || HD(EDGE) == (TOKEN)']' || HD(EDGE) == EOL)) {
     EDGE = SKIPCHUNK(EDGE);
   }
 
