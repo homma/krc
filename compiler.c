@@ -229,9 +229,13 @@ void PRINTEXP(LIST E, WORD N) {
 
 static void PRINTZF_EXP(LIST X) {
   LIST Y = X;
-  while (!(TL(Y) == NIL))
+  while (!(TL(Y) == NIL)) {
     Y = TL(Y);
-  PRINTEXP(HD(Y), 0); // BODY
+  }
+
+  // body
+  PRINTEXP(HD(Y), 0);
+
   // print "such that" as bar if a generator directly follows
   if (ISCONS(HD(X)) && HD(HD(X)) == (LIST)GENERATOR) {
     (*_WRCH)('|');
@@ -243,6 +247,7 @@ static void PRINTZF_EXP(LIST X) {
 
     if (ISCONS(QUALIFIER) && HD(QUALIFIER) == (LIST)GENERATOR) {
       PRINTEXP(HD(TL(QUALIFIER)), 0);
+
       // deals with repeated generators
       while (ISCONS(TL(X)) &&
 #ifdef INSTRUMENT_KRC_GC
