@@ -12,7 +12,7 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 #### Initial Commit
 - [Here](https://github.com/homma/krc/tree/101fc43429fcf8d97a547ef8a08aceb0df1738c9).
 
-## indentation
+## Source Code Formatting
 ````
-$ indent -npsl -nip -di0 -i4 -nut -nfc1 -nfbs ${FILE}
+$ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i <FILE>
 ````

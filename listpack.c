@@ -21,14 +21,21 @@
 #ifndef HEAPSIZE
 #define HEAPSIZE 128000
 #endif
-int SPACE=HEAPSIZE;        //SPACE IS THE NUMBER OF LIST CELLS IN EACH
-                           //SEMI-SPACE.  ON 2960/EMAS MUST BE <=128K
 
-static int DICMAX=64000;   //ATOMSPACE is DICMAX/atomsize, see later
-static int ATOMSPACE;      //MAX NUMBER OF ATOMS WHICH CAN BE STORED
-                           //The actual number of atoms is less
-                           //because their names are also stored there
-#define    ATOMSIZE 255    //MAX NO OF CHARS IN AN ATOM
+// space is the number of list cells in each SEMI-SPACE.
+// on 2960/EMAS must be <=128K
+int SPACE=HEAPSIZE;
+
+// ATOMSPACE is DICMAX/atomsize, see later
+static int DICMAX=64000;
+
+// max Number of atoms which can be stored
+// The actual number of atoms is less
+// because their names are also stored there
+static int ATOMSPACE;
+
+//MAX NO OF CHARS IN AN ATOM
+#define    ATOMSIZE 255
 
 // Non-pointer value for the HD of an entry in CONS space,
 // indicating that it is an integer, stored in the TL field.
@@ -39,6 +46,7 @@ static int ATOMSPACE;      //MAX NUMBER OF ATOMS WHICH CAN BE STORED
  
 static LIST CONSBASE, CONSLIMIT, CONSP, OTHERBASE;
 static LIST *STACKBASE;
+
 //static struct ATOM *ATOMBASE;
 static ATOM ATOMBASE;
 static ATOM ATOMP, ATOMLIMIT;
@@ -77,31 +85,31 @@ main(int argc, char **argv)
       //         argv[1]="-n -e primes?" 
       //         argv[2]="path/to/script" 
       //         argv[3..]=args passed to the script
-      IF argc>1 && argv[1][0]=='-' && strchr(argv[1], ' ') != NULL DO {
+      if( argc>1 && argv[1][0]=='-' && strchr(argv[1], ' ') != NULL ) {
 	 int nspaces=0; char *cp;
          // Allocate space for new ARGV
-	 FOR (cp=argv[1]+1; *cp; cp++) IF *cp==' ' DO nspaces++;
+	 for (cp=argv[1]+1; *cp; cp++) if( *cp==' ' ) nspaces++;
 	 // Each space generates one more argument
          ARGV=calloc(argc+nspaces, sizeof(char *));
-	 IF ARGV==NULL DO exit(1);
+	 if( ARGV==NULL ) exit(1);
 
          // Rewrite ARGV splitting up the first arg
 	 // If we find "-e ", all the rest is a single expression
          ARGV[0]=argv[0]; ARGC=1;
-   	 FOR (cp=argv[1]; *cp; ) {
+   	 for (cp=argv[1]; *cp; ) {
             // Plant another argument
 	    ARGV[ARGC++]=cp;
             // Find end of arg
-            IF strncasecmp(cp, "-e ", 3)==0 DO {
+            if( strncasecmp(cp, "-e ", 3)==0 ) {
 	       // After "-e", all the rest is the expr to evaluate
                cp += 2; *cp++='\0'; ARGV[ARGC++]=cp;
-	       BREAK;
+	       break;
             }
-	    IF strchr(cp, ' ') == NULL DO BREAK; // No more spaces
+	    if( strchr(cp, ' ') == NULL ) break; // No more spaces
             cp=strchr(cp, ' '), *cp++ = '\0';
          }
          // Now copy the rest of ARGV: the script name and its args
-         FOR (I=2; I<argc; I++) ARGV[ARGC++]=argv[I];
+         for (I=2; I<argc; I++) ARGV[ARGC++]=argv[I];
       }
 
       // Terminal output should be unbuffered
@@ -124,26 +132,26 @@ main(int argc, char **argv)
       }
 
       // Handle command line arguments that affect this file
-      FOR (I=1; I<ARGC; I++) {
-         IF ARGV[I][0]=='-' DO
-            SWITCHON ARGV[I][1] INTO {
-            CASE 'g': ATGC=TRUE; ENDCASE
-            CASE 'h': IF ++I>=ARGC || (SPACE=atoi(ARGV[I]))<=0 DO {
-                      WRITES("krc: -h What?\n"); FINISH  }
-                      ENDCASE
-            CASE 'l': TEST ++I>=ARGC //doesn't logically belong in listpack
-                      THEN { WRITES("krc: -l What?\n"); FINISH  }
-                      OR USERLIB=ARGV[I];
-                      ENDCASE
-            CASE 'd': IF ++I>=ARGC || (DICMAX=atoi(ARGV[I]))<=0 DO {
-                      WRITES("krc: -d What?\n"); FINISH  }
-                      ENDCASE
+      for (I=1; I<ARGC; I++) {
+         if( ARGV[I][0]=='-' )
+            switch( ARGV[I][1] ) {
+            case 'g': ATGC=TRUE; break;
+            case 'h': if( ++I>=ARGC || (SPACE=atoi(ARGV[I]))<=0 ) {
+                      bcpl_WRITES("krc: -h What?\n"); exit(0);  }
+                      break;
+            case 'l': if ( ++I>=ARGC //doesn't logically belong in listpack
+                      ) { bcpl_WRITES("krc: -l What?\n"); exit(0);  }
+                      else  USERLIB=ARGV[I];
+                      break;
+            case 'd': if( ++I>=ARGC || (DICMAX=atoi(ARGV[I]))<=0 ) {
+                      bcpl_WRITES("krc: -d What?\n"); exit(0);  }
+                      break;
 	    }
       }
 
-// TAKING ADVANTAGE OF THE FACT THAT WE HAVE VIRTUAL MEMORY, WE SET UP
-// TWO COPIES OF LIST SPACE IN ORDER TO BE ABLE TO DO GARBAGE COLLECTIO
-// BY DOING A GRAPH COPY FROM ONE SPACE TO THE OTHER
+// taking advantage of the fact that we have virtual memory, we set up
+// two copies of list space in order to be able to do garbage collection
+// by doing a graph copy from one space to the other
       ATOMSPACE=DICMAX/atomsize;
       CONSBASE=(LIST)malloc(SPACE*sizeof(*CONSBASE));
       if (CONSBASE == (void *)-1) SPACE_ERROR("Not enough memory");
@@ -170,17 +178,17 @@ HAVEPARAM(WORD CH)
 {
       WORD I;
       CH = toupper(CH);
-      FOR (I=1; I<ARGC; I++)
-         IF ARGV[I][0] == '-' && toupper(ARGV[I][1]) == toupper(CH)
-	 DO RESULTIS TRUE;
-      RESULTIS FALSE;  }
+      for (I=1; I<ARGC; I++)
+         if( ARGV[I][0] == '-' && toupper(ARGV[I][1]) == toupper(CH)
+	 ) { return TRUE; }
+      return FALSE;  }
 
 LIST
 CONS(LIST X, LIST Y)
 {
-   IF CONSP>=(CONSLIMIT-1) DO GC();
+   if( CONSP>=(CONSLIMIT-1) ) GC();
    HD(CONSP)=X,TL(CONSP)=Y,CONSP=CONSP+1;
-   RESULTIS CONSP-1; 
+   return CONSP-1; 
 }
 
 #include <setjmp.h>
@@ -209,22 +217,22 @@ GC2(jmp_buf *envp)
     GC3(envp, &P);
 }
 
-// GARBAGE COLLECTOR - DOES A GRAPH COPY INTO THE OTHER SEMI-SPACE
+// garbage collector - does a graph copy into the other semi-space
 void	// Not static to avoid inlining
 GC3(jmp_buf *envp, LIST *STACKEND)
    {  LIST *P;		// Examine every pointer on the stack
 			// P is a pointer to pointer, so incrementing it
 			// moved it up by the size of one pointer.
-      extern VOID HOLD_INTERRUPTS(), RELEASE_INTERRUPTS(); // In MAIN.c
+      extern void HOLD_INTERRUPTS(), RELEASE_INTERRUPTS(); // In MAIN.c
 
 #ifdef DEBUG_GC
 int LASTUSED = 0;
-WRITEF("\n<");
+fprintf(bcpl_OUTPUT, "\n<");
 
 #define SHOW(name) do{  \
-WRITEF(name":%d",(int)(CONSP-OTHERBASE)-LASTUSED); \
+fprintf(bcpl_OUTPUT, name":%d",(int)(CONSP-OTHERBASE)-LASTUSED); \
 LASTUSED=CONSP-OTHERBASE; \
-COPYHEADS(); WRITEF("+%d ",(int)(CONSP-OTHERBASE)-LASTUSED); \
+COPYHEADS(); fprintf(bcpl_OUTPUT, "+%d ",(int)(CONSP-OTHERBASE)-LASTUSED); \
 LASTUSED=CONSP-OTHERBASE; }while(0)
 #else
 #define SHOW(name) do{}while(0)
@@ -235,29 +243,28 @@ COLLECTING = TRUE;
 #endif
       HOLD_INTERRUPTS();
       NOGCS = NOGCS+1;
-      IF ATGC DO WRITES("<gc called>\n");
+      if( ATGC ) bcpl_WRITES("<gc called>\n");
       CONSP=OTHERBASE;
       BASES(COPY);    // USER'S STATIC VARIABLES ETC.
 SHOW("bases");
       {  WORD I;
-         FOR (I=0; I < 128; I++)
+         for (I=0; I < 128; I++)
          {  ATOM A=HASHV[I];         // VAL FIELDS OF ATOMS
-            UNTIL A==0
-            DO {  COPY((LIST *)&(VAL(A)));
+            while(!( A==0
+            )) {  COPY((LIST *)&(VAL(A)));
                   A=LINK(A);  }  }  }
 SHOW("atoms");
          
       // Runtime detection of stack growth direction
-      TEST STACKBASE < STACKEND
-      THEN
+      if ( STACKBASE < STACKEND )
          // STACK GROW UPWARDS
-         FOR (P=STACKBASE+1; P<STACKEND; P++) {
-            IF CONSBASE<=(LIST)*P && (LIST)*P<CONSLIMIT DO {
-	       IF ((char *)*P-(char *)CONSBASE)%sizeof(struct LIST)==0
-	       DO // AN ALIGNED ADDRESS IN LISTSPACE
+         for (P=STACKBASE+1; P<STACKEND; P++) {
+            if( CONSBASE<=(LIST)*P && (LIST)*P<CONSLIMIT ) {
+	       if( ((char *)*P-(char *)CONSBASE)%sizeof(struct LIST)==0
+	       ) // AN ALIGNED ADDRESS IN LISTSPACE
 	          COPY(P);
-	       IF ((char *)*P-(char *)CONSBASE)%sizeof(struct LIST)==sizeof(struct LIST *)
-	       DO {
+	       if( ((char *)*P-(char *)CONSBASE)%sizeof(struct LIST)==sizeof(struct LIST *)
+	       ) {
 	          // Pointer to a tail cell, which also needs updating
 		  *P = (LIST) ((LIST *)*P - 1);
 	          COPY(P);
@@ -266,21 +273,21 @@ SHOW("atoms");
 	    }
          }
       OR
-	 // STACK GROWS DOWNWARDS
-         FOR (P=STACKBASE-1; P>STACKEND; P--) {
-            IF CONSBASE<=(LIST)*P && (LIST)*P<CONSLIMIT DO {
-	       IF ((char *)*P-(char *)CONSBASE)%sizeof(struct LIST)==0
-	       DO // AN ALIGNED ADDRESS IN LISTSPACE
+	 // stack grows downwards
+         for (P=STACKBASE-1; P>STACKEND; P--) {
+            if( CONSBASE<=(LIST)*P && (LIST)*P<CONSLIMIT ) {
+	       if( ((char *)*P-(char *)CONSBASE)%sizeof(struct LIST)==0
+	       ) // AN ALIGNED ADDRESS IN LISTSPACE
 	          COPY(P);
-	       IF ((char *)*P-(char *)CONSBASE)%sizeof(struct LIST)==sizeof(struct LIST *)
-	       DO {
+	       if( ((char *)*P-(char *)CONSBASE)%sizeof(struct LIST)==sizeof(struct LIST *)
+	       ) {
 	          // Pointer to a tail cells, which also needs updating
 		  *P = (LIST) ((LIST *)*P - 1);
 	          COPY(P);
 		  *P = (LIST) ((LIST *)*P + 1);
                }
             }
-	    IF P == (LIST *)(envp+1) DO {
+	    if( P == (LIST *)(envp+1) ) {
 SHOW("stack");
 #ifdef __GLIBC__
 	       // The jmp_buf has 128 bytes to save the signal mask, which
@@ -300,7 +307,7 @@ SHOW("stack");
          }
 SHOW("regs");
 #ifdef DEBUG_GC
-WRITEF(">\n");
+fprintf(bcpl_OUTPUT, ">\n");
 #endif
 
       COPYHEADS();
@@ -310,20 +317,23 @@ WRITEF(">\n");
       }
       RECLAIMS = RECLAIMS + (CONSLIMIT-CONSP);
 #if 0
-      IF ATGC DO WRITEF("<%d cells in use>\n",(int)(CONSP-CONSBASE));
+      if( ATGC ) fprintf(bcpl_OUTPUT, "<%d cells in use>\n",(int)(CONSP-CONSBASE));
 #else
       // Don't call printf, as if leaves unaligned pointers into
       // CONS space on the stack.
-      IF ATGC DO {
-         WRITES("<");
-         WRITEN((WORD)(CONSP-CONSBASE));
-         WRITES(" cells in use>\n");
+      if( ATGC ) {
+         bcpl_WRITES("<");
+         bcpl_WRITEN((WORD)(CONSP-CONSBASE));
+         bcpl_WRITES(" cells in use>\n");
       }
 #endif
       RELEASE_INTERRUPTS();
 
-      IF CONSP-CONSBASE > (9*SPACE)/10   //ABANDON JOB IF SPACE
-      DO SPACE_ERROR("Space exhausted"); //UTILISATION EXCEEDS 90%
+      // abandon job if space
+      if( CONSP-CONSBASE > (9*SPACE)/10
+
+      // utilisation exceeds 90%
+      ) SPACE_ERROR("Space exhausted");
 
 #ifdef INSTRUMENT_KRC_GC
 COLLECTING = FALSE;
@@ -334,13 +344,13 @@ COLLECTING = FALSE;
 static void
 COPY(LIST *P)  // P IS THE ADDRESS OF A LIST FIELD
 {
-//   DO $( WRITES("COPYING ")
+//   DO $( bcpl_WRITES("COPYING ")
 //         PRINTOB(*P)
-//         NEWLINE()  $) <>
-   WHILE CONSBASE<=*P && *P<CONSLIMIT
-   DO {  IF HD(*P)==GONETO
-         DO {  *P=TL(*P);
-               RETURN }
+//         (*_WRCH)('\n')  $) <>
+   while( CONSBASE<=*P && *P<CONSLIMIT
+   ) {  if( HD(*P)==GONETO
+         ) {  *P=TL(*P);
+               return; }
       {  LIST X=HD(*P);
          LIST Y=TL(*P);
          LIST Z=CONSP;
@@ -349,54 +359,54 @@ COPY(LIST *P)  // P IS THE ADDRESS OF A LIST FIELD
          *P=Z;
          HD(Z)=X, TL(Z)=Y;
          CONSP=CONSP+1;
-         IF X==FULLWORD DO RETURN
+         if( X==FULLWORD ) return;
          P=&(TL(Z));  }  }  }
 
 static void
 COPYHEADS()
    {  LIST Z = OTHERBASE;
-      UNTIL Z == CONSP
-      DO {  COPY(&(HD(Z)));
+      while(!( Z == CONSP
+      )) {  COPY(&(HD(Z)));
             Z = Z+1;   }
    }
 
 WORD
 ISCONS(LIST X)
 #ifdef INSTRUMENT_KRC_GC
-{  IF CONSBASE<=X && X<CONSLIMIT DO
-   {  IF ((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0 DO
-      { WRITEF("\nMisaligned pointer %p in ISCONS\n", X); RESULTIS FALSE; }
-      RESULTIS HD(X)!=FULLWORD;  }
-   RESULTIS FALSE;  }
+{  if( CONSBASE<=X && X<CONSLIMIT )
+   {  if( ((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0 )
+      { fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in ISCONS\n", X); return FALSE; }
+      return HD(X)!=FULLWORD;  }
+   return FALSE;  }
 #else
-{  RESULTIS CONSBASE<=X && X<CONSLIMIT ? HD(X)!=FULLWORD : FALSE;  }
+{  return CONSBASE<=X && X<CONSLIMIT ? HD(X)!=FULLWORD : FALSE;  }
 #endif
 
 WORD
 ISATOM(LIST X)
-{  RESULTIS ATOMBASE<=(ATOM)X && (ATOM)X<ATOMP;  }
+{  return ATOMBASE<=(ATOM)X && (ATOM)X<ATOMP;  }
 
 WORD
 ISNUM(LIST X)
 #ifdef INSTRUMENT_KRC_GC
-{  IF CONSBASE<=X && X<CONSLIMIT DO
-   {  IF ((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0 DO
-      {  WRITEF("\nMisaligned pointer %p in ISNUM\n", X); RESULTIS FALSE;  }
-      RESULTIS HD(X)==FULLWORD;  }
-   RESULTIS FALSE;  }
+{  if( CONSBASE<=X && X<CONSLIMIT )
+   {  if( ((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0 )
+      {  fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in ISNUM\n", X); return FALSE;  }
+      return HD(X)==FULLWORD;  }
+   return FALSE;  }
 #else
-{  RESULTIS CONSBASE<=X&&X<CONSLIMIT ? HD(X)==FULLWORD : FALSE;  }
+{  return CONSBASE<=X&&X<CONSLIMIT ? HD(X)==FULLWORD : FALSE;  }
 #endif
 
 LIST
-STONUM(WORD N) {RESULTIS CONS(FULLWORD,(LIST)N);} // GCC WARNING EXPECTED
+STONUM(WORD N) {return CONS(FULLWORD,(LIST)N);} // GCC WARNING EXPECTED
 
 WORD
-GETNUM(LIST X) {RESULTIS (WORD)(TL(X));}          // GCC WARNING EXPECTED
+GETNUM(LIST X) {return (WORD)(TL(X));}          // GCC WARNING EXPECTED
 
 ATOM
 MKATOM(char *S)              // make an ATOM from a C string
-{  RESULTIS MKATOMN(S, strlen(S));  }
+{  return MKATOMN(S, strlen(S));  }
 
 ATOM
 MKATOMN(char *S, int LEN)    // make an ATOM which might contain NULs
@@ -404,59 +414,59 @@ MKATOMN(char *S, int LEN)    // make an ATOM which might contain NULs
    ATOM *P=BUCKET;
    // N is size of string counted as the number of pointers it occupies
    WORD N;
-   UNTIL *P==0 DO    // SEARCH THE APPROPRIATE BUCKET
-   {  IF LEN==LEN(*P) && memcmp(S, PRINTNAME(*P), (size_t)LEN) == 0
-      DO RESULTIS (ATOM)*P;
+   while(!( *P==0 ))    // SEARCH THE APPROPRIATE BUCKET
+   {  if( LEN==LEN(*P) && memcmp(S, PRINTNAME(*P), (size_t)LEN) == 0
+      ) { return (ATOM)*P; }
       P=&(LINK(*P));  }
    //CREATE NEW ATOM
    // +1 for the BCPL size, +1 for the \0, then round up to element size
    N = (1+LEN+1 + (sizeof(WORD *))-1) / sizeof(WORD *);
-   IF (WORD **)ATOMP+OFFSET+N > (WORD **)ATOMLIMIT
-   DO {  WRITES("<string space exhausted>\n");
-         FINISH }
+   if( (WORD **)ATOMP+OFFSET+N > (WORD **)ATOMLIMIT
+   ) {  bcpl_WRITES("<string space exhausted>\n");
+         exit(0); }
    *P=ATOMP, LINK(ATOMP)=0, VAL(ATOMP)=NIL;
    NAME(ATOMP)[0]=LEN,
    memcpy(NAME(ATOMP)+1, S, (size_t)LEN),
    NAME(ATOMP)[LEN+1]= '\0';
    ATOMP=(ATOM)((WORD **)ATOMP+OFFSET+N);
-   RESULTIS *P;
+   return *P;
 }
 
-STATIC WORD
-HASH(char *S, int LEN)  // TAKES A NAME AND RETURNS A VALUE IN 0..127
+// TAKES A NAME AND RETURNS A VALUE IN 0..127
+STATIC WORD HASH(char *S, int LEN)
 {  int H=LEN;
-   IF LEN && S[0] DO {
+   if( LEN && S[0] ) {
       H=H+S[0]*37; LEN=LEN-1;
-      IF LEN && S[1] DO {
+      if( LEN && S[1] ) {
          H=H+S[1]; LEN=LEN-1;
-         IF LEN && S[2] DO {
+         if( LEN && S[2] ) {
             H=H+S[2]; LEN=LEN-1;
-            IF LEN && S[3] DO
+            if( LEN && S[3] )
                H=H+S[3];
    }  }  }
 
-   RESULTIS H&0x7F; }
+   return H&0x7F; }
 
-VOID
+void
 BUFCH(WORD CH)
-   {  IF BUFP>=ATOMSIZE
-      DO { SPACE_ERROR("Atom too big"); }
+   {  if( BUFP>=ATOMSIZE
+      ) { SPACE_ERROR("Atom too big"); }
       BUFFER[BUFP++] = CH; }
 
 ATOM
 PACKBUFFER()
 {  ATOM RESULT=MKATOMN(BUFFER,BUFP);
    BUFP=0;
-   RESULTIS RESULT;  }
+   return RESULT;  }
 
 // Does string A sort before string B?
 BOOL
 ALFA_LS(ATOM A, ATOM B)  // A,B ARE ATOMS
-{  RESULTIS strcmp(PRINTNAME(A), PRINTNAME(B)) < 0; }
+{  return strcmp(PRINTNAME(A), PRINTNAME(B)) < 0; }
 
 STATIC void
 GCSTATS()
-{  WRITEF("Cells claimed = %d, no of gc's = %d",
+{  fprintf(bcpl_OUTPUT, "Cells claimed = %d, no of gc's = %d",
           (int)(RECLAIMS+(CONSP-CONSBASE)/2), (int)NOGCS); }
 
 void
@@ -467,110 +477,109 @@ void
 FORCE_GC()
    {  RECLAIMS=RECLAIMS-(CONSLIMIT-CONSP);//TO COMPENSATE FOR CALLING
                                           //TOO EARLY
-      IF ATGC DO WRITEF("Max cells available = %d\n",SPACE);
+      if( ATGC ) fprintf(bcpl_OUTPUT, "Max cells available = %d\n",SPACE);
       GC();
    }
 
 void
 REPORTDIC()
-{ WRITEF("string space = %ld bytes",(long)(ATOMSPACE*atomsize));
-  WRITEF(", used %ld\n",(long)((ATOMP-ATOMBASE)*atomsize));
+{ fprintf(bcpl_OUTPUT, "string space = %ld bytes",(long)(ATOMSPACE*atomsize));
+  fprintf(bcpl_OUTPUT, ", used %ld\n",(long)((ATOMP-ATOMBASE)*atomsize));
 }
 
 void
 LISTPM()
    {  WORD EMPTY = 0;
       WORD I;
-      WRITES("\n LIST POST MORTEM\n");
+      bcpl_WRITES("\n LIST POST MORTEM\n");
       GCSTATS();
-      WRITEF(", current cells = %d\n",(int)((CONSP-CONSBASE)/2));
-      IF BUFP>0
-      DO {  WRITES("Buffer: ");
-            FOR (I = 0; I<BUFP; I++) { WRCH(BUFFER[I]); }
-            NEWLINE();  }
-      WRITES("Atom buckets:\n");
-      FOR (I=0; I<128; I++)
-         TEST HASHV[I] != 0
-         THEN {  ATOM P=HASHV[I];
-                 WRITEF("%d :\t", (int)I);
-                 UNTIL P==0
-                 DO {  WRITES(PRINTNAME(P));
-                       UNLESS VAL(P)==NIL
-                       DO {  WRITES(" = ");
+      fprintf(bcpl_OUTPUT, ", current cells = %d\n",(int)((CONSP-CONSBASE)/2));
+      if( BUFP>0
+      ) {  bcpl_WRITES("Buffer: ");
+            for (I = 0; I<BUFP; I++) { (*_WRCH)(BUFFER[I]); }
+            (*_WRCH)('\n');  }
+      bcpl_WRITES("Atom buckets:\n");
+      for (I=0; I<128; I++)
+         if ( HASHV[I] != 0 ) {  ATOM P=HASHV[I];
+                 fprintf(bcpl_OUTPUT, "%d :\t", (int)I);
+                 while(!( P==0
+                 )) {  bcpl_WRITES(PRINTNAME(P));
+                       if(!( VAL(P)==NIL
+                       )) {  bcpl_WRITES(" = ");
                              PRINTOB(VAL(P));  }
                        P=LINK(P);
-                       IF P!=0 DO WRITES("\n\t");
+                       if( P!=0 ) bcpl_WRITES("\n\t");
                  }
-                 NEWLINE(); }
-         OR EMPTY = EMPTY + 1;
-      WRITEF("Empty buckets = %d\n", (int)EMPTY);  }
+                 (*_WRCH)('\n'); }
+         else EMPTY = EMPTY + 1;
+      fprintf(bcpl_OUTPUT, "Empty buckets = %d\n", (int)EMPTY);  }
 
 WORD
 LENGTH(LIST X)
 {  WORD N = 0;
-   UNTIL X==NIL
-   DO X=TL(X),N=N+1;
-   RESULTIS N;  }
+   while(!( X==NIL
+   )) X=TL(X),N=N+1;
+   return N;  }
 
 WORD
 MEMBER(LIST X, LIST A)
-{  UNTIL X==NIL || HD(X)==A
-   DO X = TL(X);
-   RESULTIS X!=NIL;  }
+{  while(!( X==NIL || HD(X)==A
+   )) X = TL(X);
+   return X!=NIL;  }
 
 LIST 
-APPEND(LIST X, LIST Y) { RESULTIS SHUNT(SHUNT(X,NIL),Y); }
+APPEND(LIST X, LIST Y) { return SHUNT(SHUNT(X,NIL),Y); }
 
 LIST 
-REVERSE(LIST X) { RESULTIS SHUNT(X,NIL); }
+REVERSE(LIST X) { return SHUNT(X,NIL); }
 
 LIST 
 SHUNT(LIST X, LIST Y)
-{  UNTIL X==NIL
-   DO {  Y=CONS(HD(X),Y);
+{  while(!( X==NIL
+   )) {  Y=CONS(HD(X),Y);
          X=TL(X);  }
-   RESULTIS Y;  }
+   return Y;  }
 
 LIST 
 SUB1(LIST X, ATOM A)   //DESTRUCTIVELY REMOVES A FROM X (IF PRESENT)
-{   IF X==NIL DO RESULTIS NIL;
-    IF HD(X)==(LIST)A DO RESULTIS TL(X);
+{   if( X==NIL ) return NIL;
+    if( HD(X)==(LIST)A ) return TL(X);
 {  LIST *P=&(TL(X));
-   UNTIL (*P==NIL) || HD(*P)==(LIST)A DO P=&(TL(*P));
-   UNLESS *P==NIL DO *P=TL(*P);
-   RESULTIS X;  }  }
+   while(!( (*P==NIL) || HD(*P)==(LIST)A )) P=&(TL(*P));
+   if(!( *P==NIL )) *P=TL(*P);
+   return X;  }  }
 
 WORD
 EQUAL(LIST X, LIST Y)
 { do {
-   IF X==Y DO RESULTIS TRUE;
-   IF ISNUM(X) && ISNUM(Y)
-   DO RESULTIS GETNUM(X)==GETNUM(Y);
-   UNLESS ISCONS(X) && ISCONS(Y) && EQUAL(HD(X),HD(Y))
-   DO RESULTIS FALSE;
+   if( X==Y ) return TRUE;
+   if( ISNUM(X) && ISNUM(Y)
+   ) return GETNUM(X)==GETNUM(Y);
+   if(!( ISCONS(X) && ISCONS(Y) && EQUAL(HD(X),HD(Y))
+   )) return FALSE;
    X=TL(X), Y=TL(Y);
   } while(1);
 }
 
 LIST 
 ELEM(LIST X, WORD N)
-{  UNTIL N==1 DO X=TL(X),N=N-1;
-   RESULTIS HD(X);  }
+{  while(!( N==1 )) X=TL(X),N=N-1;
+   return HD(X);  }
 
 void
 PRINTOB(LIST X) //or ATOM
-{  TEST X==NIL    THEN WRITES("NIL"); OR
-   TEST ISATOM(X) THEN WRITEF("\"%s\"",PRINTNAME((ATOM)X)); OR
-   TEST ISNUM(X)  THEN WRITEN(GETNUM(X)); OR
-   TEST ISCONS(X)
-   THEN {  WRCH('(');
-           WHILE ISCONS(X)
-           DO {  PRINTOB(HD(X));
-                 WRCH('.');
+{  if ( X==NIL    ) bcpl_WRITES("NIL"); OR
+   if ( ISATOM(X) ) fprintf(bcpl_OUTPUT, "\"%s\"",PRINTNAME((ATOM)X)); OR
+   if ( ISNUM(X)  ) bcpl_WRITEN(GETNUM(X)); OR
+   if ( ISCONS(X)
+   ) {  (*_WRCH)('(');
+           while( ISCONS(X)
+           ) {  PRINTOB(HD(X));
+                 (*_WRCH)('.');
                  X=TL(X);  }
            PRINTOB(X);
-           WRCH(')');  }
-   OR WRITEF("<%p>", X);
+           (*_WRCH)(')');  }
+   else fprintf(bcpl_OUTPUT, "<%p>", X);
 }
 
 
@@ -581,15 +590,15 @@ LIST
 ISOKCONS(LIST P)
 {
    LIST Q;
-   IF COLLECTING DO RESULTIS P;
+   if( COLLECTING ) return P;
 
-   TEST CONSBASE<=P && P<CONSLIMIT
-   THEN
+   if ( CONSBASE<=P && P<CONSLIMIT
+   )
       // (ONLY EVEN ADDRESSES IN LISTSPACE COUNT)
-      TEST ((char *)P - (char *)CONSBASE) % sizeof(struct LIST) == 0
-      THEN RESULTIS P;
-      OR { WRITEF("\nHD() or TL() called on ODD address %p\n", P); }
-   OR { WRITEF("\nHD() or TL() called on %p not in CONS space\n", P); }
-   RESULTIS (LIST)0; // Cause segfault in caller
+      if ( ((char *)P - (char *)CONSBASE) % sizeof(struct LIST) == 0
+      ) return P;
+      else { fprintf(bcpl_OUTPUT, "\nHD() or TL() called on ODD address %p\n", P); }
+   else { fprintf(bcpl_OUTPUT, "\nHD() or TL() called on %p not in CONS space\n", P); }
+   return (LIST)0; // Cause segfault in caller
 }
 #endif
