@@ -70,13 +70,22 @@ static BOOL ATOBJECT = FALSE, ATCOUNT = FALSE;
 static char PARAMV[256];
 
 // global variables owned by main.c
-WORD LEGACY = FALSE; // set by -z option
+
+// set by -z option
+WORD LEGACY = FALSE;
+
 LIST FILECOMMANDS = NIL;
-BOOL SKIPCOMMENTS;    // SET BY -s OPTION
-char *USERLIB = NULL; // SET BY -l OPTION
+
+// SET BY -s OPTION
+BOOL SKIPCOMMENTS;
+
+// SET BY -l OPTION
+char *USERLIB = NULL;
 
 // local variables
-static BOOL FORMATTING; // Are we evaluating with '?' ?
+
+// are we evaluating with '?' ?
+static BOOL FORMATTING;
 
 // suppress greetings, prompts etc.?
 static BOOL QUIET = FALSE;
@@ -96,7 +105,8 @@ static BOOL INTERRUPT_OCCURRED = FALSE;
 
 static void CATCHINTERRUPT(int signum) {
   if (INTERRUPTS_ARE_HELD) {
-    // Can't be 0
+
+    // can't be 0
     INTERRUPT_OCCURRED = signum;
     return;
   }
@@ -225,7 +235,9 @@ void GO() {
   }
 
   QUITCOM();
-  //    exit(0); //moved inside QUITCOM()
+
+  // exit(0);
+  // moved inside QUITCOM()
 }
 
 // PARSELINE: A version of readline that gets its input from a string
@@ -323,7 +335,7 @@ static void INITIALISE() {
       case 'l': // Handled in listpack.c
       case 'h':
         ++I;    // Handled in listpack.c
-      case 'g': // Handled in listpack.c
+      case 'g': // handled in listpack.c
         break;
       case 'e':
         if (++I >= ARGC || ARGV[I][0] == '-') {
@@ -345,8 +357,8 @@ static void INITIALISE() {
       case 'L':
         OLDLIB = 1;
         break;
-        //          case 'v': LISTSCRIPT=TRUE; break;
-        // Other parameters may be detected using HAVEPARAM()
+        // case 'v': LISTSCRIPT=TRUE; break;
+        // other parameters may be detected using HAVEPARAM()
       case 'C':
       case 'N':
       case 'O': // used only by testcomp, disabled
@@ -500,7 +512,7 @@ static void SETUP_COMMANDS() {
   }
 
   F("delete", DELETECOM);
-  F("d", DELETECOM); // SYNONYM
+  F("d", DELETECOM); // synonym
   F("reorder", REORDERCOM);
   FF("save", SAVECOM);
   FF("get", GETCOM);
@@ -509,7 +521,7 @@ static void SETUP_COMMANDS() {
   FF("f", FILECOM);
   F("dir", DIRCOM);
   F("quit", QUITCOM);
-  F("q", QUITCOM); // SYNONYM
+  F("q", QUITCOM); // synonym
   F("names", NAMESCOM);
   F("lib", LIBCOM);
   F("aborder", ABORDERCOM);
@@ -517,7 +529,7 @@ static void SETUP_COMMANDS() {
   F("openlib", OPENLIBCOM);
   F("clear", CLEARCOM);
   F("help", HELPCOM);
-  F("h", HELPCOM);        // SYNONYM
+  F("h", HELPCOM);        // synonym
   F("object", OBJECTCOM); // these last commands are for use in
   F("reset", RESETCOM);   // debugging the system
   F("gc", GCCOM);
@@ -977,8 +989,8 @@ static BOOL OKFILE(FILE *STR, char *FILENAME) {
 
 static void GETCOM() {
   BOOL CLEAN = SCRIPT == NIL;
-  FILENAME();
 
+  FILENAME();
   if (ERRORFLAG) {
     return;
   }
@@ -1029,8 +1041,10 @@ static BOOL GETFILE(char *FILENAME) {
       if (COMMENTFLAG) {
         line += (COMMENTFLAG - 1);
         COMMENT();
-      } else
+      } else {
         NEWEQUATION();
+      }
+
       if (ERRORFLAG) {
         syntax_error("**syntax error in file ");
         fprintf(bcpl_OUTPUT, "%s at line %d\n", FILENAME, line);
@@ -1095,8 +1109,8 @@ static void NAMESCOM() {
   }
 }
 
-static void FIND_UNDEFS() // searches the script for names used but not defined
-{
+// searches the script for names used but not defined
+static void FIND_UNDEFS() {
   LIST S = SCRIPT, UNDEFS = NIL;
   while (!(S == NIL)) {
     LIST EQNS = TL(VAL((ATOM)HD(S)));
@@ -1152,7 +1166,7 @@ static void CLEARCOM() {
 static void SCRIPTLIST(LIST S) {
   WORD COL = 0, I = 0;
 
-// THE MINIMUM OF VARIOUS DEVICES
+// the minimum of various devices
 #define LINEWIDTH 68
 
   while (!(S == NIL)) {
@@ -1371,9 +1385,10 @@ static void NEWEQUATION() {
         TL(VAL(SUBJECT)) = CONS(EQN, NIL);
       } else if (NARGS != (WORD)HD(HD(VAL(SUBJECT)))) {
 
-        //    if ( NARGS==0 //SIMPLE DEF SILENTLY OVERWRITING EXISTING EQNS -
-        //    REMOVED DT 2015 ) {
-        //    VAL(SUBJECT)=CONS(CONS(0,TL(HD(VAL(SUBJECT)))),CONS(EQN,NIL));
+        // simple def silently overwriting existing EQNS -
+        // removed DT 2015
+        // if ( NARGS==0) {
+        // VAL(SUBJECT)=CONS(CONS(0,TL(HD(VAL(SUBJECT)))),CONS(EQN,NIL));
         //            CLEARMEMORY(); } else
 
         fprintf(bcpl_OUTPUT, "Wrong no of args for \"%s\"\n",
@@ -1428,6 +1443,7 @@ static void NEWEQUATION() {
             CLEARMEMORY();
             break;
           }
+
           if (EQNO < N) {
             LIST HOLD = HD(EQNS);
             HD(EQNS) = EQN;
@@ -1435,6 +1451,7 @@ static void NEWEQUATION() {
             CLEARMEMORY();
             break;
           }
+
           if (TL(EQNS) == NIL) {
             TL(EQNS) = CONS(EQN, NIL);
             break;
@@ -1589,36 +1606,49 @@ static LIST SORT(LIST X) {
 
 static void REORDERCOM() {
   if (ISID(HD(TOKENS)) &&
-      (ISID(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (LIST)DOTDOT_SY))
+      (ISID(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (LIST)DOTDOT_SY)) {
     SCRIPTREORDER();
-  else if (haveid() && HD(TOKENS) != EOL) {
+  } else if (haveid() && HD(TOKENS) != EOL) {
     LIST NOS = NIL;
     WORD MAX = NO_OF_EQNS(THE_ID);
+
     while (havenum()) {
       WORD A = THE_NUM;
       WORD B = have(DOTDOT_SY) ? havenum() ? THE_NUM : MAX : A;
       WORD I;
-      for (I = A; I <= B; I++)
-        if (!MEMBER(NOS, (LIST)I) && 1 <= I && I <= MAX)
+
+      for (I = A; I <= B; I++) {
+        if (!MEMBER(NOS, (LIST)I) && 1 <= I && I <= MAX) {
           NOS = CONS((LIST)I, NOS);
-      // NOS OUT OF RANGE ARE SILENTLY IGNORED
+        }
+      }
+      // nos out of range are silently ignored
     }
+
     check(EOL);
-    if (ERRORFLAG)
+    if (ERRORFLAG) {
       return;
+    }
+
     if (VAL(THE_ID) == NIL) {
       DISPLAY(THE_ID, FALSE, FALSE);
       return;
     }
-    if (PROTECTED(THE_ID))
+
+    if (PROTECTED(THE_ID)) {
       return;
+    }
+
     {
       WORD I;
-      for (I = 1; I <= MAX; I++)
-        if (!(MEMBER(NOS, (LIST)I)))
+      for (I = 1; I <= MAX; I++) {
+        if (!(MEMBER(NOS, (LIST)I))) {
           NOS = CONS((LIST)I, NOS);
-      // ANY EQNS LEFT OUT ARE TACKED ON AT THE END
+        }
+      }
+      // any eqns left out are tacked on at the end
     }
+
     // note that "NOS" are in reverse order
     {
       LIST NEW = NIL;
@@ -1629,6 +1659,7 @@ static void REORDERCOM() {
         NEW = CONS(EQN, NEW);
         NOS = TL(NOS);
       }
+
       // note that the EQNS in "NEW" are now in the correct order
       TL(VAL(THE_ID)) = NEW;
       DISPLAY(THE_ID, TRUE, FALSE);
@@ -1641,30 +1672,41 @@ static void REORDERCOM() {
 
 static void SCRIPTREORDER() {
   LIST R = NIL;
-  while ((haveid()))
+  while ((haveid())) {
     if (have(DOTDOT_SY)) {
       ATOM A = THE_ID, B = 0;
       LIST X = NIL;
-      if (haveid())
+
+      if (haveid()) {
         B = THE_ID;
-      else if (HD(TOKENS) == EOL)
+      } else if (HD(TOKENS) == EOL) {
         B = (ATOM)EOL;
-      if (B == 0)
+      }
+
+      if (B == 0) {
         syntax();
-      else
+      } else {
         X = EXTRACT(A, B);
-      if (X == NIL)
+      }
+
+      if (X == NIL) {
         syntax();
+      }
+
       R = SHUNT(X, R);
-    } else if (MEMBER(SCRIPT, (LIST)THE_ID))
+    } else if (MEMBER(SCRIPT, (LIST)THE_ID)) {
       R = CONS((LIST)THE_ID, R);
-    else {
+    } else {
       fprintf(bcpl_OUTPUT, "\"%s\" not in script\n", PRINTNAME(THE_ID));
       syntax();
     }
+  }
+
   check(EOL);
-  if (ERRORFLAG)
+  if (ERRORFLAG) {
     return;
+  }
+
   {
     LIST R1 = NIL;
     while (!(TL(R) == NIL)) {
@@ -1682,14 +1724,17 @@ static WORD NO_OF_EQNS(ATOM A) {
   return VAL(A) == NIL ? 0 : LENGTH(TL(VAL(A)));
 }
 
-static BOOL PROTECTED(ATOM A)
 // library functions are recognisable by not being part of the script
-{
-  if (MEMBER(SCRIPT, (LIST)A))
+static BOOL PROTECTED(ATOM A) {
+
+  if (MEMBER(SCRIPT, (LIST)A)) {
     return FALSE;
+  }
+
   if (MEMBER(HOLDSCRIPT, (LIST)A)) {
-    if (!(MEMBER(GET_HITS, (LIST)A)))
+    if (!(MEMBER(GET_HITS, (LIST)A))) {
       GET_HITS = CONS((LIST)A, GET_HITS);
+    }
     return FALSE;
   }
   fprintf(bcpl_OUTPUT, "\"%s\" is predefined and cannot be altered\n",
@@ -1697,63 +1742,88 @@ static BOOL PROTECTED(ATOM A)
   return TRUE;
 }
 
-static void REMOVE(ATOM A) // REMOVES "A" FROM THE SCRIPT
-{
+// removes "A" from the script
+static void REMOVE(ATOM A) {
   SCRIPT = SUB1(SCRIPT, A);
   VAL(A) = NIL;
 }
 
-static LIST EXTRACT(ATOM A, ATOM B) // returns a segment of the script
-{
+// returns a segment of the script
+static LIST EXTRACT(ATOM A, ATOM B) {
   LIST S = SCRIPT, X = NIL;
-  while (!(S == NIL || HD(S) == (LIST)A))
+
+  while (!(S == NIL || HD(S) == (LIST)A)) {
     S = TL(S);
-  while (!(S == NIL || HD(S) == (LIST)B))
+  }
+
+  while (!(S == NIL || HD(S) == (LIST)B)) {
     X = CONS(HD(S), X), S = TL(S);
-  if (!(S == NIL))
+  }
+
+  if (!(S == NIL)) {
     X = CONS(HD(S), X);
-  if (S == NIL && B != (ATOM)EOL)
+  }
+
+  if (S == NIL && B != (ATOM)EOL) {
     X = NIL;
-  if (X == NIL)
+  }
+
+  if (X == NIL) {
     fprintf(bcpl_OUTPUT, "\"%s..%s\" not in script\n", PRINTNAME(A),
             B == (ATOM)EOL ? "" : PRINTNAME(B));
+  }
+
   return REVERSE(X);
 }
 
 static void DELETECOM() {
+
   LIST DLIST = NIL;
-  while (haveid())
+  while (haveid()) {
+
     if (have(DOTDOT_SY)) {
       ATOM A = THE_ID, B = (ATOM)EOL;
-      if (haveid())
+      if (haveid()) {
         B = THE_ID;
-      else if (!(HD(TOKENS) == EOL))
+      } else if (!(HD(TOKENS) == EOL)) {
         syntax();
+      }
       DLIST = CONS(CONS((LIST)A, (LIST)B), DLIST);
     } else {
       WORD MAX = NO_OF_EQNS(THE_ID);
       LIST NLIST = NIL;
+
       while (havenum()) {
         WORD A = THE_NUM;
         WORD B = have(DOTDOT_SY) ? havenum() ? THE_NUM : MAX : A;
         WORD I;
-        for (I = A; I <= B; I++)
+
+        for (I = A; I <= B; I++) {
           NLIST = CONS((LIST)I, NLIST);
+        }
       }
+
       DLIST = CONS(CONS((LIST)THE_ID, NLIST), DLIST);
     }
+  }
+
   check(EOL);
-  if (ERRORFLAG)
+  if (ERRORFLAG) {
     return;
+  }
+
   {
     WORD DELS = 0;
-    if (DLIST == NIL // DELETE ALL
-    ) {
-      if (SCRIPT == NIL)
+
+    // delete all
+    if (DLIST == NIL) {
+      if (SCRIPT == NIL) {
         DISPLAYALL(FALSE);
-      else {
-        if (!(MAKESURE()))
+      } else {
+        if (!(MAKESURE())) {
           return;
+        }
+
         while (!(SCRIPT == NIL)) {
           DELS = DELS + NO_OF_EQNS((ATOM)HD(SCRIPT));
           VAL((ATOM)HD(SCRIPT)) = NIL;
@@ -1761,9 +1831,9 @@ static void DELETECOM() {
         }
       }
     }
-    while (!(DLIST == NIL))
-      if (ISATOM(TL(HD(DLIST))) || TL(HD(DLIST)) == EOL //"NAME..NAME"
-      ) {
+    while (!(DLIST == NIL)) {
+      //"NAME..NAME"
+      if (ISATOM(TL(HD(DLIST))) || TL(HD(DLIST)) == EOL) {
         LIST X = EXTRACT((ATOM)HD(HD(DLIST)), (ATOM)TL(HD(DLIST)));
         DLIST = TL(DLIST);
         while (!(X == NIL))
@@ -1777,8 +1847,11 @@ static void DELETECOM() {
           DISPLAY(NAME, FALSE, FALSE);
           continue;
         }
-        if (PROTECTED(NAME))
+
+        if (PROTECTED(NAME)) {
           continue;
+        }
+
         if (NOS == NIL) {
           DELS = DELS + NO_OF_EQNS(NAME);
           REMOVE(NAME);
@@ -1786,19 +1859,24 @@ static void DELETECOM() {
         } else {
           WORD I;
           for (I = NO_OF_EQNS(NAME); I >= 1; I = I - 1)
-            if (MEMBER(NOS, (LIST)I))
+            if (MEMBER(NOS, (LIST)I)) {
               DELS = DELS + 1;
-            else {
+            } else {
               LIST EQN = ELEM(TL(VAL(NAME)), I);
               REMOVELINENO(EQN);
               NEW = CONS(EQN, NEW);
             }
         }
+
         TL(VAL(NAME)) = NEW;
-        if (NEW == NIL && TL(HD(VAL(NAME))) == NIL // COMMENT FIELD
-        )
+
+        // comment field
+        if (NEW == NIL && TL(HD(VAL(NAME))) == NIL) {
           REMOVE(NAME);
+        }
       }
+    }
+
     fprintf(bcpl_OUTPUT, "%" W " equations deleted\n", DELS);
     if (DELS > 0) {
       SAVED = FALSE;
