@@ -263,9 +263,10 @@ void PRINTVAL(LIST E, BOOL FORMAT) {
         PRINTVAL(TL(E), FORMAT);
         bcpl_OUTPUT_fp = (HOLD);
       }
+
     } else {
 
-      // a partial application else composition
+      // a partial application or composition
       PRINTFUNCTION(E);
     }
   } else {
