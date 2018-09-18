@@ -42,7 +42,8 @@ static int ATOMSPACE;
 #define FULLWORD (NIL - 1)
 
 // Impossible value of pointer or integer used as flag during GC.
-#define GONETO ((LIST)(1ULL << (sizeof(LIST) * 8 - 1))) // just top bit set
+// just top bit set
+#define GONETO ((LIST)(1ULL << (sizeof(LIST) * 8 - 1)))
 
 static LIST CONSBASE, CONSLIMIT, CONSP, OTHERBASE;
 static LIST *STACKBASE;
@@ -168,8 +169,8 @@ int main(int argc, char **argv) {
         }
         break;
       case 'l':
-        if (++I >= ARGC // doesn't logically belong in listpack
-        ) {
+        // doesn't logically belong in listpack
+        if (++I >= ARGC) {
           bcpl_WRITES("krc: -l What?\n");
           exit(0);
         } else
