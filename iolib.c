@@ -2,10 +2,17 @@
 
 #include "common.h"
 #include "iolib.h"
-#include "emas.h" // for TERMINATOR
 
 #include <ctype.h>  // for isdigit()
 #include <string.h> // for strcmp()
+
+// EMAS emulation stubs
+
+// on EMAS prompts remain in effect until cancelled
+char *emas_PROMPT = "";
+
+// The extra character gobbled up at the end of a call to READN()
+int TERMINATOR;
 
 // which file descriptors should BCPL's input and output use?
 // we use (FILE *)0 as a synonym for stdin / stdout since

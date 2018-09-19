@@ -9,6 +9,7 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 - replaced long long with int64_t with stdint.h
 - renamed bcpl to iolib
 - replaced BOOL with bool and stdbool.h (experimental)
+- removed emas.c emas.h
 
 ### 2018.09.15
 

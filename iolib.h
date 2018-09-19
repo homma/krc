@@ -29,5 +29,23 @@ extern void (*_WRCH)(WORD D);
 extern void bcpl_WRITES(char *s);
 extern void bcpl_WRITEN(WORD N);
 
+// for EMAS emulation stubs
+
+extern char *emas_PROMPT;
+
+// the character gobbled after a READN()
+extern int TERMINATOR;
+
+#define PROMPT(S) emas_PROMPT = S
+#define SUPPRESSPROMPTS() emas_PROMPT = ""
+
+// other stuff;
+//
+// APTOVEC(function, size)
+//	allocates size+1 bytes on the stack and calls the function
+//	passing the address of the vector and the "size" parameter.
+// FILES(DESCRIPTOR(), PARAMS)
+//      lists the names of your files
+
 #define IOLIB_H
 #endif

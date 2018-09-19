@@ -1,6 +1,5 @@
 #include "common.h"
 #include "iolib.h"
-#include "emas.h"
 #include "listhdr.h"
 #include "comphdr.h"
 

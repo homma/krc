@@ -1,7 +1,6 @@
 #include "listhdr.h"
 #include "comphdr.h"
 #include "redhdr.h"
-#include "emas.h"
 #include "revision"
 #ifdef LINENOISE
 #include "linenoise.h"
