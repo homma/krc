@@ -16,7 +16,7 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 
 ### 2018.09.15
 
-- Ported to macOS
+- ported to macOS
   - replaced `sbrk` to `malloc` in order to compile successfully on macOS
 
 #### Initial Commit
