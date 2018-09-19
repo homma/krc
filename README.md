@@ -16,3 +16,36 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 ````
 $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i <FILE>
 ````
+## Plan
+
+### Short Term
+- make it looks like a plain C software
+- remove BCPL dependency completely
+- CAPITAL LETTER to small letter
+- replace long long with int64_t with stdint.h
+- replace BOOL with bool and stdbool.h
+- rename bcpl to iolib
+- rename listpack to listlib
+- separate main() from listlib
+- separate commands into their own file
+- fix write function to properly output into files
+- fix command line options
+- remove old comments
+- add comments
+
+### Long Term
+- add where clause
+- add record type
+- add anonymous function
+- add floating point numeral
+- port to JavaScript
+
+### Someday..
+- add more I/O
+- add FFI
+- add n+k pattern
+- add type system
+
+### Done
+- port to macOS
+
