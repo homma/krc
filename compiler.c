@@ -1,8 +1,9 @@
-// KRC COMPILER
+// KRC compiler
 
 // Note: What is now '{' here was '{ ' in the BCPL.
 
-#include "bcpl.h"
+#include "common.h"
+#include "iolib.h"
 #include "listhdr.h"
 #include "comphdr.h"
 
@@ -12,7 +13,7 @@
 // terms in the file "COPYING", which is included in the distribution.
 //----------------------------------------------------------------------
 
-// Local function declarations
+// local function declarations
 static BOOL ISOP(LIST X);
 static BOOL ISINFIX(LIST X);
 static BOOL ISRELOP(LIST X);

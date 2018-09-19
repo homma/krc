@@ -1,39 +1,9 @@
-// bcpl.h: map BCPL constructs to C equivalents
+// iolib.h: compatible i/o functions
 
-#ifndef BCPL_H
+#ifndef IOLIB_H
 
 #include <stdio.h>  // For printf etc
 #include <stdlib.h> // For exit()
-#include <limits.h> // for __WORDSIZE
-
-#if __WORDSIZE == 64
-
-// Type for machine words, used for all integer variables.
-// 64-bit value.
-typedef long long WORD;
-
-// Printf/scanf format to use with WORDs
-#define W "lld"
-
-#else
-
-// 32-bit value.
-typedef int WORD;
-#define W "d"
-
-#endif
-
-// Trap broken compiler versions here, as it is included by everything
-// Definitely doesn't work with gcc-4.9.[012]
-#if __GNUC__ == 4 && __GNUC_MINOR__ == 9
-// && __GNUC_PATCHLEVEL__  < 3
-# error "KRC is broken when compiled with GCC 4.9. Earlier GCCs, clang and TinyC work.".
-#endif
-
-// bool
-typedef WORD BOOL;
-#define FALSE 0
-#define TRUE 1
 
 // implement BCPL i/o system using stdio
 extern FILE *bcpl_INPUT_fp;
@@ -59,5 +29,5 @@ extern void (*_WRCH)(WORD D);
 extern void bcpl_WRITES(char *s);
 extern void bcpl_WRITEN(WORD N);
 
-#define BCPL_H
+#define IOLIB_H
 #endif

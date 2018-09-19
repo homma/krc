@@ -1,6 +1,7 @@
-// helper functions for bcpl.h
+// helper functions for iolib.h
 
-#include "bcpl.h"
+#include "common.h"
+#include "iolib.h"
 #include "emas.h" // for TERMINATOR
 
 #include <ctype.h>  // for isdigit()

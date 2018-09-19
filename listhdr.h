@@ -6,7 +6,8 @@
 // terms in the file "COPYING", which is included in the distribution.
 //----------------------------------------------------------------------
 
-#include "bcpl.h"
+#include "common.h"
+#include "iolib.h"
 
 // Include code to check validity of pointers handed to HD() and TL
 // #define INSTRUMENT_KRC_GC

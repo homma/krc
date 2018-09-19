@@ -33,24 +33,24 @@ CFLAGS+=-g -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
  	-DLINENOISE \
 	-DLIBDIR='$(LIBDIR)' -DHEAPSIZE=$(HEAPSIZE)
 
-SRCS= main.c reducer.c compiler.c lex.c listpack.c bcpl.c emas.c \
-      listhdr.h comphdr.h redhdr.h bcpl.h emas.h \
+SRCS= main.c reducer.c compiler.c lex.c listpack.c iolib.c emas.c \
+      listhdr.h comphdr.h redhdr.h common.h common.h iolib.h emas.h \
       linenoise.h linenoise.c
-OBJS= main.o reducer.o compiler.o lex.o listpack.o bcpl.o emas.o \
+OBJS= main.o reducer.o compiler.o lex.o listpack.o iolib.o emas.o \
       linenoise.o
 
 krc: $(OBJS)
 	@$(CC) $(CFLAGS) -o $@ $(OBJS)
 
-listpack.o: listhdr.h bcpl.h
-lex.o:      comphdr.h listhdr.h bcpl.h emas.h
-compiler.o: comphdr.h listhdr.h bcpl.h
-reducer.o:  redhdr.h comphdr.h listhdr.h bcpl.h
-main.o:     redhdr.h comphdr.h listhdr.h bcpl.h emas.h revision
+listpack.o: listhdr.h common.h iolib.h
+lex.o:      comphdr.h listhdr.h common.h iolib.h emas.h
+compiler.o: comphdr.h listhdr.h common.h iolib.h
+reducer.o:  redhdr.h comphdr.h listhdr.h common.h iolib.h
+main.o:     redhdr.h comphdr.h listhdr.h common.h iolib.h emas.h revision
 
 linenoise.o: Makefile
 main.o: Makefile
-listpack.o: listhdr.h bcpl.h
+listpack.o: listhdr.h common.h iolib.h
 
 .c.o:
 	@$(CC) $(CFLAGS) -c $<
