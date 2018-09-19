@@ -42,6 +42,7 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 - add comments
 - implement test cases
 - remove `(!(`
+- rename header files (`hdr` portion)
 
 ### Long Term
 - add where clause
