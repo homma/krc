@@ -411,7 +411,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 
 // p is the address of a list field
 static void COPY(LIST *P) {
-  //   DO $( bcpl_WRITES("COPYING ")
+  //   do $( bcpl_WRITES("COPYING ")
   //         PRINTOB(*P)
   //         (*_WRCH)('\n')  $) <>
   while (CONSBASE <= *P && *P < CONSLIMIT) {

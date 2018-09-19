@@ -16,6 +16,7 @@ typedef struct LIST {
 	struct LIST *hd;
 	struct LIST *tl;
 } *LIST;
+
 // HD can contain:
 // - the memory address of another cell in the CONS space
 // - the memory address of a cell in the ATOM space
@@ -59,74 +60,74 @@ typedef struct ATOM {
 WORD	HAVEPARAM(WORD CH);
 extern int ARGC;
 extern char **ARGV;
-         //FOR PICKING UP SYSTEM PARAMETERS PASSED TO PROGRAM
+//for picking up system parameters passed to program
 
 extern BOOL ATGC;
 
 
 // PACKAGE SPECIFICATIONS:
 
-// "GO" "BASES" "SPACE.ERROR"      MUST BE DEFINED BY THE USER
-// ALL THE OTHER FUNCTIONS ETC ARE DEFINED BY THE PACKAGE
+// "GO" "BASES" "SPACE.ERROR"      must be defined by the user
+// all the other functions etc are defined by the package
 
-// "GO()"   IS THE MAIN ROUTINE OF THE USERS PROGRAM (NECESSARY BECAUSE
-// THE PACKAGE HAS ITS OWN  "START" ROUTINE)
-// "BASES" IS USED TO INFORM THE PACKAGE WHICH OF THE USERS OFF-STACK
-// VARIABLES ARE BASES FOR GARBAGE COLLECTION - IT SHOULD BE DEFINED
-// THUS -  "LET BASES(F) BE $( F(@A); F(@B); ... $)" WHERE A, B ETC.
-// ARE THE RELEVANT VARIABLES.  SEE NOTE 1 BELOW.
-// "SPACE.ERROR()" DEFINES THE ACTION THE USER WISHES TO TAKE WHEN LIST
-// SPACE IS EXHAUSTED (E.G. PRINT A MESSAGE AND CALL FINISH)
+// "GO()"   is the main routine of the users program (necessary because
+// the package has its own  "START" routine)
+// "BASES" is used to inform the package which of the users off-stack
+// variables are bases for garbage collection - it should be defined
+// thus -  "let BASES(F) be $( F(@A); F(@B); ... $)" where A, B etc.
+// are the relevant variables.  see NOTE 1 below.
+// "SPACE.ERROR()" defines the action the user wishes to take when list
+// space is exhausted (e.g. print a message and call finish)
 extern void GO(void);
 extern void BASES(void (*f)(LIST *));
 extern void SPACE_ERROR(char *MESSAGE);
 
-// "CONS(X,Y)" CREATES A LIST CELL, Z SAY, WITH X AND Y FOR ITS FIELDS
-// AND "HD!Z", "TL!Z" GIVE ACCESS TO THE FIELDS
+// "CONS(X,Y)" creates a list cell, Z say, with X and Y for its fields
+// and "HD!Z", "TL!Z" give access to the fields
 LIST	CONS(LIST X, LIST Y);
 
-// "STONUM(N)" STORES AWAY THE NUMBER N AS A LIST OBJECT AND "GETNUM(X)"
-// GETS IT OUT AGAIN.  SEE NOTE 2 BELOW.
+// "STONUM(N)" stores away the number N as a list object and "GETNUM(X)"
+// gets it out again.  see NOTE 2 below.
 LIST 	STONUM(WORD N);
 WORD	GETNUM(LIST X);
 
-// "MKATOM(S)" CREATES AN ATOM FROM BCPL STRING S  - ATOMS ARE STORED
-// UNIQUELY, MKATOM USES A HASHING ALGORITHM TO ACCOMPLISH THIS 
-// EFFICIENTLY.  "PRINTNAME(X)" RECOVERS THE BCPL STRING. THERE IS A LIST
-// VALUED FIELD "VAL!A" ASSOCIATED WITH EACH ATOM A, INITIALLY 
-// CONTAINING "NIL".
+// "MKATOM(S)" creates an atom from BCPL string S  - atoms are stored
+// uniquely, MKATOM uses a hashing algorithm to accomplish this 
+// efficiently.  "PRINTNAME(X)" recovers the BCPL string. there is a list
+// valued field "VAL!A" associated with each atom A, initially 
+// containing "NIL".
 ATOM 	MKATOM(char *s);
 ATOM 	MKATOMN(char *s, int len);
 
-// "BUFCH(CH)" PUTS THE CHARACTER CH INTO A BUFFER, "PACKBUFFER()"
-// EMPTIES THE BUFFER AND RETURNS AN ATOM FORMED FROM THE CHARACTERS
-// WHICH HAD BEEN PLACED IN IT(BY CALLING "MKATOM")
+// "BUFCH(CH)" puts the character ch into a buffer, "PACKBUFFER()"
+// empties the buffer and returns an atom formed from the characters
+// which had been placed in it(by calling "MKATOM")
 void	BUFCH(WORD CH);
 ATOM	PACKBUFFER(void);
 
-// THE FUNCTIONS "ISCONS(X)", "ISATOM(X)", "ISNUM(X)" DISTINGUISH
-// THE THREE DIFFERENT KINDS OF CONSTRUCTED LIST OBJECT.
-// NOTE THAT THE SPECIAL OBJECT "NIL" IS NEITHER AN ATOM NOR A LIST.
-// (SO REMEMBER THAT "NIL" HAS NO PRINTNAME AND NO "VAL" FIELD.)
-// THERE IS A FIFTH KIND OF VALUE WHICH CAN BE STORED IN A LIST FIELD
-// NAMELY A SMALL INTEGER (WHERE "SMALL" IS AN IMPLEMENTATION DEPENDENT
-// ADJECTIVE MEANING SMALL ENOUGH NOT TO BE CONFUSED WITH ONE OF THE
-// THREE ABOVE MENTIONED TYPES OF LIST OBJECT - SEE NOTE 3, BELOW).
+// the functions "ISCONS(X)", "ISATOM(X)", "ISNUM(X)" distinguish
+// the three different kinds of constructed list object.
+// note that the special object "NIL" is neither an atom nor a list.
+// (so remember that "NIL" has no printname and no "VAL" field.)
+// there is a fifth kind of value which can be stored in a list field
+// namely a small integer (where "small" is an implementation dependent
+// adjective meaning small enough not to be confused with one of the
+// three above mentioned types of list object - see NOTE 3, below).
 WORD	ISCONS(LIST X);
 WORD	ISATOM(LIST X);
 WORD	ISNUM(LIST X);
 
-// "ALFA.LS(A,B)" TESTS ATOMS FOR ALPHABETICAL ORDER
-// "LENGTH(X)" GIVES THE LENGTH OF LIST X
-// "MEMBER(X,A)" SAYS IF "A" IS = AN ELEMENT OF X
-// "APPEND(X,Y)" APPENDS (A COPY OF) LIST X TO THE FRONT OF LIST Y
-// "EQUAL(X,Y)" DETERMINES IF LIST OBJECTS X AND Y ARE ISOMORPHIC
-// "ELEM(X,N)" RETURNS THE N'TH ELEMENT OF LIST X
-// "PRINTOB(X)" PRINTS AN ARBITRARY LIST OBJECT X
-// "FORCE.GC()" FORCES A GARBAGE COLLECTION
-// "REVERSE(X)" REVERSES THE LIST X
-// "SHUNT(X,Y)" APPENDS REVERSE(X) TO THE LIST Y
-// "SUB1(X,A)" REMOVES A FROM THE LIST X (DESTRUCTIVELY) IF PRESENT
+// "ALFA.LS(A,B)" tests atoms for alphabetical order
+// "LENGTH(X)" gives the length of list X
+// "MEMBER(X,A)" says if "A" is = an element of X
+// "APPEND(X,Y)" appends (a copy of) list X to the front of list Y
+// "EQUAL(X,Y)" determines if list objects X and Y are isomorphic
+// "ELEM(X,N)" returns the n'th element of list X
+// "PRINTOB(X)" prints an arbitrary list object X
+// "FORCE.GC()" forces a garbage collection
+// "REVERSE(X)" reverses the list X
+// "SHUNT(X,Y)" appends REVERSE(X) to the list Y
+// "SUB1(X,A)" removes A from the list X (destructively) if present
 BOOL	ALFA_LS(ATOM A, ATOM B);
 WORD	LENGTH(LIST X);
 WORD	MEMBER(LIST X, LIST A);
@@ -142,19 +143,19 @@ LIST 	REVERSE(LIST X);
 LIST 	SHUNT(LIST X, LIST Y);
 LIST 	SUB1(LIST X, ATOM A);
 
-// NOTES FOR 2960/EMAS IMPLEMENTATION AT UKC:
+// NOTES for 2960/EMAS implementation at UKC:
 
 // NOTE 1
-// AT GARBAGE COLLECTION TIME THE BCPL STACK IS SEARCHED AND ANY VALUE
-// WITHIN THE ADDRESS RANGE OF LIST OBJECTS IS TREATED AS A BASE AND 
-// POSSIBLY RELOCATED.  IT IS THEREFORE ESSENTIAL THAT THERE SHOULD BE
-// NO INTEGERS ON THE STACK LARGE ENOUGH TO BE CONFUSED WITH A BCPL
-// ADDRESS - INTEGERS LESS THAN 8 MEG ARE SAFE.
+// at garbage collection time the bcpl stack is searched and any value
+// within the address range of list objects is treated as a base and 
+// possibly relocated.  it is therefore essential that there should be
+// no integers on the stack large enough to be confused with a BCPL
+// address - integers less than 8 meg are safe.
 
 // NOTE 2
-// THE NUMBERS STORED AND RECOVERED BY MKNUM AND GETNUM ARE 32 BIT 
-// INTEGERS - TAKE CARE NOT TO LEAVE THEM ON THE STACK.
+// the numbers stored and recovered by mknum and getnum are 32 bit 
+// integers - take care not to leave them on the stack.
 
 // NOTE 3
-// "SMALL" HERE MEANS LESS THAN 8 MEG
+// "small" here means less than 8 meg
 

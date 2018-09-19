@@ -1,4 +1,4 @@
-//KRC COMPILER HEADER FILE
+// KRC compiler header file
 
 //----------------------------------------------------------------------
 //The KRC system is Copyright (c) D. A. Turner 1981
@@ -6,7 +6,7 @@
 //terms in the file "COPYING", which is included in the distribution.
 //----------------------------------------------------------------------
 
-//LEX ANALYSER MANIFESTS
+// lex analyser manifests
 #define TOKEN LIST	// in-core tokens can be CONSes
 #define	IDENT		(TOKEN)0
 #define	CONST		(TOKEN)1
@@ -23,52 +23,60 @@
 #define STARSTAR_SY     (TOKEN)265
 #define ENDSTREAMCH     (TOKEN)EOF //-1
 
-//LEX ANALYSER GLOBALS
-extern LIST	TOKENS, THE_CONST;              // BASES
-extern ATOM	THE_ID;                         // BASES
-extern WORD	THE_NUM, THE_DECIMALS;		// DECIMALS are never used
+// lex analyser globals
+
+// bases
+extern LIST	TOKENS, THE_CONST;
+
+// bases
+extern ATOM	THE_ID;
+
+// DECIMALS are never used
+extern WORD	THE_NUM, THE_DECIMALS;
+
 extern WORD	EXPFLAG, ERRORFLAG, EQNFLAG;
 extern TOKEN	MISSEDTOK;
 extern WORD caseconv(WORD CH);
 extern WORD	COMMENTFLAG;
-// SUPPRESSPROMPTS();  //EMAS COMMAND
+// SUPPRESSPROMPTS();  // EMAS command
 extern LIST	FILECOMMANDS;
 extern BOOL	LEGACY;
 extern void	writetoken(TOKEN T);
 
-// KRC EXPRESSION REPRESENTATIONS
-// THE INTERNAL REPRESENTATIONS OF EXPRESSIONS IS AS FOLLOWS
+// KRC expression representations
+// the internal representations of expressions is as follows
 // EXP::= ID|CONST|APPLN|OTHER
 // ID::= ATOM
 // CONST::= NUM|CONS(QUOTE,ATOM)|NIL
 // APPLN::= CONS(EXP,EXP)
 // OTHER::= CONS(OPERATOR,OPERANDS)
-// NOTE THAT THE INTERNAL FORM OF ZF EXESSIONS IS CONS(ZF_OP,BODY) :-
+// note that the internal form of ZF exessions is CONS(ZF_OP,BODY) :-
 //  BODY::= CONS(EXP,NIL) | CONS(QUALIFIER,BODY)
 //  QUALIFIER::= EXP | CONS(GENERATOR,CONS(ID,EXP))
 
-// OPERATOR VALUES:
+// operator values:
 typedef enum {
-   // QUASI OPERATORS
+   // quasi operators
    ALPHA=-2, INDIR=-1, QUOTE=0,
-   // INFIX OPERATORS
+   // infix operators
    COLON_OP=1, APPEND_OP=2, LISTDIFF_OP=3, OR_OP=4, AND_OP=5,
-      // SUBGROUP: RELATIONAL OPERATORS
+      // subgroup: relational operators
       GR_OP=6, GE_OP=7, NE_OP=8, EQ_OP=9, LE_OP=10, LS_OP=11,
    PLUS_OP=12,MINUS_OP=13,TIMES_OP=14,DIV_OP=15,REM_OP=16,
    EXP_OP=17,DOT_OP=18,
-   // OTHER OPERATORS
+   // other operators
    DOTDOT_OP=19, COMMADOTDOT_OP=20, ZF_OP=21, GENERATOR=22,
    LENGTH_OP=23, NEG_OP=24, NOT_OP=25,
-   QUOTE_OP=26    //USED TO CONVERT AN INFIX INTO A FUNCTION 
+   QUOTE_OP=26
+   // used to convert an infix into a function 
 } OPERATOR;
 
-//INTERNAL REPRESENTATION OF KRC EQUATIONS
-//VAL FIELD OF ATOM ::= CONS(CONS(NARGS,COMMENT),LISTOF(EQN))
+// internal representation of KRC equations
+// VAL FIELD OF ATOM ::= CONS(CONS(NARGS,COMMENT),LISTOF(EQN))
 // COMMENT ::= NIL | CONS(ATOM,COMMENT)
 // EQN ::= CONS(LHS,CODE)
-//(IF NARGS=0 THERE IS ONLY ONE EQUATION IN THE LIST AND ITS LHS FIELD
-// IS USED TO REMEMBER THE VALUE OF THE VARIABLE)
+//(if NARGS=0 there is only one equation in the list and its lhs field
+// is used to remember the value of the variable)
 // LHS ::= ID | CONS(LHS,FORMAL)
 // FORMAL ::= ID | CONST | CONS(COLON_OP,CONS(FORMAL,FORMAL))
 // CODE ::= INSTR*
@@ -88,18 +96,18 @@ typedef enum {
 //           FORMZF_C INT|
 //           CALL_C BCPL_FN
 
-//INSTRUCTION CODES
+// instruction codes
 typedef enum {
        LOAD_C=0, LOADARG_C=1, APPLY_C=2, APPLYINFIX_C=3,
        IF_C=4, FORMLIST_C=5, MATCH_C=6, MATCHARG_C=7,
        MATCHPAIR_C=8, STOP_C=9, LINENO_C=10, CALL_C=11,
        CONTINUE_INFIX_C=12, FORMZF_C=13, CONT_GENERATOR_C=14,
-       //THE LINENO COMMAND HAS NO EFFECT AT EXECUTION TIME, IT IS USED
-       //TO GIVE AN EQUATION A NON STANDARD LINE NUMBER FOR INSERTION 
-       //PURPOSES
+       // the lineno command has no effect at execution time, it is used
+       // to give an equation a non standard line number for insertion 
+       // purposes
 } INSTRUCTION;
 
-//EXTERNAL SYNTAX FOR KRC EXPRESSIONS AND EQUATIONS
+// external syntax for KRC expressions and equations
 // EQUATION ::= LHS=EXP | LHS=EXP,EXP
 // LHS ::= ID FORMAL*
 // FORMAL ::= ID | CONST | (PATTERN) | [PATTERN-LIST?]
@@ -111,9 +119,9 @@ typedef enum {
 // QUALIFIER ::= EXP | NAME-LIST<-EXP
 // CONST ::= INT | "STRING"
 
-// PREFIX AND INFIX OPERATORS, IN ORDER OF INCREASING BINDING POWER:
+// prefix and infix operators, in order of increasing binding power:
 
-//    (PREFIX)               (INFIX)            (REMARKS)
+//    (prefix)               (infix)            (remarks)
 //                          :  ++  --           right associative
 //                             |
 //                             &
@@ -126,9 +134,9 @@ typedef enum {
 //      #
 //Notes - "%" is remainder operator, "." is functional composition and "#" takes the length of lists
 
-//COMPILER GLOBALS
+// compiler globals
 
-// DEFINED IN KRC_LEX
+// defined in lex.c
 extern void	readline(void);
 extern BOOL	have(TOKEN);
 extern WORD	haveid(void);
@@ -138,7 +146,7 @@ extern WORD	haveconst(void);
 extern WORD	havenum(void);
 extern void	syntax_error(char *);
 
-// DEFINED IN KRC_COMPILER
+// defined in compiler.c
 extern void INIT_CODEV(void);
 extern LIST EQUATION(void);
 extern LIST PROFILE(LIST);
@@ -150,12 +158,14 @@ extern void DISPLAY(ATOM ID, BOOL WITHNOS, BOOL DOUBLESPACING);
 extern void DISPLAYEQN(ATOM ID, WORD NARGS, LIST EQN);
 extern void DISPLAYRHS(LIST LHS,WORD NARGS, LIST CODE);
 
-//DEFINED IN KRC_REDUCER
+// defined in reducer.c
 extern void PRINTATOM(ATOM A, WORD FORMAT);
 
-//OTHERS
+// others
 extern void (*TRUEWRCH)(WORD C);
-extern LIST TRUTH, FALSITY, INFINITY, LASTLHS;     //BASES
+
+// bases
+extern LIST TRUTH, FALSITY, INFINITY, LASTLHS;
 
 // GC helpers
 extern void COMPILER_BASES(void (*F)(LIST *));

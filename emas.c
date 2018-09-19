@@ -1,6 +1,6 @@
 // EMAS emulation stubs
 
-// ON EMAS PROMPTS REMAIN IN EFFECT UNTIL CANCELLED
+// on EMAS prompts remain in effect until cancelled
 char *emas_PROMPT = "";
 
 // The extra character gobbled up at the end of a call to READN()

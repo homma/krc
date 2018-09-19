@@ -36,16 +36,17 @@ FILE *bcpl_FINDOUTPUT(char *file) {
 }
 
 // EMAS's READN() gobbles up the following character
-// and deposits it in a global variable TERMINATOR. So we do the same.
+// and deposits it in a global variable TERMINATOR.
+// so we do the same.
 
 // KRC only needs positive numbers, and an initial digit is guaranteed,
 WORD bcpl_READN() {
   WORD D = 0;
-  int CH = RDCH();
+  int CH = (*_RDCH)();
 
   while (isdigit(CH)) {
     D = D * 10 + (CH - '0');
-    CH = RDCH();
+    CH = (*_RDCH)();
   }
 
   TERMINATOR = CH;
