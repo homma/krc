@@ -57,11 +57,11 @@ LIST LASTLHS = NIL;
 LIST TRUTH, FALSITY, INFINITY;
 
 // SETUP_INFIXES() - interesting elements start at [1]
-// The indices correspond to the OPERATOR values in comphdr.h
+// the indices correspond to the OPERATOR values in comphdr.h
+// EQ_SY was (TOKEN)'=', changed DT May 2015
 static TOKEN INFIXNAMEVEC[] = {
     (TOKEN)0,   (TOKEN)':', PLUSPLUS_SY, DASHDASH_SY, (TOKEN)'|',
-    (TOKEN)'&', (TOKEN)'>', GE_SY,       NE_SY,
-    EQ_SY, // WAS (TOKEN) '=', CHANGED DT MAY 2015
+    (TOKEN)'&', (TOKEN)'>', GE_SY,       NE_SY,       EQ_SY,
     LE_SY,      (TOKEN)'<', (TOKEN)'+',  (TOKEN)'-',  (TOKEN)'*',
     (TOKEN)'/', (TOKEN)'%', STARSTAR_SY, (TOKEN)'.',
 };
@@ -115,7 +115,7 @@ static OPERATOR MKINFIX(TOKEN T) {
   return I;
 }
 
-// n is the priority level
+// N is the priority level
 void PRINTEXP(LIST E, WORD N) {
   if (E == NIL) {
     bcpl_WRITES("[]");
@@ -142,7 +142,7 @@ void PRINTEXP(LIST E, WORD N) {
       return;
     }
     {
-      // maybe could be OPERATOR
+      // maybe could be operator
       LIST OP = HD(E);
       if (!ISOP(OP) && N <= 7) {
         PRINTEXP(OP, 7);
