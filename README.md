@@ -41,6 +41,7 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 - remove old comments
 - add comments
 - implement test cases
+- remove `(!(`
 
 ### Long Term
 - add where clause
