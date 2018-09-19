@@ -2,9 +2,7 @@
 #include "comphdr.h"
 #include "redhdr.h"
 #include "revision"
-#ifdef LINENOISE
 #include "linenoise.h"
-#endif
 
 //----------------------------------------------------------------------
 // The KRC system is Copyright (c) D. A. Turner 1981
@@ -684,7 +682,7 @@ static void HELPCOM() {
 
 static void COMMAND() {
   static char prompt[] = "krc> ";
-#ifdef LINENOISE
+
   char *line = linenoise(QUIET ? "" : prompt);
 
   if (line && line[0] == '\0') {
@@ -705,22 +703,7 @@ static void COMMAND() {
     linenoiseHistoryAdd(line);
     free(line);
   }
-#else
-  if (!QUIET) {
-    // on EMAS prompts remain in effect until cancelled
-    PROMPT(prompt);
-  }
-  readline();
 
-  if (have(EOL)) {
-    // ignore blank lines
-    return;
-  }
-
-  // cancel prompt (in case command reads data)
-  SUPPRESSPROMPTS();
-
-#endif
   if (have((TOKEN)EOF)) {
 
     SIGNOFF = TRUE;

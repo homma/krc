@@ -10,6 +10,7 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 - renamed bcpl to iolib
 - replaced BOOL with bool and stdbool.h (experimental)
 - removed emas.c emas.h
+- removed emas prompt (we always use linenoise)
 
 ### 2018.09.19
 - replaced BCPL related macros with their C equivalents

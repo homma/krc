@@ -25,9 +25,6 @@ HEAPSIZE?=128000		# Default heap size if unspecified
 # NOT saved by setjmp/longjmp, so the garbage collector fails to update
 # its contents, causing heap corruption.
 
-# delete "-DLINENOISE" to remove line editing and command history,
-# reduces code size from 75K to 63K
-
 CFLAGS+=-g -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
 	-O2 -fno-omit-frame-pointer \
  	-DLINENOISE \

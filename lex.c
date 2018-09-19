@@ -40,9 +40,9 @@ static TOKEN MISSING;
 
 // reads the next line into "TOKENS"
 void readline() {
+
   do {
     LIST *P = &TOKENS;
-    bcpl_WRITES(emas_PROMPT);
     TOKEN T = 0;
     MISSING = 0;
     TOKENS = NIL;
@@ -238,7 +238,6 @@ static TOKEN readtoken(void) {
       LIST SUBJECT = TL(HD(TOKENS));
       COMMENTFLAG = 1;
 
-      // SUPPRESSPROMPTS(); FIXME
       CH = (*_RDCH)();
 
       // ignore blank lines

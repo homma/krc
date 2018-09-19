@@ -43,7 +43,6 @@ extern WORD EXPFLAG, ERRORFLAG, EQNFLAG;
 extern TOKEN MISSEDTOK;
 extern WORD caseconv(WORD CH);
 extern WORD COMMENTFLAG;
-// SUPPRESSPROMPTS();  // EMAS command
 extern LIST FILECOMMANDS;
 extern BOOL LEGACY;
 extern void writetoken(TOKEN T);
