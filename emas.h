@@ -5,8 +5,8 @@ extern char *emas_PROMPT;
 // the character gobbled after a READN()
 extern int TERMINATOR;
 
-#define PROMPT(S)         emas_PROMPT=S
-#define SUPPRESSPROMPTS() emas_PROMPT=""
+#define PROMPT(S) emas_PROMPT = S
+#define SUPPRESSPROMPTS() emas_PROMPT = ""
 
 // other stuff;
 //

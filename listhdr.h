@@ -1,9 +1,9 @@
 // HEADER FOR LIST  PROCESSING  PACKAGE    DAT 23/11/79
 
 //----------------------------------------------------------------------
-//The KRC system is Copyright (c) D. A. Turner 1981
-//All  rights reserved.  It is distributed as free software under the
-//terms in the file "COPYING", which is included in the distribution.
+// The KRC system is Copyright (c) D. A. Turner 1981
+// All  rights reserved.  It is distributed as free software under the
+// terms in the file "COPYING", which is included in the distribution.
 //----------------------------------------------------------------------
 
 #include "bcpl.h"
@@ -13,9 +13,9 @@
 
 /* An element in LIST space */
 typedef struct LIST {
-	struct LIST *hd;
-	struct LIST *tl;
-} *LIST;
+  struct LIST *hd;
+  struct LIST *tl;
+} * LIST;
 
 // HD can contain:
 // - the memory address of another cell in the CONS space
@@ -23,7 +23,7 @@ typedef struct LIST {
 // - improbable pointer values of HD() for special values:
 //   FULLWORD (see above) or GONETO (see listpack.c)
 //#define NIL ((LIST)0) //causes problems
-#define NIL ((LIST)0x40000000) //from oldbcpl/listhdr, may need changing
+#define NIL ((LIST)0x40000000) // from oldbcpl/listhdr, may need changing
 #ifdef INSTRUMENT_KRC_GC
 extern LIST ISOKCONS(LIST);
 #define HD(p) (ISOKCONS(p)->hd)
@@ -33,13 +33,12 @@ extern LIST ISOKCONS(LIST);
 #define TL(p) ((p)->tl)
 #endif
 
-
 /* An element in ATOM space */
 typedef struct ATOM {
-	struct ATOM *link;
-	struct LIST *val;
-	char        name[];
-} *ATOM;
+  struct ATOM *link;
+  struct LIST *val;
+  char name[];
+} * ATOM;
 // link points to the next item in the linked list of values,
 //	or has value 0 if it is the end of this list.
 // val  points to the item's value in the CONS space.
@@ -47,23 +46,22 @@ typedef struct ATOM {
 // name is a combined BCPL- and C-like string, i.e. the length in the
 //	first byte, then the string itself followed by a nul character.
 #define LINK(p) ((p)->link)
-#define  VAL(p) ((p)->val)
+#define VAL(p) ((p)->val)
 #define NAME(p) ((p)->name)
-#define LEN(p) ((p)->name[0]&0xff)
-#define OFFSET 2	// Offset of "name" field in pointer words
+#define LEN(p) ((p)->name[0] & 0xff)
+#define OFFSET 2 // Offset of "name" field in pointer words
 
-#define atomsize (sizeof(struct ATOM)) //unit of allocation for ATOMSPACE
+#define atomsize (sizeof(struct ATOM)) // unit of allocation for ATOMSPACE
 
 // The C string version of the name
-#define PRINTNAME(X) (NAME(X)+1)
+#define PRINTNAME(X) (NAME(X) + 1)
 
-WORD	HAVEPARAM(WORD CH);
+WORD HAVEPARAM(WORD CH);
 extern int ARGC;
 extern char **ARGV;
-//for picking up system parameters passed to program
+// for picking up system parameters passed to program
 
 extern BOOL ATGC;
-
 
 // PACKAGE SPECIFICATIONS:
 
@@ -84,26 +82,26 @@ extern void SPACE_ERROR(char *MESSAGE);
 
 // "CONS(X,Y)" creates a list cell, Z say, with X and Y for its fields
 // and "HD!Z", "TL!Z" give access to the fields
-LIST	CONS(LIST X, LIST Y);
+LIST CONS(LIST X, LIST Y);
 
 // "STONUM(N)" stores away the number N as a list object and "GETNUM(X)"
 // gets it out again.  see NOTE 2 below.
-LIST 	STONUM(WORD N);
-WORD	GETNUM(LIST X);
+LIST STONUM(WORD N);
+WORD GETNUM(LIST X);
 
 // "MKATOM(S)" creates an atom from BCPL string S  - atoms are stored
-// uniquely, MKATOM uses a hashing algorithm to accomplish this 
+// uniquely, MKATOM uses a hashing algorithm to accomplish this
 // efficiently.  "PRINTNAME(X)" recovers the BCPL string. there is a list
-// valued field "VAL!A" associated with each atom A, initially 
+// valued field "VAL!A" associated with each atom A, initially
 // containing "NIL".
-ATOM 	MKATOM(char *s);
-ATOM 	MKATOMN(char *s, int len);
+ATOM MKATOM(char *s);
+ATOM MKATOMN(char *s, int len);
 
 // "BUFCH(CH)" puts the character ch into a buffer, "PACKBUFFER()"
 // empties the buffer and returns an atom formed from the characters
 // which had been placed in it(by calling "MKATOM")
-void	BUFCH(WORD CH);
-ATOM	PACKBUFFER(void);
+void BUFCH(WORD CH);
+ATOM PACKBUFFER(void);
 
 // the functions "ISCONS(X)", "ISATOM(X)", "ISNUM(X)" distinguish
 // the three different kinds of constructed list object.
@@ -113,9 +111,9 @@ ATOM	PACKBUFFER(void);
 // namely a small integer (where "small" is an implementation dependent
 // adjective meaning small enough not to be confused with one of the
 // three above mentioned types of list object - see NOTE 3, below).
-WORD	ISCONS(LIST X);
-WORD	ISATOM(LIST X);
-WORD	ISNUM(LIST X);
+WORD ISCONS(LIST X);
+WORD ISATOM(LIST X);
+WORD ISNUM(LIST X);
 
 // "ALFA.LS(A,B)" tests atoms for alphabetical order
 // "LENGTH(X)" gives the length of list X
@@ -128,34 +126,33 @@ WORD	ISNUM(LIST X);
 // "REVERSE(X)" reverses the list X
 // "SHUNT(X,Y)" appends REVERSE(X) to the list Y
 // "SUB1(X,A)" removes A from the list X (destructively) if present
-BOOL	ALFA_LS(ATOM A, ATOM B);
-WORD	LENGTH(LIST X);
-WORD	MEMBER(LIST X, LIST A);
-LIST 	APPEND(LIST X, LIST Y);
-WORD	EQUAL(LIST X, LIST Y);
-LIST 	ELEM(LIST X, WORD N);
-void	PRINTOB(LIST X);
-void	RESETGCSTATS(void);
-void	FORCE_GC(void);
-void	REPORTDIC(void);
-void	LISTPM(void);
-LIST 	REVERSE(LIST X);
-LIST 	SHUNT(LIST X, LIST Y);
-LIST 	SUB1(LIST X, ATOM A);
+BOOL ALFA_LS(ATOM A, ATOM B);
+WORD LENGTH(LIST X);
+WORD MEMBER(LIST X, LIST A);
+LIST APPEND(LIST X, LIST Y);
+WORD EQUAL(LIST X, LIST Y);
+LIST ELEM(LIST X, WORD N);
+void PRINTOB(LIST X);
+void RESETGCSTATS(void);
+void FORCE_GC(void);
+void REPORTDIC(void);
+void LISTPM(void);
+LIST REVERSE(LIST X);
+LIST SHUNT(LIST X, LIST Y);
+LIST SUB1(LIST X, ATOM A);
 
 // NOTES for 2960/EMAS implementation at UKC:
 
 // NOTE 1
 // at garbage collection time the bcpl stack is searched and any value
-// within the address range of list objects is treated as a base and 
+// within the address range of list objects is treated as a base and
 // possibly relocated.  it is therefore essential that there should be
 // no integers on the stack large enough to be confused with a BCPL
 // address - integers less than 8 meg are safe.
 
 // NOTE 2
-// the numbers stored and recovered by mknum and getnum are 32 bit 
+// the numbers stored and recovered by mknum and getnum are 32 bit
 // integers - take care not to leave them on the stack.
 
 // NOTE 3
 // "small" here means less than 8 meg
-

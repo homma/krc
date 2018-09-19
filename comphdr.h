@@ -1,47 +1,52 @@
 // KRC compiler header file
 
 //----------------------------------------------------------------------
-//The KRC system is Copyright (c) D. A. Turner 1981
-//All  rights reserved.  It is distributed as free software under the
-//terms in the file "COPYING", which is included in the distribution.
+// The KRC system is Copyright (c) D. A. Turner 1981
+// All  rights reserved.  It is distributed as free software under the
+// terms in the file "COPYING", which is included in the distribution.
 //----------------------------------------------------------------------
 
 // lex analyser manifests
-#define TOKEN LIST	// in-core tokens can be CONSes
-#define	IDENT		(TOKEN)0
-#define	CONST		(TOKEN)1
-#define	EOL		(TOKEN)'\n'
-#define	BADTOKEN 	(TOKEN)256
-#define	PLUSPLUS_SY	(TOKEN)257
-#define	GE_SY		(TOKEN)258
-#define	LE_SY		(TOKEN)259
-#define	NE_SY		(TOKEN)260
-#define EQ_SY           (TOKEN)261
-#define DOTDOT_SY       (TOKEN)262
-#define BACKARROW_SY    (TOKEN)263
-#define DASHDASH_SY     (TOKEN)264
-#define STARSTAR_SY     (TOKEN)265
-#define ENDSTREAMCH     (TOKEN)EOF //-1
+
+// in-core tokens can be CONSes
+#define TOKEN LIST
+
+#define IDENT (TOKEN)0
+#define CONST (TOKEN)1
+#define EOL (TOKEN)'\n'
+#define BADTOKEN (TOKEN)256
+#define PLUSPLUS_SY (TOKEN)257
+#define GE_SY (TOKEN)258
+#define LE_SY (TOKEN)259
+#define NE_SY (TOKEN)260
+#define EQ_SY (TOKEN)261
+#define DOTDOT_SY (TOKEN)262
+#define BACKARROW_SY (TOKEN)263
+#define DASHDASH_SY (TOKEN)264
+#define STARSTAR_SY (TOKEN)265
+
+//-1
+#define ENDSTREAMCH (TOKEN) EOF
 
 // lex analyser globals
 
 // bases
-extern LIST	TOKENS, THE_CONST;
+extern LIST TOKENS, THE_CONST;
 
 // bases
-extern ATOM	THE_ID;
+extern ATOM THE_ID;
 
 // DECIMALS are never used
-extern WORD	THE_NUM, THE_DECIMALS;
+extern WORD THE_NUM, THE_DECIMALS;
 
-extern WORD	EXPFLAG, ERRORFLAG, EQNFLAG;
-extern TOKEN	MISSEDTOK;
+extern WORD EXPFLAG, ERRORFLAG, EQNFLAG;
+extern TOKEN MISSEDTOK;
 extern WORD caseconv(WORD CH);
-extern WORD	COMMENTFLAG;
+extern WORD COMMENTFLAG;
 // SUPPRESSPROMPTS();  // EMAS command
-extern LIST	FILECOMMANDS;
-extern BOOL	LEGACY;
-extern void	writetoken(TOKEN T);
+extern LIST FILECOMMANDS;
+extern BOOL LEGACY;
+extern void writetoken(TOKEN T);
 
 // KRC expression representations
 // the internal representations of expressions is as follows
@@ -56,19 +61,40 @@ extern void	writetoken(TOKEN T);
 
 // operator values:
 typedef enum {
-   // quasi operators
-   ALPHA=-2, INDIR=-1, QUOTE=0,
-   // infix operators
-   COLON_OP=1, APPEND_OP=2, LISTDIFF_OP=3, OR_OP=4, AND_OP=5,
-      // subgroup: relational operators
-      GR_OP=6, GE_OP=7, NE_OP=8, EQ_OP=9, LE_OP=10, LS_OP=11,
-   PLUS_OP=12,MINUS_OP=13,TIMES_OP=14,DIV_OP=15,REM_OP=16,
-   EXP_OP=17,DOT_OP=18,
-   // other operators
-   DOTDOT_OP=19, COMMADOTDOT_OP=20, ZF_OP=21, GENERATOR=22,
-   LENGTH_OP=23, NEG_OP=24, NOT_OP=25,
-   QUOTE_OP=26
-   // used to convert an infix into a function 
+  // quasi operators
+  ALPHA = -2,
+  INDIR = -1,
+  QUOTE = 0,
+  // infix operators
+  COLON_OP = 1,
+  APPEND_OP = 2,
+  LISTDIFF_OP = 3,
+  OR_OP = 4,
+  AND_OP = 5,
+  // subgroup: relational operators
+  GR_OP = 6,
+  GE_OP = 7,
+  NE_OP = 8,
+  EQ_OP = 9,
+  LE_OP = 10,
+  LS_OP = 11,
+  PLUS_OP = 12,
+  MINUS_OP = 13,
+  TIMES_OP = 14,
+  DIV_OP = 15,
+  REM_OP = 16,
+  EXP_OP = 17,
+  DOT_OP = 18,
+  // other operators
+  DOTDOT_OP = 19,
+  COMMADOTDOT_OP = 20,
+  ZF_OP = 21,
+  GENERATOR = 22,
+  LENGTH_OP = 23,
+  NEG_OP = 24,
+  NOT_OP = 25,
+  QUOTE_OP = 26
+  // used to convert an infix into a function
 } OPERATOR;
 
 // internal representation of KRC equations
@@ -98,13 +124,24 @@ typedef enum {
 
 // instruction codes
 typedef enum {
-       LOAD_C=0, LOADARG_C=1, APPLY_C=2, APPLYINFIX_C=3,
-       IF_C=4, FORMLIST_C=5, MATCH_C=6, MATCHARG_C=7,
-       MATCHPAIR_C=8, STOP_C=9, LINENO_C=10, CALL_C=11,
-       CONTINUE_INFIX_C=12, FORMZF_C=13, CONT_GENERATOR_C=14,
-       // the lineno command has no effect at execution time, it is used
-       // to give an equation a non standard line number for insertion 
-       // purposes
+  LOAD_C = 0,
+  LOADARG_C = 1,
+  APPLY_C = 2,
+  APPLYINFIX_C = 3,
+  IF_C = 4,
+  FORMLIST_C = 5,
+  MATCH_C = 6,
+  MATCHARG_C = 7,
+  MATCHPAIR_C = 8,
+  STOP_C = 9,
+  LINENO_C = 10,
+  CALL_C = 11,
+  CONTINUE_INFIX_C = 12,
+  FORMZF_C = 13,
+  CONT_GENERATOR_C = 14,
+  // the lineno command has no effect at execution time, it is used
+  // to give an equation a non standard line number for insertion
+  // purposes
 } INSTRUCTION;
 
 // external syntax for KRC expressions and equations
@@ -128,23 +165,24 @@ typedef enum {
 //      \
 //                     >  >=  ==  \=  <=  <     continued relations allowed
 //                            +  -              left associative
-//      -      
-//                          *  /  %             left associative 
+//      -
+//                          *  /  %             left associative
 //                           **  .              (** is right associative)
 //      #
-//Notes - "%" is remainder operator, "." is functional composition and "#" takes the length of lists
+// Notes - "%" is remainder operator, "." is functional composition and "#"
+// takes the length of lists
 
 // compiler globals
 
 // defined in lex.c
-extern void	readline(void);
-extern BOOL	have(TOKEN);
-extern WORD	haveid(void);
-extern void	syntax(void);
-extern void	check(TOKEN);
-extern WORD	haveconst(void);
-extern WORD	havenum(void);
-extern void	syntax_error(char *);
+extern void readline(void);
+extern BOOL have(TOKEN);
+extern WORD haveid(void);
+extern void syntax(void);
+extern void check(TOKEN);
+extern WORD haveconst(void);
+extern WORD havenum(void);
+extern void syntax_error(char *);
 
 // defined in compiler.c
 extern void INIT_CODEV(void);
@@ -156,7 +194,7 @@ extern void REMOVELINENO(LIST);
 extern WORD ISID(LIST);
 extern void DISPLAY(ATOM ID, BOOL WITHNOS, BOOL DOUBLESPACING);
 extern void DISPLAYEQN(ATOM ID, WORD NARGS, LIST EQN);
-extern void DISPLAYRHS(LIST LHS,WORD NARGS, LIST CODE);
+extern void DISPLAYRHS(LIST LHS, WORD NARGS, LIST CODE);
 
 // defined in reducer.c
 extern void PRINTATOM(ATOM A, WORD FORMAT);

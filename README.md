@@ -14,7 +14,7 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 
 ## Source Code Formatting
 ````
-$ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i <FILE>
+$ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 ````
 ## Plan
 
