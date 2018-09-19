@@ -11,6 +11,9 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 - replaced BOOL with bool and stdbool.h (experimental)
 - removed emas.c emas.h
 
+### 2018.09.19
+- replaced BCPL related macros with their C equivalents
+
 ### 2018.09.15
 
 - Ported to macOS
