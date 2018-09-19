@@ -48,4 +48,5 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 
 ### Done
 - port to macOS
+- apply formatter to all source files
 
