@@ -22,7 +22,6 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 - make it looks like a plain C software
 - remove BCPL dependency completely
 - CAPITAL LETTER to small letter
-- replace BOOL with bool and stdbool.h
 - rename listpack to listlib
 - separate main() from listlib
 - separate commands into their own file
@@ -45,8 +44,9 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 - add type system
 
 ### Done
-- port to macOS
-- apply formatter to all source files
-- replace long long with int64_t with stdint.h
-- rename bcpl to iolib
+- ported to macOS
+- applied formatter to all source files
+- replaced long long with int64_t with stdint.h
+- renamed bcpl to iolib
+- replaced BOOL with bool and stdbool.h (experimental)
 

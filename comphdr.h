@@ -191,13 +191,13 @@ extern LIST PROFILE(LIST);
 extern void PRINTEXP(LIST, WORD);
 extern LIST EXP(void);
 extern void REMOVELINENO(LIST);
-extern WORD ISID(LIST);
+extern BOOL ISID(LIST);
 extern void DISPLAY(ATOM ID, BOOL WITHNOS, BOOL DOUBLESPACING);
 extern void DISPLAYEQN(ATOM ID, WORD NARGS, LIST EQN);
 extern void DISPLAYRHS(LIST LHS, WORD NARGS, LIST CODE);
 
 // defined in reducer.c
-extern void PRINTATOM(ATOM A, WORD FORMAT);
+extern void PRINTATOM(ATOM A, BOOL FORMAT);
 
 // others
 extern void (*TRUEWRCH)(WORD C);

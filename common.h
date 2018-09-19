@@ -8,11 +8,11 @@
 
 #if __WORDSIZE == 64
 
-// Type for machine words, used for all integer variables.
+// type for machine words, used for all integer variables.
 // 64-bit value.
 typedef int64_t WORD;
 
-// Printf/scanf format to use with WORDs
+// printf/scanf format to use with WORDs
 #define W PRId64
 
 #else
@@ -30,10 +30,17 @@ typedef int WORD;
 # error "KRC is broken when compiled with GCC 4.9. Earlier GCCs, clang and TinyC work.".
 #endif
 
+//// bool replaced from WORD to bool
+
 // bool
-typedef WORD BOOL;
-#define FALSE 0
-#define TRUE 1
+// typedef WORD BOOL;
+// #define FALSE 0
+// #define TRUE 1
+
+#include <stdbool.h>
+typedef bool BOOL;
+#define TRUE true
+#define FALSE false
 
 #define COMMON_H
 #endif

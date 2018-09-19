@@ -72,7 +72,8 @@ static char PARAMV[256];
 // global variables owned by main.c
 
 // set by -z option
-WORD LEGACY = FALSE;
+// WORD LEGACY = FALSE;
+bool LEGACY = FALSE;
 
 LIST FILECOMMANDS = NIL;
 
