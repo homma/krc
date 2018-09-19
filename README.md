@@ -35,6 +35,7 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 - fix command line options
 - remove old comments
 - add comments
+- implement test cases
 
 ### Long Term
 - add where clause
