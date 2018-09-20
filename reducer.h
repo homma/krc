@@ -1,15 +1,14 @@
-// global function declarations
-void SETUP_PRIMFNS_ETC(void);
-void PRINTVAL(LIST E, bool FORMAT);
-LIST BUILDEXP(LIST CODE);
 
 // global functions in reducer
+void setup_primfns_etc(void);
+void printval(LIST E, bool FORMAT);
+LIST buildexp(LIST CODE);
 void init_argspace(void);
 void ESCAPETONEXTCOMMAND();
-void INITSTATS();
-void OUTSTATS();
-void FIXUP_S(void);
-char *SCASECONV(char *S);
+void initstats();
+void outstats();
+void fixup_s(void);
+char *scaseconv(char *S);
 
 // global functions in main
 void CLOSECHANNELS();

@@ -196,7 +196,7 @@ extern void displayeqn(ATOM ID, word NARGS, LIST EQN);
 extern void displayrhs(LIST LHS, word NARGS, LIST CODE);
 
 // defined in reducer.c
-extern void PRINTATOM(ATOM A, bool FORMAT);
+extern void printatom(ATOM A, bool FORMAT);
 
 // others
 extern void (*TRUEWRCH)(word C);
@@ -204,6 +204,9 @@ extern void (*TRUEWRCH)(word C);
 // bases
 extern LIST TRUTH, FALSITY, INFINITY, LASTLHS;
 
-// GC helpers
-extern void COMPILER_BASES(void (*F)(LIST *));
-extern void REDUCER_BASES(void (*F)(LIST *));
+//// GC helpers
+// defined in compiler.c
+extern void compiler_bases(void (*F)(LIST *));
+
+// defined in reducer.c
+extern void reducer_bases(void (*F)(LIST *));

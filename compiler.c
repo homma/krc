@@ -149,7 +149,7 @@ void printexp(LIST E, word N) {
         (*_WRCH)(' ');
         printexp(TL(E), 8);
       } else if (OP == (LIST)QUOTE) {
-        PRINTATOM((ATOM)TL(E), true);
+        printatom((ATOM)TL(E), true);
       } else if (OP == (LIST)INDIR || OP == (LIST)ALPHA) {
         printexp(TL(E), N);
       } else if (OP == (LIST)DOTDOT_OP || OP == (LIST)COMMADOTDOT_OP) {
@@ -1057,7 +1057,7 @@ static LIST collectcode() {
 
 // mark elements in CODEV and ENV for preservation by the GC.
 // this routine should be called by your BASES() function.
-void COMPILER_BASES(void (*F)(LIST *)) {
+void compiler_bases(void (*F)(LIST *)) {
   word I;
 
   F(&CODEV);

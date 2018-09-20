@@ -109,7 +109,7 @@ static void CATCHINTERRUPT(int signum) {
   }
 
   // in case interrupt struck while reduce was dissecting a constant
-  FIXUP_S();
+  fixup_s();
 
   _WRCH = TRUEWRCH;
   CLOSECHANNELS();
@@ -155,7 +155,7 @@ void ESCAPETONEXTCOMMAND() {
 
   if (EVALUATING) {
     if (ATCOUNT) {
-      OUTSTATS();
+      outstats();
     }
 
     // in case some pointers have been left reversed
@@ -310,7 +310,7 @@ static void INITIALISE() {
     QUIET = true;
   }
 
-  SETUP_PRIMFNS_ETC();
+  setup_primfns_etc();
 
   for (I = 1; I < ARGC; I++) {
 
@@ -495,8 +495,8 @@ void BASES(void (*F)(LIST *)) {
   F(&TRUTH);
   F(&FALSITY);
   F(&INFINITY);
-  COMPILER_BASES(F);
-  REDUCER_BASES(F);
+  compiler_bases(F);
+  reducer_bases(F);
 }
 
 static void SETUP_COMMANDS() {
@@ -685,7 +685,7 @@ static void COMMAND() {
       LIST P = COMMANDS;
 
       if (haveid()) {
-        THE_ID = MKATOM(SCASECONV(PRINTNAME(THE_ID)));
+        THE_ID = MKATOM(scaseconv(PRINTNAME(THE_ID)));
         // always accept commands in either case
       } else {
         P = NIL;
@@ -1489,16 +1489,16 @@ static void EVALUATION() {
     (*_WRCH)('\n');
   }
 
-  E = BUILDEXP(CODE);
+  E = buildexp(CODE);
 
   if (ATCOUNT) {
     RESETGCSTATS();
   }
 
-  INITSTATS();
+  initstats();
   EVALUATING = true;
   FORMATTING = CH == '?';
-  PRINTVAL(E, FORMATTING);
+  printval(E, FORMATTING);
 
   if (FORMATTING) {
     (*_WRCH)('\n');
@@ -1508,7 +1508,7 @@ static void EVALUATION() {
   EVALUATING = false;
 
   if (ATCOUNT) {
-    OUTSTATS();
+    outstats();
   }
 }
 
