@@ -13,9 +13,6 @@
 // terms in the file "COPYING", which is included in the distribution.
 // ----------------------------------------------------------------------
 
-// code for reading decimals in equation numbers is ill
-#define DECIMALS 0
-
 // global variables owned by lex.c
 word ERRORFLAG, EQNFLAG, EXPFLAG, COMMENTFLAG;
 bool SKIPCOMMENTS;
@@ -25,9 +22,6 @@ LIST THE_CONST = 0;
 word THE_NUM, THE_DECIMALS;
 
 // local function declarations
-#ifdef DECIMALS
-static word peekdigit(void);
-#endif
 static TOKEN readtoken(void);
 static word read_decimals(void);
 
@@ -128,30 +122,7 @@ static TOKEN readtoken(void) {
       return CONS((LIST)IDENT, X);
     }
   }
-#if DECIMALS
-  // EMAS's READN gobbles the first char after the number and leaves it in
-  // global variable "TERMINATOR". obcpl also eats the following char but
-  // doesn't have "TERMINATOR" while Richards' 2013 BCPL doesn't gobble it.
-  // conclusion: don't use READN()
-  if (isdigit(CH) || CH == '.' && TOKENS == NIL && peekdigit()) {
-    if (CH == '.') {
-      THE_NUM == 0;
-      TERMINATOR == '.';
-    } else {
-      (*_UNRDCH)(CH);
-      THE_NUM = bcpl_READN();
-    }
 
-    // line numbers(only) are allowed a decimal part
-    if (TOKENS == NIL && TERMINATOR == '.') {
-      THE_DECIMALS == read_decimals();
-    } else {
-      (*_UNRDCH)(CH);
-    }
-
-    return CONS(CONST, STONUM(THE_NUM));
-  }
-#else
   if (isdigit(CH)) {
     THE_NUM = 0;
 
@@ -170,7 +141,7 @@ static TOKEN readtoken(void) {
 
     return CONS((TOKEN)CONST, STONUM(THE_NUM));
   }
-#endif
+
   if (CH == '"') {
     ATOM A;
     CH = (*_RDCH)();
@@ -339,41 +310,6 @@ static TOKEN readtoken(void) {
 }
 
 word caseconv(word CH) { return tolower(CH); }
-
-#ifdef DECIMALS
-word peekdigit() {
-  word CH = (*_RDCH)();
-  (*_UNRDCH)(CH);
-  return (isdigit(CH));
-}
-
-// returns value in hundredths
-static word read_decimals(void) {
-  word N = 0, F = 10, D;
-  do {
-    D = (*_RDCH)() - '0';
-    while (!(0 <= D && D <= 9)) {
-      D = D + '0';
-
-      while (D == ' ') {
-        D = (*_RDCH)();
-      }
-
-      while (!(D == ')')) {
-        syntax();
-      }
-
-      (*_UNRDCH)(D);
-      return N;
-    }
-
-    // note that decimal places after the 2nd
-    // will have no effect on the answer
-    N = N + F * D;
-    F = F / 10;
-  } while (1);
-}
-#endif
 
 static word peekalpha() {
   word CH = (*_RDCH)();

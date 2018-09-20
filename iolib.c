@@ -6,9 +6,6 @@
 #include <ctype.h>  // for isdigit()
 #include <string.h> // for strcmp()
 
-// The extra character gobbled up at the end of a call to READN()
-int TERMINATOR;
-
 // which file descriptors should BCPL's input and output use?
 // we use (FILE *)0 as a synonym for stdin / stdout since
 // we can't initialise statically because stdin and stdout
@@ -36,25 +33,6 @@ FILE *bcpl_FINDOUTPUT(char *file) {
   }
 
   return fopen(file, "w");
-}
-
-// EMAS's READN() gobbles up the following character
-// and deposits it in a global variable TERMINATOR.
-// so we do the same.
-
-// KRC only needs positive numbers, and an initial digit is guaranteed,
-word bcpl_READN() {
-  word D = 0;
-  int CH = (*_RDCH)();
-
-  while (isdigit(CH)) {
-    D = D * 10 + (CH - '0');
-    CH = (*_RDCH)();
-  }
-
-  TERMINATOR = CH;
-
-  return D;
 }
 
 // the character that has been UNRDCH-ed. -1 means none are pending.

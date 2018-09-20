@@ -7,6 +7,7 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 ### 2018.09.21
 - replaced `WORD` with `word`
   - I did not choose to use `word_t` or `sword_t`
+- removed unused code : `DECIMALS`, `READN`, `TERMINATOR`
 
 ### 2018.09.20
 - applied formatter to all source files

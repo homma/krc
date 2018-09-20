@@ -12,7 +12,6 @@ extern FILE *bcpl_OUTPUT_fp;
 #define bcpl_OUTPUT (bcpl_OUTPUT_fp ? bcpl_OUTPUT_fp : stdout)
 extern FILE *bcpl_FINDINPUT(char *file);
 extern FILE *bcpl_FINDOUTPUT(char *file);
-extern word bcpl_READN(void);
 
 // RDCH/UNRDCH and WRCH need to be redirectable
 extern int bcpl_RDCH(void);
@@ -28,9 +27,6 @@ extern void (*_WRCH)(word D);
 // output functions must go through WRCH
 extern void bcpl_WRITES(char *s);
 extern void bcpl_WRITEN(word N);
-
-// the character gobbled after a READN()
-extern int TERMINATOR;
 
 // other stuff;
 //
