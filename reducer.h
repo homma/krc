@@ -18,8 +18,8 @@ void ENTERSCRIPT(ATOM A);
 
 // global variables in reducer
 extern LIST MEMORIES;
-extern WORD LISTBASE;
-extern WORD ABORTED;
+extern word LISTBASE;
+extern word ABORTED;
 
 // ----------------------------------------------------------------------
 // The KRC system is Copyright (c) D. A. Turner 1981

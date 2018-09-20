@@ -11,15 +11,15 @@
 
 // type for machine words, used for all integer variables.
 // 64-bit value.
-typedef int64_t WORD;
+typedef int64_t word;
 
-// printf/scanf format to use with WORDs
+// printf/scanf format to use with words
 #define W PRId64
 
 #else
 
 // 32-bit value.
-typedef int WORD;
+typedef int word;
 #define W "d"
 
 #endif

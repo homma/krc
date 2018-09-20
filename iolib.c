@@ -43,8 +43,8 @@ FILE *bcpl_FINDOUTPUT(char *file) {
 // so we do the same.
 
 // KRC only needs positive numbers, and an initial digit is guaranteed,
-WORD bcpl_READN() {
-  WORD D = 0;
+word bcpl_READN() {
+  word D = 0;
   int CH = (*_RDCH)();
 
   while (isdigit(CH)) {
@@ -91,7 +91,7 @@ int echo_RDCH() {
 int bcpl_UNRDCH(int c) { return (UNREADCH = c & 0xff); }
 
 // the standard function for WRCH(c)
-void bcpl_WRCH(WORD C) { putc(C, bcpl_OUTPUT); }
+void bcpl_WRCH(word C) { putc(C, bcpl_OUTPUT); }
 
 // _RDCH and _WRCH are the function pointers used to perform
 // RDCH() and WRCH() and may be modified to attain special effects.
@@ -101,7 +101,7 @@ void bcpl_WRCH(WORD C) { putc(C, bcpl_OUTPUT); }
 
 int (*_RDCH)() = bcpl_RDCH;
 int (*_UNRDCH)(int) = bcpl_UNRDCH;
-void (*_WRCH)(WORD C) = bcpl_WRCH;
+void (*_WRCH)(word C) = bcpl_WRCH;
 
 // other output functions must go through WRCH so that
 // callers may redirect it to some other function.
@@ -113,7 +113,7 @@ void bcpl_WRITES(char *s) {
 }
 
 // helper function writes positive integers
-static void bcpl_WRITEP(WORD n) {
+static void bcpl_WRITEP(word n) {
 
   if (n / 10) {
     bcpl_WRITEP(n / 10);
@@ -122,7 +122,7 @@ static void bcpl_WRITEP(WORD n) {
   (*_WRCH)(n % 10 + '0');
 }
 
-void bcpl_WRITEN(WORD n) {
+void bcpl_WRITEN(word n) {
 
   if (n < 0) {
     (*_WRCH)('-');

@@ -22,7 +22,7 @@ typedef struct LIST {
 // - the memory address of another cell in the CONS space
 // - the memory address of a cell in the ATOM space
 // - improbable pointer values of HD() for special values:
-//   FULLWORD (see above) or GONETO (see listlib.c)
+//   FULLword (see above) or GONETO (see listlib.c)
 //#define NIL ((LIST)0) //causes problems
 
 // from oldbcpl/listhdr, may need changing
@@ -60,7 +60,7 @@ typedef struct ATOM {
 // The C string version of the name
 #define PRINTNAME(X) (NAME(X) + 1)
 
-WORD HAVEPARAM(WORD CH);
+word HAVEPARAM(word CH);
 extern int ARGC;
 extern char **ARGV;
 // for picking up system parameters passed to program
@@ -90,8 +90,8 @@ LIST CONS(LIST X, LIST Y);
 
 // "STONUM(N)" stores away the number N as a list object and "GETNUM(X)"
 // gets it out again.  see NOTE 2 below.
-LIST STONUM(WORD N);
-WORD GETNUM(LIST X);
+LIST STONUM(word N);
+word GETNUM(LIST X);
 
 // "MKATOM(S)" creates an atom from BCPL string S  - atoms are stored
 // uniquely, MKATOM uses a hashing algorithm to accomplish this
@@ -104,7 +104,7 @@ ATOM MKATOMN(char *s, int len);
 // "BUFCH(CH)" puts the character ch into a buffer, "PACKBUFFER()"
 // empties the buffer and returns an atom formed from the characters
 // which had been placed in it(by calling "MKATOM")
-void BUFCH(WORD CH);
+void BUFCH(word CH);
 ATOM PACKBUFFER(void);
 
 // the functions "ISCONS(X)", "ISATOM(X)", "ISNUM(X)" distinguish
@@ -115,9 +115,9 @@ ATOM PACKBUFFER(void);
 // namely a small integer (where "small" is an implementation dependent
 // adjective meaning small enough not to be confused with one of the
 // three above mentioned types of list object - see NOTE 3, below).
-WORD ISCONS(LIST X);
-WORD ISATOM(LIST X);
-WORD ISNUM(LIST X);
+word ISCONS(LIST X);
+word ISATOM(LIST X);
+word ISNUM(LIST X);
 
 // "ALFA.LS(A,B)" tests atoms for alphabetical order
 // "LENGTH(X)" gives the length of list X
@@ -131,11 +131,11 @@ WORD ISNUM(LIST X);
 // "SHUNT(X,Y)" appends REVERSE(X) to the list Y
 // "SUB1(X,A)" removes A from the list X (destructively) if present
 bool ALFA_LS(ATOM A, ATOM B);
-WORD LENGTH(LIST X);
-WORD MEMBER(LIST X, LIST A);
+word LENGTH(LIST X);
+word MEMBER(LIST X, LIST A);
 LIST APPEND(LIST X, LIST Y);
-WORD EQUAL(LIST X, LIST Y);
-LIST ELEM(LIST X, WORD N);
+word EQUAL(LIST X, LIST Y);
+LIST ELEM(LIST X, word N);
 void PRINTOB(LIST X);
 void RESETGCSTATS(void);
 void FORCE_GC(void);

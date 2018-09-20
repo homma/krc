@@ -17,12 +17,12 @@
 
 // global variables owned by reducer
 LIST MEMORIES = NIL;
-WORD REDS;
+word REDS;
 
 // base for list indexing
-WORD LISTBASE = 0;
+word LISTBASE = 0;
 
-WORD ABORTED = false;
+word ABORTED = false;
 
 static ATOM ETC, SILLYNESS, GUARD, LISTDIFF, BADFILE, READFN, WRITEFN,
     INTERLEAVEFN;
@@ -95,7 +95,7 @@ static bool BINDS(LIST FORMAL, LIST X);
 // DT 2015
 static void SHOWCH(unsigned char c);
 
-static void R(char *S, void (*F)(LIST), WORD N) {
+static void R(char *S, void (*F)(LIST), word N) {
   ATOM A = MKATOM(S);
   LIST EQN = CONS((LIST)A, CONS((LIST)CALL_C, (LIST)F));
 
@@ -446,7 +446,7 @@ static void OBEY(LIST EQNS, LIST E) {
 
     LIST CODE = TL(HD(EQNS));
     LIST *HOLDARG = ARGP;
-    WORD I;
+    word I;
 
     // decode loop
     do {
@@ -454,7 +454,7 @@ static void OBEY(LIST EQNS, LIST E) {
       CODE = TL(CODE);
 
       // first, check the only cases that increment ARGP
-      switch ((WORD)H) {
+      switch ((word)H) {
       case LOAD_C:
       case LOADARG_C:
       case FORMLIST_C:
@@ -464,7 +464,7 @@ static void OBEY(LIST EQNS, LIST E) {
         }
       }
 
-      switch ((WORD)H) {
+      switch ((word)H) {
       case LOAD_C:
         // ARGP=ARGP+1;
         *ARGP = HD(CODE);
@@ -475,7 +475,7 @@ static void OBEY(LIST EQNS, LIST E) {
         if (ARGP > ARGMAX) {
           SPACE_ERROR("Arg stack overflow");
         }
-        *ARGP = ARG[(WORD)(HD(CODE))];
+        *ARGP = ARG[(word)(HD(CODE))];
         CODE = TL(CODE);
         break;
       case APPLYINFIX_C:
@@ -506,33 +506,33 @@ static void OBEY(LIST EQNS, LIST E) {
       case FORMLIST_C:
         // ARGP=ARGP+1;
         *ARGP = NIL;
-        for (I = 1; I <= (WORD)HD(CODE); I++) {
+        for (I = 1; I <= (word)HD(CODE); I++) {
           ARGP = ARGP - 1;
           *ARGP = CONS((LIST)COLON_OP, CONS(*ARGP, *(ARGP + 1)));
         }
         CODE = TL(CODE);
         break;
       case FORMZF_C: {
-        LIST X = CONS(*(ARGP - (WORD)HD(CODE)), NIL);
+        LIST X = CONS(*(ARGP - (word)HD(CODE)), NIL);
         LIST *P;
-        for (P = ARGP; P >= ARGP - (WORD)HD(CODE) + 1; P = P - 1) {
+        for (P = ARGP; P >= ARGP - (word)HD(CODE) + 1; P = P - 1) {
           X = CONS(*P, X);
         }
 
-        ARGP = ARGP - (WORD)HD(CODE);
+        ARGP = ARGP - (word)HD(CODE);
         *ARGP = CONS((LIST)ZF_OP, X);
         CODE = TL(CODE);
         break;
       }
       case CONT_GENERATOR_C:
-        for (I = 1; I <= (WORD)HD(CODE); I++) {
+        for (I = 1; I <= (word)HD(CODE); I++) {
           *(ARGP - I) = CONS((LIST)GENERATOR, CONS(*(ARGP - I), TL(TL(*ARGP))));
         }
 
         CODE = TL(CODE);
         break;
       case MATCH_C: {
-        WORD I = (WORD)HD(CODE);
+        word I = (word)HD(CODE);
         CODE = TL(CODE);
 
         if (!(EQUALVAL(ARG[I], HD(CODE)))) {
@@ -543,10 +543,10 @@ static void OBEY(LIST EQNS, LIST E) {
         break;
       }
       case MATCHARG_C: {
-        WORD I = (WORD)HD(CODE);
+        word I = (word)HD(CODE);
         CODE = TL(CODE);
 
-        if (!(EQUALVAL(ARG[I], ARG[(WORD)(HD(CODE))]))) {
+        if (!(EQUALVAL(ARG[I], ARG[(word)(HD(CODE))]))) {
           goto BREAK_DECODE_LOOP;
         }
 
@@ -554,7 +554,7 @@ static void OBEY(LIST EQNS, LIST E) {
         break;
       }
       case MATCHPAIR_C: {
-        LIST *P = ARG + (WORD)(HD(CODE));
+        LIST *P = ARG + (word)(HD(CODE));
         *P = REDUCE(*P);
 
         if (!(ISCONS(*P) && HD(*P) == (LIST)COLON_OP)) {
@@ -628,8 +628,8 @@ static void CHAR(LIST E) {
               : FALSITY;
 }
 
-static WORD COUNT;
-static void COUNTCH(WORD CH) { COUNT = COUNT + 1; }
+static word COUNT;
+static void COUNTCH(word CH) { COUNT = COUNT + 1; }
 
 static void SIZE(LIST E) {
   COUNT = 0;
@@ -653,18 +653,18 @@ static void CODE(LIST E) {
       BADEXP(E);
     }
 
-    HD(E) = (LIST)INDIR, TL(E) = STONUM((WORD)NAME(A)[1] & 0xff);
+    HD(E) = (LIST)INDIR, TL(E) = STONUM((word)NAME(A)[1] & 0xff);
   }
 }
 
 static void DECODE(LIST E) {
   *ARG = REDUCE(*ARG);
 
-  if (!(ISNUM(*ARG) && 0 <= (WORD)TL(*ARG) && (WORD)TL(*ARG) <= 255)) {
+  if (!(ISNUM(*ARG) && 0 <= (word)TL(*ARG) && (word)TL(*ARG) <= 255)) {
     BADEXP(E);
   }
 
-  BUFCH((WORD)TL(*ARG));
+  BUFCH((word)TL(*ARG));
   HD(E) = (LIST)INDIR, TL(E) = CONS((LIST)QUOTE, (LIST)PACKBUFFER());
 }
 
@@ -765,7 +765,7 @@ static void READ(LIST E) {
 
   {
     LIST *X = &(TL(E));
-    WORD C = (*_RDCH)();
+    word C = (*_RDCH)();
 
     // read one character
     if (C != EOF) {
@@ -803,10 +803,10 @@ static void SEQ(LIST E) {
 // HEAD:= NAME | NUM | NIL | OPERATOR
 
 static LIST REDUCE(LIST E) {
-  static WORD M = 0;
-  static WORD N = 0;
+  static word M = 0;
+  static word N = 0;
   LIST HOLD_S = S;
-  WORD NARGS = 0;
+  word NARGS = 0;
   LIST *HOLDARG = ARG;
 
   // if ( &E>STACKLIMIT ) SPACE_ERROR("Arg stack overflow");
@@ -859,7 +859,7 @@ static LIST REDUCE(LIST E) {
           // function
 
           // hides the static N
-          WORD N = (WORD)HD(HD(VAL((ATOM)E)));
+          word N = (word)HD(HD(VAL((ATOM)E)));
 
           if (N > NARGS) {
             // not enough ARGS
@@ -869,7 +869,7 @@ static LIST REDUCE(LIST E) {
           {
             LIST EQNS = TL(VAL((ATOM)E));
 
-            WORD I;
+            word I;
             for (I = 0; I <= N - 1; I++) {
 
               // move back up GRAPH,
@@ -900,7 +900,7 @@ static LIST REDUCE(LIST E) {
 
     } else {
       // operators
-      switch ((WORD)E) {
+      switch ((word)E) {
       case QUOTE:
         if (!(NARGS == 1)) {
           HOLDARG = (LIST *)-1;
@@ -942,7 +942,7 @@ static LIST REDUCE(LIST E) {
           LIST HOLD = HD(S);
 
           // hides static M
-          WORD M;
+          word M;
 
           HD(S) = (LIST)COLON_OP, E = S, S = HOLD;
           TL(S) = REDUCE(TL(S));
@@ -1074,7 +1074,7 @@ static LIST REDUCE(LIST E) {
         // The values of M and N when STRINGS == true
         ATOM SM, SN;
 
-        if ((WORD)E >= LENGTH_OP) {
+        if ((word)E >= LENGTH_OP) {
           // monadic
           A = REDUCE(TL(S));
         } else {
@@ -1113,7 +1113,7 @@ static LIST REDUCE(LIST E) {
             B = TL(TL(S));
           }
         }
-        switch ((WORD)E) {
+        switch ((word)E) {
         case AND_OP:
           if (A == FALSITY) {
             E = A;
@@ -1158,9 +1158,9 @@ static LIST REDUCE(LIST E) {
           continue;
         case COMMADOTDOT_OP: {
           // reduce clobbers M,N
-          WORD M1 = M, N1 = N;
+          word M1 = M, N1 = N;
           LIST C = REDUCE(TL(TL(TL(S))));
-          static WORD P = 0;
+          static word P = 0;
 
           if (ISNUM(C)) {
             P = GETNUM(C);
@@ -1196,7 +1196,7 @@ static LIST REDUCE(LIST E) {
           E = STONUM(-GETNUM(A));
           break;
         case LENGTH_OP: {
-          WORD L = 0;
+          word L = 0;
 
           while (ISCONS(A) && HD(A) == (LIST)COLON_OP) {
             A = REDUCE(TL(TL(A))), L = L + 1;
@@ -1209,7 +1209,7 @@ static LIST REDUCE(LIST E) {
           BADEXP(CONS((LIST)COLON_OP, CONS((LIST)ETC, A)));
         }
         case PLUS_OP: {
-          WORD X = M + N;
+          word X = M + N;
           if ((M > 0 && N > 0 && X <= 0) || (M < 0 && N < 0 && X >= 0) ||
               (X == -X && X != 0)) {
             // This checks for -(2**31)
@@ -1219,7 +1219,7 @@ static LIST REDUCE(LIST E) {
           break;
         }
         case MINUS_OP: {
-          WORD X = M - N;
+          word X = M - N;
 
           if ((M < 0 && N > 0 && X > 0) || (M > 0 && N < 0 && X < 0) ||
               (X == -X && X != 0)) {
@@ -1230,7 +1230,7 @@ static LIST REDUCE(LIST E) {
           break;
         }
         case TIMES_OP: {
-          WORD X = M * N;
+          word X = M * N;
 
           // may not catch all cases
           if ((M > 0 && N > 0 && X <= 0) || (M < 0 && N < 0 && X <= 0) ||
@@ -1262,9 +1262,9 @@ static LIST REDUCE(LIST E) {
           }
 
           {
-            WORD P = 1;
+            word P = 1;
             while (!(N == 0)) {
-              WORD X = P * M;
+              word X = P * M;
 
               // may not catch all cases
               if ((M > 0 && P > 0 && X <= 0) || (M < 0 && P < 0 && X <= 0) ||

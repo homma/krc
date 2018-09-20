@@ -17,22 +17,22 @@
 #define DECIMALS 0
 
 // global variables owned by lex.c
-WORD ERRORFLAG, EQNFLAG, EXPFLAG, COMMENTFLAG;
+word ERRORFLAG, EQNFLAG, EXPFLAG, COMMENTFLAG;
 bool SKIPCOMMENTS;
 LIST TOKENS = 0;
 ATOM THE_ID = 0;
 LIST THE_CONST = 0;
-WORD THE_NUM, THE_DECIMALS;
+word THE_NUM, THE_DECIMALS;
 
 // local function declarations
 #ifdef DECIMALS
-static WORD peekdigit(void);
+static word peekdigit(void);
 #endif
 static TOKEN readtoken(void);
-static WORD read_decimals(void);
+static word read_decimals(void);
 
 // returns value in hundredths
-static WORD peekalpha(void);
+static word peekalpha(void);
 
 // local variables
 static bool EXPECTFILE = false;
@@ -92,7 +92,7 @@ void readline() {
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
 //|CONS(IDENT, ATOM) | CONS(CONST, <ATOM | NUM >)
 static TOKEN readtoken(void) {
-  WORD CH = (*_RDCH)();
+  word CH = (*_RDCH)();
 
   while ((CH == ' ' || CH == '\t'))
     CH = (*_RDCH)();
@@ -231,7 +231,7 @@ static TOKEN readtoken(void) {
     return CH != '"' ? (TOKEN)BADTOKEN : CONS(CONST, (LIST)A);
   }
   {
-    WORD CH2 = (*_RDCH)();
+    word CH2 = (*_RDCH)();
     if (CH == ':' && CH2 == '-' && TOKENS != NIL && ISCONS(HD(TOKENS)) &&
         HD(HD(TOKENS)) == IDENT && TL(TOKENS) == NIL) {
       LIST C = NIL;
@@ -338,18 +338,18 @@ static TOKEN readtoken(void) {
   }
 }
 
-WORD caseconv(WORD CH) { return tolower(CH); }
+word caseconv(word CH) { return tolower(CH); }
 
 #ifdef DECIMALS
-WORD peekdigit() {
-  WORD CH = (*_RDCH)();
+word peekdigit() {
+  word CH = (*_RDCH)();
   (*_UNRDCH)(CH);
   return (isdigit(CH));
 }
 
 // returns value in hundredths
-static WORD read_decimals(void) {
-  WORD N = 0, F = 10, D;
+static word read_decimals(void) {
+  word N = 0, F = 10, D;
   do {
     D = (*_RDCH)() - '0';
     while (!(0 <= D && D <= 9)) {
@@ -375,45 +375,45 @@ static WORD read_decimals(void) {
 }
 #endif
 
-static WORD peekalpha() {
-  WORD CH = (*_RDCH)();
+static word peekalpha() {
+  word CH = (*_RDCH)();
   (*_UNRDCH)(CH);
   return (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z'));
 }
 
 void writetoken(TOKEN T) {
   if (T < (TOKEN)256 && T > (TOKEN)32) {
-    (*_WRCH)((WORD)T);
+    (*_WRCH)((word)T);
   } else {
-    switch ((WORD)T) {
-    case (WORD)'\n':
+    switch ((word)T) {
+    case (word)'\n':
       bcpl_WRITES("newline");
       break;
-    case (WORD)PLUSPLUS_SY:
+    case (word)PLUSPLUS_SY:
       bcpl_WRITES("++");
       break;
-    case (WORD)DASHDASH_SY:
+    case (word)DASHDASH_SY:
       bcpl_WRITES("--");
       break;
-    case (WORD)STARSTAR_SY:
+    case (word)STARSTAR_SY:
       bcpl_WRITES("**");
       break;
-    case (WORD)GE_SY:
+    case (word)GE_SY:
       bcpl_WRITES(">=");
       break;
-    case (WORD)LE_SY:
+    case (word)LE_SY:
       bcpl_WRITES("<=");
       break;
-    case (WORD)NE_SY:
+    case (word)NE_SY:
       bcpl_WRITES("\\=");
       break;
-    case (WORD)EQ_SY:
+    case (word)EQ_SY:
       bcpl_WRITES("==");
       break;
-    case (WORD)BACKARROW_SY:
+    case (word)BACKARROW_SY:
       bcpl_WRITES("<-");
       break;
-    case (WORD)DOTDOT_SY:
+    case (word)DOTDOT_SY:
       bcpl_WRITES("..");
       break;
     default:
@@ -453,7 +453,7 @@ void check(TOKEN T) {
 
 void syntax() { ERRORFLAG = true; }
 
-WORD haveid() {
+word haveid() {
   while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
     return false;
   }
@@ -464,7 +464,7 @@ WORD haveid() {
   return true;
 }
 
-WORD haveconst() {
+word haveconst() {
   while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
     return false;
   }
@@ -475,7 +475,7 @@ WORD haveconst() {
   return true;
 }
 
-WORD havenum() {
+word havenum() {
   while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == CONST &&
            ISNUM(TL(HD(TOKENS))))) {
     return false;

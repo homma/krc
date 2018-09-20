@@ -34,14 +34,14 @@ static int DICMAX = 64000;
 // because their names are also stored there
 static int ATOMSPACE;
 
-// MAX NO OF CHARS IN AN ATOM
+// max no of chars in an ATOM
 #define ATOMSIZE 255
 
 // Non-pointer value for the HD of an entry in CONS space,
 // indicating that it is an integer, stored in the TL field.
-#define FULLWORD (NIL - 1)
+#define FULLword (NIL - 1)
 
-// Impossible value of pointer or integer used as flag during GC.
+// impossible value of pointer or integer used as flag during GC.
 // just top bit set
 #define GONETO ((LIST)(1ULL << (sizeof(LIST) * 8 - 1)))
 
@@ -51,19 +51,19 @@ static LIST *STACKBASE;
 // static struct ATOM *ATOMBASE;
 static ATOM ATOMBASE;
 static ATOM ATOMP, ATOMLIMIT;
-static WORD NOGCS = 0, RECLAIMS = 0;
+static word NOGCS = 0, RECLAIMS = 0;
 bool ATGC;
 char *USERLIB;
 
 #ifdef INSTRUMENT_KRC_GC
-// ARE WE CURRENTLY IN THE GARBAGE COLLECTOR?
+// are we currently in the garbage collector?
 bool COLLECTING = false;
 #endif
 
 static ATOM HASHV[128];
 
 static char BUFFER[ATOMSIZE + 1];
-static WORD BUFP = 0;
+static word BUFP = 0;
 
 int ARGC;
 
@@ -71,7 +71,7 @@ int ARGC;
 char **ARGV;
 
 // Forward declarations
-static WORD HASH(char *S, int LEN);
+static word HASH(char *S, int LEN);
 static void GC(void);
 static void COPY(LIST *P);
 static void COPYHEADS(void);
@@ -220,8 +220,8 @@ void main2() {
   GO();
 }
 
-WORD HAVEPARAM(WORD CH) {
-  WORD I;
+word HAVEPARAM(word CH) {
+  word I;
   CH = toupper(CH);
   for (I = 1; I < ARGC; I++)
     if (ARGV[I][0] == '-' && toupper(ARGV[I][1]) == toupper(CH)) {
@@ -305,7 +305,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   BASES(COPY);
   SHOW("bases");
   {
-    WORD I;
+    word I;
     for (I = 0; I < 128; I++) {
       // val fields of atoms
       ATOM A = HASHV[I];
@@ -392,7 +392,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   // cons space on the stack.
   if (ATGC) {
     bcpl_WRITES("<");
-    bcpl_WRITEN((WORD)(CONSP - CONSBASE));
+    bcpl_WRITEN((word)(CONSP - CONSBASE));
     bcpl_WRITES(" cells in use>\n");
   }
 #endif
@@ -427,7 +427,7 @@ static void COPY(LIST *P) {
     *P = Z;
     HD(Z) = X, TL(Z) = Y;
     CONSP = CONSP + 1;
-    if (X == FULLWORD) {
+    if (X == FULLword) {
       return;
     }
     P = &(TL(Z));
@@ -442,7 +442,7 @@ static void COPYHEADS() {
   }
 }
 
-WORD ISCONS(LIST X)
+word ISCONS(LIST X)
 #ifdef INSTRUMENT_KRC_GC
 {
   if (CONSBASE <= X && X < CONSLIMIT) {
@@ -450,19 +450,19 @@ WORD ISCONS(LIST X)
       fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in ISCONS\n", X);
       return false;
     }
-    return HD(X) != FULLWORD;
+    return HD(X) != FULLword;
   }
   return false;
 }
 #else
 {
-  return CONSBASE <= X && X < CONSLIMIT ? HD(X) != FULLWORD : false;
+  return CONSBASE <= X && X < CONSLIMIT ? HD(X) != FULLword : false;
 }
 #endif
 
-WORD ISATOM(LIST X) { return ATOMBASE <= (ATOM)X && (ATOM)X < ATOMP; }
+word ISATOM(LIST X) { return ATOMBASE <= (ATOM)X && (ATOM)X < ATOMP; }
 
-WORD ISNUM(LIST X)
+word ISNUM(LIST X)
 #ifdef INSTRUMENT_KRC_GC
 {
   if (CONSBASE <= X && X < CONSLIMIT) {
@@ -470,21 +470,21 @@ WORD ISNUM(LIST X)
       fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in ISNUM\n", X);
       return false;
     }
-    return HD(X) == FULLWORD;
+    return HD(X) == FULLword;
   }
   return false;
 }
 #else
 {
-  return CONSBASE <= X && X < CONSLIMIT ? HD(X) == FULLWORD : false;
+  return CONSBASE <= X && X < CONSLIMIT ? HD(X) == FULLword : false;
 }
 #endif
 
 // GCC warning expected
-LIST STONUM(WORD N) { return CONS(FULLWORD, (LIST)N); }
+LIST STONUM(word N) { return CONS(FULLword, (LIST)N); }
 
 // GCC warning expected
-WORD GETNUM(LIST X) { return (WORD)(TL(X)); }
+word GETNUM(LIST X) { return (word)(TL(X)); }
 
 // make an ATOM from a C string
 ATOM MKATOM(char *S) { return MKATOMN(S, strlen(S)); }
@@ -494,7 +494,7 @@ ATOM MKATOMN(char *S, int LEN) {
   ATOM *BUCKET = &(HASHV[HASH(S, LEN)]);
   ATOM *P = BUCKET;
   // N is size of string counted as the number of pointers it occupies
-  WORD N;
+  word N;
 
   // SEARCH THE APPROPRIATE BUCKET
   while (!(*P == 0)) {
@@ -506,8 +506,8 @@ ATOM MKATOMN(char *S, int LEN) {
 
   // CREATE NEW ATOM
   // +1 for the BCPL size, +1 for the \0, then round up to element size
-  N = (1 + LEN + 1 + (sizeof(WORD *)) - 1) / sizeof(WORD *);
-  if ((WORD **)ATOMP + OFFSET + N > (WORD **)ATOMLIMIT) {
+  N = (1 + LEN + 1 + (sizeof(word *)) - 1) / sizeof(word *);
+  if ((word **)ATOMP + OFFSET + N > (word **)ATOMLIMIT) {
     bcpl_WRITES("<string space exhausted>\n");
     exit(0);
   }
@@ -515,12 +515,12 @@ ATOM MKATOMN(char *S, int LEN) {
   NAME(ATOMP)
   [0] = LEN,
  memcpy(NAME(ATOMP) + 1, S, (size_t)LEN), NAME(ATOMP)[LEN + 1] = '\0';
-  ATOMP = (ATOM)((WORD **)ATOMP + OFFSET + N);
+  ATOMP = (ATOM)((word **)ATOMP + OFFSET + N);
   return *P;
 }
 
 // takes a name and returns a value in 0..127
-static WORD HASH(char *S, int LEN) {
+static word HASH(char *S, int LEN) {
   int H = LEN;
   if (LEN && S[0]) {
     H = H + S[0] * 37;
@@ -540,7 +540,7 @@ static WORD HASH(char *S, int LEN) {
   return H & 0x7F;
 }
 
-void BUFCH(WORD CH) {
+void BUFCH(word CH) {
   if (BUFP >= ATOMSIZE) {
     SPACE_ERROR("Atom too big");
   }
@@ -582,8 +582,8 @@ void REPORTDIC() {
 }
 
 void LISTPM() {
-  WORD EMPTY = 0;
-  WORD I;
+  word EMPTY = 0;
+  word I;
   bcpl_WRITES("\n LIST POST MORTEM\n");
   GCSTATS();
   fprintf(bcpl_OUTPUT, ", current cells = %d\n", (int)((CONSP - CONSBASE) / 2));
@@ -615,14 +615,14 @@ void LISTPM() {
   fprintf(bcpl_OUTPUT, "Empty buckets = %d\n", (int)EMPTY);
 }
 
-WORD LENGTH(LIST X) {
-  WORD N = 0;
+word LENGTH(LIST X) {
+  word N = 0;
   while (!(X == NIL))
     X = TL(X), N = N + 1;
   return N;
 }
 
-WORD MEMBER(LIST X, LIST A) {
+word MEMBER(LIST X, LIST A) {
   while (!(X == NIL || HD(X) == A))
     X = TL(X);
   return X != NIL;
@@ -664,7 +664,7 @@ LIST SUB1(LIST X, ATOM A) {
   }
 }
 
-WORD EQUAL(LIST X, LIST Y) {
+word EQUAL(LIST X, LIST Y) {
   do {
     if (X == Y) {
       return true;
@@ -682,7 +682,7 @@ WORD EQUAL(LIST X, LIST Y) {
   } while (1);
 }
 
-LIST ELEM(LIST X, WORD N) {
+LIST ELEM(LIST X, word N) {
   while (!(N == 1)) {
     X = TL(X), N = N - 1;
   }

@@ -37,12 +37,12 @@ extern LIST TOKENS, THE_CONST;
 extern ATOM THE_ID;
 
 // DECIMALS are never used
-extern WORD THE_NUM, THE_DECIMALS;
+extern word THE_NUM, THE_DECIMALS;
 
-extern WORD EXPFLAG, ERRORFLAG, EQNFLAG;
+extern word EXPFLAG, ERRORFLAG, EQNFLAG;
 extern TOKEN MISSEDTOK;
-extern WORD caseconv(WORD CH);
-extern WORD COMMENTFLAG;
+extern word caseconv(word CH);
+extern word COMMENTFLAG;
 extern LIST FILECOMMANDS;
 extern bool LEGACY;
 extern void writetoken(TOKEN T);
@@ -176,30 +176,30 @@ typedef enum {
 // defined in lex.c
 extern void readline(void);
 extern bool have(TOKEN);
-extern WORD haveid(void);
+extern word haveid(void);
 extern void syntax(void);
 extern void check(TOKEN);
-extern WORD haveconst(void);
-extern WORD havenum(void);
+extern word haveconst(void);
+extern word havenum(void);
 extern void syntax_error(char *);
 
 // defined in compiler.c
 extern void INIT_CODEV(void);
 extern LIST EQUATION(void);
 extern LIST PROFILE(LIST);
-extern void PRINTEXP(LIST, WORD);
+extern void PRINTEXP(LIST, word);
 extern LIST EXP(void);
 extern void REMOVELINENO(LIST);
 extern bool ISID(LIST);
 extern void DISPLAY(ATOM ID, bool WITHNOS, bool DOUBLESPACING);
-extern void DISPLAYEQN(ATOM ID, WORD NARGS, LIST EQN);
-extern void DISPLAYRHS(LIST LHS, WORD NARGS, LIST CODE);
+extern void DISPLAYEQN(ATOM ID, word NARGS, LIST EQN);
+extern void DISPLAYRHS(LIST LHS, word NARGS, LIST CODE);
 
 // defined in reducer.c
 extern void PRINTATOM(ATOM A, bool FORMAT);
 
 // others
-extern void (*TRUEWRCH)(WORD C);
+extern void (*TRUEWRCH)(word C);
 
 // bases
 extern LIST TRUTH, FALSITY, INFINITY, LASTLHS;

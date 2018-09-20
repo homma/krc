@@ -47,7 +47,7 @@ static void COMMENT();
 static void EVALUATION();
 static LIST SORT(LIST X);
 static void SCRIPTREORDER();
-static WORD NO_OF_EQNS(ATOM A);
+static word NO_OF_EQNS(ATOM A);
 static bool PROTECTED(ATOM A);
 static bool PRIMITIVE(ATOM A);
 static void REMOVE(ATOM A);
@@ -138,7 +138,7 @@ void RELEASE_INTERRUPTS() {
 // essential that definitions of the above should be provided if
 // the package is to be used in an interactive program
 
-// Where to jump back to on runtime errors or keyboard interrupts
+// where to jump back to on runtime errors or keyboard interrupts
 static jmp_buf nextcommand;
 
 void ESCAPETONEXTCOMMAND() {
@@ -644,7 +644,7 @@ FILE *FINDCHANNEL(char *F) {
 //};
 //
 // static void
-// SHOWHELP()
+// showhelp()
 //{
 //	char **h;
 //	for (h=HELP; *h; h++) printf("%s\n", *h);
@@ -712,8 +712,8 @@ static void COMMAND() {
     if (have(EOL)) {
 
       DISPLAYALL(false);
-      // if ( have((TOKEN)'@') && have(EOL)
-      // ) LISTPM(); else  // for debugging the system
+      // if ( have((TOKEN)'@') && have(EOL) ) LISTPM(); else
+      // for debugging the system
 
     } else {
 
@@ -732,7 +732,7 @@ static void COMMAND() {
 
       if (P == NIL) {
 
-        // SHOWHELP();
+        // showhelp();
         bcpl_WRITES("command not recognised\nfor help type /h\n");
 
       } else {
@@ -766,7 +766,7 @@ static void COMMAND() {
 
 static bool STARTDISPLAYCOM() {
   LIST HOLD = TOKENS;
-  WORD R = haveid() && (have(EOL) || have((TOKEN)DOTDOT_SY));
+  word R = haveid() && (have(EOL) || have((TOKEN)DOTDOT_SY));
   TOKENS = HOLD;
   return R;
 }
@@ -859,7 +859,7 @@ static bool MAKESURE() {
   bcpl_WRITES("Are you sure? ");
 
   {
-    WORD CH = (*_RDCH)(), C;
+    word CH = (*_RDCH)(), C;
     (*_UNRDCH)(CH);
     while (!((C = (*_RDCH)()) == '\n' || C == EOF)) {
       continue;
@@ -896,6 +896,7 @@ static void SAVECOM() {
     bcpl_WRITES("Cannot save empty script\n");
     return;
   }
+
   {
     FILE *OUT = bcpl_FINDOUTPUT("T#SCRIPT");
     bcpl_OUTPUT_fp = (OUT);
@@ -1061,7 +1062,7 @@ static void LISTCOM() {
     bcpl_INPUT_fp = (IN);
 
     {
-      WORD CH = (*_RDCH)();
+      word CH = (*_RDCH)();
 
       while (!(CH == EOF)) {
         (*_WRCH)(CH);
@@ -1146,7 +1147,7 @@ static void CLEARCOM() {
 }
 
 static void SCRIPTLIST(LIST S) {
-  WORD COL = 0, I = 0;
+  word COL = 0, I = 0;
 
 // the minimum of various devices
 #define LINEWIDTH 68
@@ -1281,12 +1282,12 @@ static void RENAMECOM() {
       LIST S = SCRIPT;
       while (!(S == NIL)) {
         LIST EQNS = TL(VAL((ATOM)HD(S)));
-        WORD NARGS = (WORD)HD(HD(VAL((ATOM)HD(S))));
+        word NARGS = (word)HD(HD(VAL((ATOM)HD(S))));
         while (!(EQNS == NIL)) {
           LIST CODE = TL(HD(EQNS));
           if (NARGS > 0) {
             LIST LHS = HD(HD(EQNS));
-            WORD I;
+            word I;
 
             for (I = 2; I <= NARGS; I++) {
               LHS = HD(LHS);
@@ -1334,7 +1335,7 @@ static LIST SUBST(LIST Z, LIST A) {
 
 static void NEWEQUATION() {
 
-  WORD EQNO = -1;
+  word EQNO = -1;
 
   if (havenum()) {
     EQNO = 100 * THE_NUM + THE_DECIMALS;
@@ -1349,7 +1350,7 @@ static void NEWEQUATION() {
 
     {
       ATOM SUBJECT = (ATOM)HD(X);
-      WORD NARGS = (WORD)HD(TL(X));
+      word NARGS = (word)HD(TL(X));
       LIST EQN = TL(TL(X));
       if (ATOBJECT) {
         PRINTOB(EQN);
@@ -1365,7 +1366,7 @@ static void NEWEQUATION() {
         // subject currently defined only by a comment
         HD(HD(VAL(SUBJECT))) = (LIST)NARGS;
         TL(VAL(SUBJECT)) = CONS(EQN, NIL);
-      } else if (NARGS != (WORD)HD(HD(VAL(SUBJECT)))) {
+      } else if (NARGS != (word)HD(HD(VAL(SUBJECT)))) {
 
         // simple def silently overwriting existing EQNS -
         // removed DT 2015
@@ -1409,7 +1410,7 @@ static void NEWEQUATION() {
         // numbered EQN
 
         LIST EQNS = TL(VAL(SUBJECT));
-        WORD N = 0;
+        word N = 0;
         if (EQNO % 100 != 0 || EQNO == 0) {
           // if EQN has non standard lineno
 
@@ -1418,7 +1419,7 @@ static void NEWEQUATION() {
         }
 
         do {
-          N = HD(TL(HD(EQNS))) == (LIST)LINENO_C ? (WORD)HD(TL(TL(HD(EQNS))))
+          N = HD(TL(HD(EQNS))) == (LIST)LINENO_C ? (word)HD(TL(TL(HD(EQNS))))
                                                  : (N / 100 + 1) * 100;
           if (EQNO == N) {
             HD(EQNS) = EQN;
@@ -1504,7 +1505,7 @@ static void COMMENT() {
 
 static void EVALUATION() {
   LIST CODE = EXP();
-  WORD CH = (WORD)HD(TOKENS);
+  word CH = (word)HD(TOKENS);
 
   // static SO INVISIBLE TO GARBAGE COLLECTOR
   LIST E = 0;
@@ -1592,12 +1593,12 @@ static void REORDERCOM() {
     SCRIPTREORDER();
   } else if (haveid() && HD(TOKENS) != EOL) {
     LIST NOS = NIL;
-    WORD MAX = NO_OF_EQNS(THE_ID);
+    word MAX = NO_OF_EQNS(THE_ID);
 
     while (havenum()) {
-      WORD A = THE_NUM;
-      WORD B = have(DOTDOT_SY) ? havenum() ? THE_NUM : MAX : A;
-      WORD I;
+      word A = THE_NUM;
+      word B = have(DOTDOT_SY) ? havenum() ? THE_NUM : MAX : A;
+      word I;
 
       for (I = A; I <= B; I++) {
         if (!MEMBER(NOS, (LIST)I) && 1 <= I && I <= MAX) {
@@ -1622,7 +1623,7 @@ static void REORDERCOM() {
     }
 
     {
-      WORD I;
+      word I;
       for (I = 1; I <= MAX; I++) {
         if (!(MEMBER(NOS, (LIST)I))) {
           NOS = CONS((LIST)I, NOS);
@@ -1636,7 +1637,7 @@ static void REORDERCOM() {
       LIST NEW = NIL;
       LIST EQNS = TL(VAL(THE_ID));
       while (!(NOS == NIL)) {
-        LIST EQN = ELEM(EQNS, (WORD)HD(NOS));
+        LIST EQN = ELEM(EQNS, (word)HD(NOS));
         REMOVELINENO(EQN);
         NEW = CONS(EQN, NEW);
         NOS = TL(NOS);
@@ -1702,7 +1703,7 @@ static void SCRIPTREORDER() {
   }
 }
 
-static WORD NO_OF_EQNS(ATOM A) {
+static word NO_OF_EQNS(ATOM A) {
   return VAL(A) == NIL ? 0 : LENGTH(TL(VAL(A)));
 }
 
@@ -1772,13 +1773,13 @@ static void DELETECOM() {
       }
       DLIST = CONS(CONS((LIST)A, (LIST)B), DLIST);
     } else {
-      WORD MAX = NO_OF_EQNS(THE_ID);
+      word MAX = NO_OF_EQNS(THE_ID);
       LIST NLIST = NIL;
 
       while (havenum()) {
-        WORD A = THE_NUM;
-        WORD B = have(DOTDOT_SY) ? havenum() ? THE_NUM : MAX : A;
-        WORD I;
+        word A = THE_NUM;
+        word B = have(DOTDOT_SY) ? havenum() ? THE_NUM : MAX : A;
+        word I;
 
         for (I = A; I <= B; I++) {
           NLIST = CONS((LIST)I, NLIST);
@@ -1795,7 +1796,7 @@ static void DELETECOM() {
   }
 
   {
-    WORD DELS = 0;
+    word DELS = 0;
 
     // delete all
     if (DLIST == NIL) {
@@ -1839,7 +1840,7 @@ static void DELETECOM() {
           REMOVE(NAME);
           continue;
         } else {
-          WORD I;
+          word I;
           for (I = NO_OF_EQNS(NAME); I >= 1; I = I - 1)
             if (MEMBER(NOS, (LIST)I)) {
               DELS = DELS + 1;

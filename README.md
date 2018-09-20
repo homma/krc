@@ -4,11 +4,15 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 
 ## ChangeLog
 
+### 2018.09.21
+- replaced `WORD` with `word`
+  - I did not choose to use `word_t` or `sword_t`
+
 ### 2018.09.20
 - applied formatter to all source files
-- replaced long long with int64_t with stdint.h
+- replaced `long long` with `int64_t` with stdint.h
 - renamed bcpl to iolib
-- replaced BOOL with bool and stdbool.h (experimental)
+- replaced `BOOL` with `bool` and stdbool.h (experimental)
 - removed emas.c emas.h
 - removed emas prompt (we always use linenoise)
 - renamed listpack to listlib
