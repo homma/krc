@@ -148,7 +148,6 @@ void fixup_s(void) {
   if (!(S == (LIST)ENDOFSTACK)) {
     HD(S) = (LIST)QUOTE;
   }
-
 }
 
 // return an upper-case copy of a string.
@@ -627,18 +626,20 @@ static void charp(LIST E) {
               : FALSITY;
 }
 
-static word COUNT;
-static void COUNTCH(word CH) { COUNT = COUNT + 1; }
+static word count;
+static void countch(word CH) { count = count + 1; }
 
 static void size(LIST E) {
-  COUNT = 0;
-  _WRCH = COUNTCH;
+
+  count = 0;
+  _WRCH = countch;
   printval(*ARG, false);
   _WRCH = TRUEWRCH;
-  HD(E) = (LIST)INDIR, TL(E) = STONUM(COUNT);
+  HD(E) = (LIST)INDIR, TL(E) = STONUM(count);
 }
 
 static void code(LIST E) {
+
   *ARG = reduce(*ARG);
 
   if (!(ISCONS(*ARG) && HD(*ARG) == QUOTE)) {
