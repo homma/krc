@@ -45,11 +45,14 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 - rename header files (`hdr` portion)
 
 ### Long Term
+- add anonymous function
 - add where clause
 - add record type
-- add anonymous function
+- add char literal ('c' as special string)
+- add tuple literal (as a special array)
 - add floating point numeral
-- add date type
+- add user defined operator (infix)
+- add date library
 - port to JavaScript
 
 ### Someday..
