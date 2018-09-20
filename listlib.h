@@ -22,9 +22,12 @@ typedef struct LIST {
 // - the memory address of another cell in the CONS space
 // - the memory address of a cell in the ATOM space
 // - improbable pointer values of HD() for special values:
-//   FULLWORD (see above) or GONETO (see listpack.c)
+//   FULLWORD (see above) or GONETO (see listlib.c)
 //#define NIL ((LIST)0) //causes problems
-#define NIL ((LIST)0x40000000) // from oldbcpl/listhdr, may need changing
+
+// from oldbcpl/listhdr, may need changing
+#define NIL ((LIST)0x40000000)
+
 #ifdef INSTRUMENT_KRC_GC
 extern LIST ISOKCONS(LIST);
 #define HD(p) (ISOKCONS(p)->hd)

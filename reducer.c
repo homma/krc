@@ -1,8 +1,8 @@
 // KRC REDUCER
 
-#include "listhdr.h"
+#include "listlib.h"
 #include "comphdr.h"
-#include "redhdr.h"
+#include "reducer.h"
 
 //----------------------------------------------------------------------
 // The KRC system is Copyright (c) D. A. Turner 1981
@@ -36,7 +36,7 @@ static LIST *ARGP;
 void INIT_ARGSPACE(void) {
   if (ARGSPACE == NULL) {
 
-    // number of LIST cells, in listpack.c
+    // number of LIST cells, in listlib.c
     extern int SPACE;
 
     // empirically, using edigits,

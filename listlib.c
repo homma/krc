@@ -1,6 +1,6 @@
 // list processing package (for 2960/EMAS)    DAT 23/11/79
 // warning - much of this code is machine dependent
-#include "listhdr.h"
+#include "listlib.h"
 
 //----------------------------------------------------------------------
 // The KRC system is Copyright (c) D. A. Turner 1981
@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
         }
         break;
       case 'l':
-        // doesn't logically belong in listpack
+        // doesn't logically belong in listlib
         if (++I >= ARGC) {
           bcpl_WRITES("krc: -l What?\n");
           exit(0);

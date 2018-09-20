@@ -28,24 +28,24 @@ CFLAGS+=-g -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
  	-DLINENOISE \
 	-DLIBDIR='$(LIBDIR)' -DHEAPSIZE=$(HEAPSIZE)
 
-SRCS= main.c reducer.c compiler.c lex.c listpack.c iolib.c \
-      listhdr.h comphdr.h redhdr.h common.h common.h iolib.h \
+SRCS= main.c reducer.c compiler.c lex.c listlib.c iolib.c \
+      listlib.h comphdr.h reducer.h common.h common.h iolib.h \
       linenoise.h linenoise.c
-OBJS= main.o reducer.o compiler.o lex.o listpack.o iolib.o \
+OBJS= main.o reducer.o compiler.o lex.o listlib.o iolib.o \
       linenoise.o
 
 krc: $(OBJS)
 	@$(CC) $(CFLAGS) -o $@ $(OBJS)
 
-listpack.o: listhdr.h common.h iolib.h
-lex.o:      comphdr.h listhdr.h common.h iolib.h
-compiler.o: comphdr.h listhdr.h common.h iolib.h
-reducer.o:  redhdr.h comphdr.h listhdr.h common.h iolib.h
-main.o:     redhdr.h comphdr.h listhdr.h common.h iolib.h revision
+listlib.o: listlib.h common.h iolib.h
+lex.o:      comphdr.h listlib.h common.h iolib.h
+compiler.o: comphdr.h listlib.h common.h iolib.h
+reducer.o:  reducer.h comphdr.h listlib.h common.h iolib.h
+main.o:     reducer.h comphdr.h listlib.h common.h iolib.h revision
 
 linenoise.o: Makefile
 main.o: Makefile
-listpack.o: listhdr.h common.h iolib.h
+listlib.o: listlib.h common.h iolib.h
 
 .c.o:
 	@$(CC) $(CFLAGS) -c $<

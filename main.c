@@ -1,6 +1,6 @@
-#include "listhdr.h"
+#include "listlib.h"
 #include "comphdr.h"
-#include "redhdr.h"
+#include "reducer.h"
 #include "revision"
 #include "linenoise.h"
 
@@ -328,11 +328,11 @@ static void INITIALISE() {
       case 'o':
         ATOBJECT = true;
         break;
-      case 'd': // Handled in listpack.c
-      case 'l': // Handled in listpack.c
+      case 'd': // handled in listlib.c
+      case 'l': // handled in listlib.c
       case 'h':
-        ++I;    // Handled in listpack.c
-      case 'g': // handled in listpack.c
+        ++I;    // handled in listlib.c
+      case 'g': // handled in listlib.c
         break;
       case 'e':
         if (++I >= ARGC || ARGV[I][0] == '-') {
