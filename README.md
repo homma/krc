@@ -49,6 +49,7 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 - add record type
 - add anonymous function
 - add floating point numeral
+- add date type
 - port to JavaScript
 
 ### Someday..
