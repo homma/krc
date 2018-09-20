@@ -4,7 +4,7 @@ void PRINTVAL(LIST E, bool FORMAT);
 LIST BUILDEXP(LIST CODE);
 
 // global functions in reducer
-void INIT_ARGSPACE(void);
+void init_argspace(void);
 void ESCAPETONEXTCOMMAND();
 void INITSTATS();
 void OUTSTATS();

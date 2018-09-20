@@ -169,7 +169,7 @@ void ESCAPETONEXTCOMMAND() {
     CHECK_HITS();
   }
   init_codev();
-  INIT_ARGSPACE();
+  init_argspace();
   longjmp(nextcommand, 1);
 }
 
@@ -185,7 +185,7 @@ void GO() {
   if (setjmp(nextcommand) == 0) {
 
     init_codev();
-    INIT_ARGSPACE();
+    init_argspace();
     INITIALISE();
 
     // set up the interrupt handler

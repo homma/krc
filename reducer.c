@@ -33,7 +33,7 @@ static LIST *ARG;
 static LIST *ARGMAX;
 static LIST *ARGP;
 
-void INIT_ARGSPACE(void) {
+void init_argspace(void) {
   if (ARGSPACE == NULL) {
 
     // number of LIST cells, in listlib.c
@@ -60,18 +60,15 @@ void INIT_ARGSPACE(void) {
 
 LIST S;
 
-// local function declarations
-static void SIZE(LIST E);
-
 // primitive functions
-static void FUNCTIONP(LIST E);
-static void LISTP(LIST E);
-static void STRINGP(LIST E);
-static void NUMBERP(LIST E);
-static void CHAR(LIST E);
-static void SIZE(LIST E);
-static void CODE(LIST E);
-static void DECODE(LIST E);
+static void functionp(LIST E);
+static void listp(LIST E);
+static void stringp(LIST E);
+static void numberp(LIST E);
+static void charp(LIST E);
+static void size(LIST E);
+static void code(LIST E);
+static void decode(LIST E);
 static void CONCAT(LIST E);
 static void EXPLODE(LIST E);
 static void ABORT(LIST E);
@@ -122,14 +119,14 @@ void SETUP_PRIMFNS_ETC(void) {
   INFINITY = CONS((LIST)QUOTE, (LIST)-3);
 
   // primitive functions
-  R("function__", FUNCTIONP, 1);
-  R("list__", LISTP, 1);
-  R("string__", STRINGP, 1);
-  R("number__", NUMBERP, 1);
-  R("char__", CHAR, 1);
-  R("printwidth__", SIZE, 1);
-  R("ord__", CODE, 1);
-  R("chr__", DECODE, 1);
+  R("function__", functionp, 1);
+  R("list__", listp, 1);
+  R("string__", stringp, 1);
+  R("number__", numberp, 1);
+  R("char__", charp, 1);
+  R("printwidth__", size, 1);
+  R("ord__", code, 1);
+  R("chr__", decode, 1);
   R("implode__", CONCAT, 1);
   R("explode__", EXPLODE, 1);
   R("abort__", ABORT, 1);
@@ -424,7 +421,7 @@ static void OVERFLOW(LIST E) {
 }
 
 // a kludge
-LIST BUILDEXP(LIST CODE) {
+LIST BUILDEXP(LIST code) {
 
   // a bogus piece of graph
   LIST E = CONS(NIL, NIL);
@@ -591,18 +588,18 @@ static void OBEY(LIST EQNS, LIST E) {
   BADEXP(E);
 }
 
-static void STRINGP(LIST E) {
+static void stringp(LIST E) {
   *ARG = REDUCE(*ARG);
   HD(E) = (LIST)INDIR,
   TL(E) = ISCONS(*ARG) && HD(*ARG) == (LIST)QUOTE ? TRUTH : FALSITY;
 }
 
-static void NUMBERP(LIST E) {
+static void numberp(LIST E) {
   *ARG = REDUCE(*ARG);
   HD(E) = (LIST)INDIR, TL(E) = ISNUM(*ARG) ? TRUTH : FALSITY;
 }
 
-static void LISTP(LIST E) {
+static void listp(LIST E) {
   *ARG = REDUCE(*ARG);
   HD(E) = (LIST)INDIR;
   TL(E) = (*ARG == NIL || (ISCONS(*ARG) && HD(*ARG) == (LIST)COLON_OP))
@@ -610,7 +607,7 @@ static void LISTP(LIST E) {
               : FALSITY;
 }
 
-static void FUNCTIONP(LIST E) {
+static void functionp(LIST E) {
   *ARG = REDUCE(*ARG);
   HD(E) = (LIST)INDIR;
   TL(E) = ISFUN(*ARG) ? TRUTH : FALSITY;
@@ -620,7 +617,8 @@ static bool ISFUN(LIST X) {
   return ISATOM(X) || (ISCONS(X) && QUOTE != HD(X) && HD(X) != (LIST)COLON_OP);
 }
 
-static void CHAR(LIST E) {
+// renamed from char to avoid conflict with char type
+static void charp(LIST E) {
   *ARG = REDUCE(*ARG);
   HD(E) = (LIST)INDIR;
   TL(E) = ISCONS(*ARG) && HD(*ARG) == (LIST)QUOTE && LEN((ATOM)TL(*ARG)) == 1
@@ -631,7 +629,7 @@ static void CHAR(LIST E) {
 static word COUNT;
 static void COUNTCH(word CH) { COUNT = COUNT + 1; }
 
-static void SIZE(LIST E) {
+static void size(LIST E) {
   COUNT = 0;
   _WRCH = COUNTCH;
   PRINTVAL(*ARG, false);
@@ -639,7 +637,7 @@ static void SIZE(LIST E) {
   HD(E) = (LIST)INDIR, TL(E) = STONUM(COUNT);
 }
 
-static void CODE(LIST E) {
+static void code(LIST E) {
   *ARG = REDUCE(*ARG);
 
   if (!(ISCONS(*ARG) && HD(*ARG) == QUOTE)) {
@@ -657,7 +655,7 @@ static void CODE(LIST E) {
   }
 }
 
-static void DECODE(LIST E) {
+static void decode(LIST E) {
   *ARG = REDUCE(*ARG);
 
   if (!(ISNUM(*ARG) && 0 <= (word)TL(*ARG) && (word)TL(*ARG) <= 255)) {
