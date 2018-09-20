@@ -1,7 +1,7 @@
 #include "common.h"
 #include "iolib.h"
 #include "listlib.h"
-#include "comphdr.h"
+#include "compiler.h"
 
 #include <ctype.h>
 

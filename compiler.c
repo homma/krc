@@ -5,7 +5,7 @@
 #include "common.h"
 #include "iolib.h"
 #include "listlib.h"
-#include "comphdr.h"
+#include "compiler.h"
 
 //----------------------------------------------------------------------
 // The KRC system is Copyright (c) D. A. Turner 1981
@@ -57,7 +57,7 @@ LIST LASTLHS = NIL;
 LIST TRUTH, FALSITY, INFINITY;
 
 // SETUP_INFIXES() - interesting elements start at [1]
-// the indices correspond to the OPERATOR values in comphdr.h
+// the indices correspond to the OPERATOR values in compiler.h
 // EQ_SY was (TOKEN)'=', changed DT May 2015
 static TOKEN INFIXNAMEVEC[] = {
     (TOKEN)0,   (TOKEN)':', PLUSPLUS_SY, DASHDASH_SY, (TOKEN)'|',

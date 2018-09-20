@@ -11,7 +11,8 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 - replaced BOOL with bool and stdbool.h (experimental)
 - removed emas.c emas.h
 - removed emas prompt (we always use linenoise)
-- rename listpack to listlib
+- renamed listpack to listlib
+- renamed header files (`hdr` portion)
 
 ### 2018.09.19
 - replaced BCPL related macros with their C equivalents
@@ -43,7 +44,6 @@ make it looks like a plain C software.
 - add comments
 - implement test cases
 - remove `(!(`
-- rename header files (`hdr` portion)
 
 ### Long Term
 add features and extend.

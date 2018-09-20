@@ -29,7 +29,7 @@ CFLAGS+=-g -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
 	-DLIBDIR='$(LIBDIR)' -DHEAPSIZE=$(HEAPSIZE)
 
 SRCS= main.c reducer.c compiler.c lex.c listlib.c iolib.c \
-      listlib.h comphdr.h reducer.h common.h common.h iolib.h \
+      listlib.h compiler.h reducer.h common.h common.h iolib.h \
       linenoise.h linenoise.c
 OBJS= main.o reducer.o compiler.o lex.o listlib.o iolib.o \
       linenoise.o
@@ -38,10 +38,10 @@ krc: $(OBJS)
 	@$(CC) $(CFLAGS) -o $@ $(OBJS)
 
 listlib.o: listlib.h common.h iolib.h
-lex.o:      comphdr.h listlib.h common.h iolib.h
-compiler.o: comphdr.h listlib.h common.h iolib.h
-reducer.o:  reducer.h comphdr.h listlib.h common.h iolib.h
-main.o:     reducer.h comphdr.h listlib.h common.h iolib.h revision
+lex.o:      compiler.h listlib.h common.h iolib.h
+compiler.o: compiler.h listlib.h common.h iolib.h
+reducer.o:  reducer.h compiler.h listlib.h common.h iolib.h
+main.o:     reducer.h compiler.h listlib.h common.h iolib.h revision
 
 linenoise.o: Makefile
 main.o: Makefile

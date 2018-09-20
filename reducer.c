@@ -1,7 +1,7 @@
 // KRC REDUCER
 
 #include "listlib.h"
-#include "comphdr.h"
+#include "compiler.h"
 #include "reducer.h"
 
 //----------------------------------------------------------------------
