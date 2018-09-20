@@ -1,4 +1,4 @@
-// KRC REDUCER
+// KRC reducer
 
 #include "listlib.h"
 #include "compiler.h"
