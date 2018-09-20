@@ -88,8 +88,9 @@ void readline() {
 static TOKEN readtoken(void) {
   word CH = (*_RDCH)();
 
-  while ((CH == ' ' || CH == '\t'))
+  while ((CH == ' ' || CH == '\t')) {
     CH = (*_RDCH)();
+  }
 
   if (CH == '\n') {
     return (TOKEN)EOL;
