@@ -615,42 +615,6 @@ FILE *FINDCHANNEL(char *F) {
 // <THINGY> ::= <NAME> | <NAME> .. <NAME> | <NAME> ..
 // <PART> ::= <INT> | <INT>..<INT> | <INT>..
 
-// // replaced by HELPCOM() see below
-// static char *HELP[] = {
-// "/                  displays the whole script",
-// "/delete NAMES      deletes the named functions. /d deletes everything",
-// "/delete NAME PARTS deletes the numbered equations from function NAME",
-// "/reorder NAME NAMES moves the equations for NAMES after those for NAME",
-// "/reorder NAME PARTS redefines the order of NAME's equations",
-// "/aborder           sorts the script into alphabetical order",
-// "/rename FROMs,TOs  changes the names of one or more functions",
-// "/save FILENAME     saves the script in the named file",
-// "/get FILENAME      adds the contents of a file to the script",
-// "/list FILENAME     displays the contents of a disk file",
-// "/file (or /f)      shows the current default filename",
-// "/file FILENAME     changes the default filename",
-// "/dir               list filenames in current directory/folder",
-// "/quit (or /q)      ends this KRC session",
-// "/names             displays the names defined in your script",
-// "/openlib           allows you to modify equations in the prelude/library",
-// "/clear             clears the memo fields for all variables",
-// "/lib               displays the names defined in the prelude/library",
-// "NAME               displays the equations defined for the function NAME",
-// "NAME..NAME         displays a section of the script",
-// "EXP?               evaluates an expression and pretty-print the result",
-// "EXP!               the same but with unformatted output",
-// "EQUATION           adds an equation to the script",
-// "   NAMES ::= NAME | NAME..NAME | NAME..   PARTS ::= INT | INT..INT | INT..",
-//  NULL,
-// };
-//
-// static void
-// showhelp()
-//{
-//	char **h;
-//	for (h=HELP; *h; h++) printf("%s\n", *h);
-//}
-
 #define KRCPAGER "less -F -X -P'%F (press q to quit)' "
 #define HELPLOCAL KRCPAGER "krclib/help/"
 #define HELP KRCPAGER LIBDIR "/help/"
@@ -733,7 +697,6 @@ static void COMMAND() {
 
       if (P == NIL) {
 
-        // showhelp();
         bcpl_WRITES("command not recognised\nfor help type /h\n");
 
       } else {
