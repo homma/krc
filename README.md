@@ -50,6 +50,7 @@ make it looks like a plain C software.
 - add comments
 - implement test cases
 - remove `(!(`
+- replace linenoise with its unicode supported version
 
 ### Long Term
 add features and extend.
