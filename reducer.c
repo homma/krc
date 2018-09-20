@@ -148,6 +148,7 @@ void fixup_s(void) {
   if (!(S == (LIST)ENDOFSTACK)) {
     HD(S) = (LIST)QUOTE;
   }
+
 }
 
 // return an upper-case copy of a string.
