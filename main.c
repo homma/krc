@@ -280,7 +280,7 @@ static char TITLE[] = "Kent Recursive Calculator 1.0";
 
 // where to look for "prelude" and other files KRC needs
 #ifndef LIBDIR
-#define LIBDIR "/usr/lib/krc"
+#define LIBDIR "/usr/local/lib/krc"
 #endif
 // but use krclib in current directory if present, see below
 

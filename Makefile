@@ -1,9 +1,7 @@
 # makefile for Kent Recursive Calculator
 # (BCPL version translated into C)
 
-#alternatives
-#PREFIX=/usr/local
-PREFIX=/usr
+PREFIX=/usr/local
 
 BINDIR=$(PREFIX)/bin
 LIBDIR="$(PREFIX)/lib/krc"
