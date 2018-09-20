@@ -30,7 +30,8 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 ## Plan
 
 ### Short Term
-- make it looks like a plain C software
+make it looks like a plain C software.
+
 - remove BCPL dependency completely
 - CAPITAL LETTER to small letter
 - rename listpack to listlib
@@ -45,9 +46,12 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 - rename header files (`hdr` portion)
 
 ### Long Term
+add features and extend.
+
 - add anonymous function
 - add where clause
 - add record type
+- add unicode string support
 - add char literal ('c' as special string)
 - add tuple literal (as a special array)
 - add floating point numeral
