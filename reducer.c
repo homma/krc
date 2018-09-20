@@ -354,7 +354,7 @@ static void SHOWCH(unsigned char c) {
 static void PRINTFUNCTION(LIST E) {
 
   (*_WRCH)('<');
-  PRINTEXP(E, 0);
+  printexp(E, 0);
   (*_WRCH)('>');
 }
 
@@ -400,7 +400,7 @@ static void BADEXP(LIST E) {
   _WRCH = TRUEWRCH;
   CLOSECHANNELS();
   bcpl_WRITES("\n**undefined expression**\n  ");
-  PRINTEXP(E, 0);
+  printexp(E, 0);
 
   // could insert more detailed diagnostics here,
   // depending on nature of HD!E, for example:
@@ -418,7 +418,7 @@ static void OVERFLOW(LIST E) {
   _WRCH = TRUEWRCH;
   CLOSECHANNELS();
   bcpl_WRITES("\n**integer overflow**\n  ");
-  PRINTEXP(E, 0);
+  printexp(E, 0);
   bcpl_WRITES("\n**evaluation abandoned**\n");
   ESCAPETONEXTCOMMAND();
 }

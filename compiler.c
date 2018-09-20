@@ -14,49 +14,49 @@
 //----------------------------------------------------------------------
 
 // local function declarations
-static bool ISOP(LIST X);
-static bool ISINFIX(LIST X);
-static bool ISRELOP(LIST X);
-static word DIPRIO(OPERATOR OP);
-static OPERATOR MKINFIX(TOKEN T);
-static void PRINTZF_EXP(LIST X);
-static bool ISLISTEXP(LIST E);
-static bool ISRELATION(LIST X);
-static bool ISRELATION_BEGINNING(LIST A, LIST X);
-static word LEFTPREC(OPERATOR OP);
-static word RIGHTPREC(OPERATOR OP);
-static bool ROTATE(LIST E);
-static bool PARMY(LIST X);
-static LIST REST(LIST C);
-static LIST SUBTRACT(LIST X, LIST Y);
-static void EXPR(word N);
-static bool STARTFORMAL(TOKEN T);
-static bool STARTSIMPLE(TOKEN T);
-static void COMBN(void);
-static void SIMPLE(void);
-static void COMPILENAME(ATOM N);
-static word QUALIFIER(void);
-static void PERFORM_ALPHA_CONVERSIONS();
-static bool ISGENERATOR(LIST T);
-static void ALPHA_CONVERT(LIST VAR, LIST P);
-static LIST SKIPCHUNK(LIST P);
-static void CONV1(LIST T, LIST VAR, LIST VAR1);
-static LIST FORMAL(void);
-static LIST INTERNALISE(LIST VAL);
-static LIST PATTERN(void);
-static void COMPILELHS(LIST LHS, word NARGS);
-static void COMPILEFORMAL(LIST X, word I);
-static void PLANT0(INSTRUCTION OP);
-static void PLANT1(INSTRUCTION OP, LIST A);
-static void PLANT2(INSTRUCTION OP, LIST A, LIST B);
-static LIST COLLECTCODE(void);
+static bool isop(LIST X);
+static bool isinfix(LIST X);
+static bool isrelop(LIST X);
+static word diprio(OPERATOR OP);
+static OPERATOR mkinfix(TOKEN T);
+static void printzf_exp(LIST X);
+static bool islistexp(LIST E);
+static bool isrelation(LIST X);
+static bool isrelation_beginning(LIST A, LIST X);
+static word leftprec(OPERATOR OP);
+static word rightprec(OPERATOR OP);
+static bool rotate(LIST E);
+static bool parmy(LIST X);
+static LIST rest(LIST C);
+static LIST subtract(LIST X, LIST Y);
+static void expr(word N);
+static bool startformal(TOKEN T);
+static bool startsimple(TOKEN T);
+static void combn(void);
+static void simple(void);
+static void compilename(ATOM N);
+static word qualifier(void);
+static void perform_alpha_conversions();
+static bool isgenerator(LIST T);
+static void alpha_convert(LIST VAR, LIST P);
+static LIST skipchunk(LIST P);
+static void conv1(LIST T, LIST VAR, LIST VAR1);
+static LIST formal(void);
+static LIST internalise(LIST VAL);
+static LIST pattern(void);
+static void compilelhs(LIST LHS, word NARGS);
+static void compileformal(LIST X, word I);
+static void plant0(INSTRUCTION OP);
+static void plant1(INSTRUCTION OP, LIST A);
+static void plant2(INSTRUCTION OP, LIST A, LIST B);
+static LIST collectcode(void);
 
 // global variables
 void (*TRUEWRCH)(word C) = bcpl_WRCH;
 LIST LASTLHS = NIL;
 LIST TRUTH, FALSITY, INFINITY;
 
-// SETUP_INFIXES() - interesting elements start at [1]
+// setup_infixes() - interesting elements start at [1]
 // the indices correspond to the OPERATOR values in compiler.h
 // EQ_SY was (TOKEN)'=', changed DT May 2015
 static TOKEN INFIXNAMEVEC[] = {
@@ -78,26 +78,26 @@ static LIST ENV[100];
 
 static word ENVP;
 
-void INIT_CODEV() {
+void init_codev() {
   ENVP = -1;
   CODEV = NIL;
 }
 
-static bool ISOP(LIST X) {
+static bool isop(LIST X) {
   return X == (LIST)ALPHA || X == (LIST)INDIR ||
          ((LIST)QUOTE <= X && X <= (LIST)QUOTE_OP);
 }
 
-static bool ISINFIX(LIST X) { return (LIST)COLON_OP <= X && X <= (LIST)DOT_OP; }
+static bool isinfix(LIST X) { return (LIST)COLON_OP <= X && X <= (LIST)DOT_OP; }
 
-static bool ISRELOP(LIST X) { return (LIST)GR_OP <= X && X <= (LIST)LS_OP; }
+static bool isrelop(LIST X) { return (LIST)GR_OP <= X && X <= (LIST)LS_OP; }
 
 // return the priority of an operator from its index in INFIX*
-static word DIPRIO(OPERATOR OP) { return OP == -1 ? -1 : INFIXPRIOVEC[OP]; }
+static word diprio(OPERATOR OP) { return OP == -1 ? -1 : INFIXPRIOVEC[OP]; }
 
 // takes a token , returns an operator
 // else -1 if t not the name of an infix
-static OPERATOR MKINFIX(TOKEN T) {
+static OPERATOR mkinfix(TOKEN T) {
   word I = 1;
   if (T == (TOKEN)'=') {
     // legacy, accept "=" for "=="
@@ -116,7 +116,7 @@ static OPERATOR MKINFIX(TOKEN T) {
 }
 
 // N is the priority level
-void PRINTEXP(LIST E, word N) {
+void printexp(LIST E, word N) {
   if (E == NIL) {
     bcpl_WRITES("[]");
   } else if (ISATOM(E)) {
@@ -144,41 +144,41 @@ void PRINTEXP(LIST E, word N) {
     {
       // maybe could be operator
       LIST OP = HD(E);
-      if (!ISOP(OP) && N <= 7) {
-        PRINTEXP(OP, 7);
+      if (!isop(OP) && N <= 7) {
+        printexp(OP, 7);
         (*_WRCH)(' ');
-        PRINTEXP(TL(E), 8);
+        printexp(TL(E), 8);
       } else if (OP == (LIST)QUOTE) {
         PRINTATOM((ATOM)TL(E), true);
       } else if (OP == (LIST)INDIR || OP == (LIST)ALPHA) {
-        PRINTEXP(TL(E), N);
+        printexp(TL(E), N);
       } else if (OP == (LIST)DOTDOT_OP || OP == (LIST)COMMADOTDOT_OP) {
         (*_WRCH)('[');
         E = TL(E);
-        PRINTEXP(HD(E), 0);
+        printexp(HD(E), 0);
         if (OP == (LIST)COMMADOTDOT_OP) {
           (*_WRCH)(',');
           E = TL(E);
-          PRINTEXP(HD(E), 0);
+          printexp(HD(E), 0);
         }
         bcpl_WRITES("..");
         if (!(TL(E) == INFINITY)) {
-          PRINTEXP(TL(E), 0);
+          printexp(TL(E), 0);
         }
         (*_WRCH)(']');
       } else if (OP == (LIST)ZF_OP) {
         (*_WRCH)('{');
-        PRINTZF_EXP(TL(E));
+        printzf_exp(TL(E));
         (*_WRCH)('}');
       } else if (OP == (LIST)NOT_OP && N <= 3) {
         (*_WRCH)('\\');
-        PRINTEXP(TL(E), 3);
+        printexp(TL(E), 3);
       } else if (OP == (LIST)NEG_OP && N <= 5) {
         (*_WRCH)('-');
-        PRINTEXP(TL(E), 5);
+        printexp(TL(E), 5);
       } else if (OP == (LIST)LENGTH_OP && N <= 7) {
         (*_WRCH)('#');
-        PRINTEXP(TL(E), 7);
+        printexp(TL(E), 7);
       } else if (OP == (LIST)QUOTE_OP) {
         (*_WRCH)('\'');
         if (TL(E) == (LIST)LENGTH_OP) {
@@ -189,27 +189,27 @@ void PRINTEXP(LIST E, word N) {
           writetoken(INFIXNAMEVEC[(word)TL(E)]);
         }
         (*_WRCH)('\'');
-      } else if (ISLISTEXP(E)) {
+      } else if (islistexp(E)) {
         (*_WRCH)('[');
         while (!(E == NIL)) {
-          PRINTEXP(HD(TL(E)), 0);
+          printexp(HD(TL(E)), 0);
           if (!(TL(TL(E)) == NIL)) {
             (*_WRCH)(',');
           }
           E = TL(TL(E));
         }
         (*_WRCH)(']');
-      } else if (OP == (LIST)AND_OP && N <= 3 && ROTATE(E) &&
-                 ISRELATION(HD(TL(E))) &&
-                 ISRELATION_BEGINNING(TL(TL(HD(TL(E)))), TL(TL(E)))) {
+      } else if (OP == (LIST)AND_OP && N <= 3 && rotate(E) &&
+                 isrelation(HD(TL(E))) &&
+                 isrelation_beginning(TL(TL(HD(TL(E)))), TL(TL(E)))) {
         // continued relations
-        PRINTEXP(HD(TL(HD(TL(E)))), 4);
+        printexp(HD(TL(HD(TL(E)))), 4);
         (*_WRCH)(' ');
         writetoken(INFIXNAMEVEC[(word)HD(HD(TL(E)))]);
         (*_WRCH)(' ');
-        PRINTEXP(TL(TL(E)), 2);
-      } else if (ISINFIX(OP) && INFIXPRIOVEC[(word)OP] >= N) {
-        PRINTEXP(HD(TL(E)), LEFTPREC((OPERATOR)OP));
+        printexp(TL(TL(E)), 2);
+      } else if (isinfix(OP) && INFIXPRIOVEC[(word)OP] >= N) {
+        printexp(HD(TL(E)), leftprec((OPERATOR)OP));
         if (!(OP == (LIST)COLON_OP)) {
           // DOT.OP should be spaced, DT 2015
           (*_WRCH)(' ');
@@ -218,24 +218,24 @@ void PRINTEXP(LIST E, word N) {
         if (!(OP == (LIST)COLON_OP)) {
           (*_WRCH)(' ');
         }
-        PRINTEXP(TL(TL(E)), RIGHTPREC((OPERATOR)OP));
+        printexp(TL(TL(E)), rightprec((OPERATOR)OP));
       } else {
         (*_WRCH)('(');
-        PRINTEXP(E, 0);
+        printexp(E, 0);
         (*_WRCH)(')');
       }
     }
   }
 }
 
-static void PRINTZF_EXP(LIST X) {
+static void printzf_exp(LIST X) {
   LIST Y = X;
   while (!(TL(Y) == NIL)) {
     Y = TL(Y);
   }
 
   // body
-  PRINTEXP(HD(Y), 0);
+  printexp(HD(Y), 0);
 
   // print "such that" as bar if a generator directly follows
   if (ISCONS(HD(X)) && HD(HD(X)) == (LIST)GENERATOR) {
@@ -244,10 +244,10 @@ static void PRINTZF_EXP(LIST X) {
     (*_WRCH)(';');
   }
   while (!(TL(X) == NIL)) {
-    LIST QUALIFIER = HD(X);
+    LIST qualifier = HD(X);
 
-    if (ISCONS(QUALIFIER) && HD(QUALIFIER) == (LIST)GENERATOR) {
-      PRINTEXP(HD(TL(QUALIFIER)), 0);
+    if (ISCONS(qualifier) && HD(qualifier) == (LIST)GENERATOR) {
+      printexp(HD(TL(qualifier)), 0);
 
       // deals with repeated generators
       while (ISCONS(TL(X)) &&
@@ -255,16 +255,16 @@ static void PRINTZF_EXP(LIST X) {
              ISCONS(HD(TL(X))) &&
 #endif
              HD(HD(TL(X))) == (LIST)GENERATOR &&
-             EQUAL(TL(TL(HD(TL(X)))), TL(TL(QUALIFIER)))) {
+             EQUAL(TL(TL(HD(TL(X)))), TL(TL(qualifier)))) {
         X = TL(X);
-        QUALIFIER = HD(X);
+        qualifier = HD(X);
         (*_WRCH)(',');
-        PRINTEXP(HD(TL(QUALIFIER)), 0);
+        printexp(HD(TL(qualifier)), 0);
       }
       bcpl_WRITES("<-");
-      PRINTEXP(TL(TL(QUALIFIER)), 0);
+      printexp(TL(TL(qualifier)), 0);
     } else {
-      PRINTEXP(QUALIFIER, 0);
+      printexp(qualifier, 0);
     }
     X = TL(X);
     if (!(TL(X) == NIL)) {
@@ -273,7 +273,7 @@ static void PRINTZF_EXP(LIST X) {
   }
 }
 
-static bool ISLISTEXP(LIST E) {
+static bool islistexp(LIST E) {
   while (ISCONS(E) && HD(E) == (LIST)COLON_OP) {
     LIST E1 = TL(TL(E));
 
@@ -287,18 +287,18 @@ static bool ISLISTEXP(LIST E) {
   return E == NIL;
 }
 
-static bool ISRELATION(LIST X) { return ISCONS(X) && ISRELOP(HD(X)); }
+static bool isrelation(LIST X) { return ISCONS(X) && isrelop(HD(X)); }
 
-static bool ISRELATION_BEGINNING(LIST A, LIST X) {
-  return (ISRELATION(X) && EQUAL(HD(TL(X)), A)) ||
+static bool isrelation_beginning(LIST A, LIST X) {
+  return (isrelation(X) && EQUAL(HD(TL(X)), A)) ||
          (ISCONS(X) && HD(X) == (LIST)AND_OP &&
-          ISRELATION_BEGINNING(A, HD(TL(X))));
+          isrelation_beginning(A, HD(TL(X))));
 }
 
-static word LEFTPREC(OPERATOR OP) {
+static word leftprec(OPERATOR OP) {
   return OP == COLON_OP || OP == APPEND_OP || OP == LISTDIFF_OP ||
                  OP == AND_OP || OP == OR_OP || OP == EXP_OP ||
-                 ISRELOP((LIST)OP)
+                 isrelop((LIST)OP)
              ? INFIXPRIOVEC[OP] + 1
              : INFIXPRIOVEC[OP];
 }
@@ -307,7 +307,7 @@ static word LEFTPREC(OPERATOR OP) {
 // colon, append, and, or are right-associative
 // all other infixes are left-associative
 
-static word RIGHTPREC(OPERATOR OP) {
+static word rightprec(OPERATOR OP) {
   return OP == COLON_OP || OP == APPEND_OP || OP == LISTDIFF_OP ||
                  OP == AND_OP || OP == OR_OP || OP == EXP_OP
              ? INFIXPRIOVEC[OP]
@@ -316,7 +316,7 @@ static word RIGHTPREC(OPERATOR OP) {
 
 // puts nested and's into rightist form to ensure
 // detection of continued relations
-static bool ROTATE(LIST E) {
+static bool rotate(LIST E) {
   while (ISCONS(HD(TL(E))) && HD(HD(TL(E))) == (LIST)AND_OP) {
     LIST X = TL(HD(TL(E))), C = TL(TL(E));
     LIST A = HD(X), B = TL(X);
@@ -329,7 +329,7 @@ static bool ROTATE(LIST E) {
 
 // the val field of each user defined name
 // contains - cons(cons(nargs,comment),<list of eqns>)
-void DISPLAY(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
+void display(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
   if (VAL(ID) == NIL) {
     fprintf(bcpl_OUTPUT, "\"%s\" - not defined\n", PRINTNAME(ID));
     return;
@@ -369,8 +369,8 @@ void DISPLAY(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
         bcpl_WRITES("    ");
       }
 
-      REMOVELINENO(HD(EQNS));
-      DISPLAYEQN(ID, NARGS, HD(EQNS));
+      removelineno(HD(EQNS));
+      displayeqn(ID, NARGS, HD(EQNS));
       if (DOUBLESPACING) {
         (*_WRCH)('\n');
       }
@@ -382,7 +382,7 @@ void DISPLAY(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
 static void SHCH(word CH) { TRUEWRCH(' '); }
 
 // equation decoder
-void DISPLAYEQN(ATOM ID, word NARGS, LIST EQN) {
+void displayeqn(ATOM ID, word NARGS, LIST EQN) {
   LIST LHS = HD(EQN), CODE = TL(EQN);
 
   if (NARGS == 0) {
@@ -395,7 +395,7 @@ void DISPLAYEQN(ATOM ID, word NARGS, LIST EQN) {
     } else {
       LASTLHS = LHS;
     }
-    PRINTEXP(LHS, 0);
+    printexp(LHS, 0);
     _WRCH = TRUEWRCH;
   }
 
@@ -404,13 +404,13 @@ void DISPLAYEQN(ATOM ID, word NARGS, LIST EQN) {
   if (HD(CODE) == (LIST)CALL_C) {
     bcpl_WRITES("<primitive function>");
   } else {
-    DISPLAYRHS(LHS, NARGS, CODE);
+    displayrhs(LHS, NARGS, CODE);
   }
 
   (*_WRCH)('\n');
 }
 
-void DISPLAYRHS(LIST LHS, word NARGS, LIST CODE) {
+void displayrhs(LIST LHS, word NARGS, LIST CODE) {
   LIST V[100];
   word I = NARGS, J;
   bool IF_FLAG = false;
@@ -490,15 +490,15 @@ void DISPLAYRHS(LIST LHS, word NARGS, LIST CODE) {
       }
       break;
     case STOP_C:
-      PRINTEXP(V[I], 0);
+      printexp(V[I], 0);
       if (!(IF_FLAG)) {
         return;
       }
       bcpl_WRITES(", ");
-      PRINTEXP(V[I - 1], 0);
+      printexp(V[I - 1], 0);
       return;
     default:
-      bcpl_WRITES("IMPOSSIBLE INSTRUCTION IN \"DISPLAYRHS\"\n");
+      bcpl_WRITES("IMPOSSIBLE INSTRUCTION IN \"displayrhs\"\n");
     }
     // end of switch
     CODE = TL(CODE);
@@ -507,34 +507,34 @@ void DISPLAYRHS(LIST LHS, word NARGS, LIST CODE) {
 
 // extracts that part of the code which
 // determines which cases this equation applies to
-LIST PROFILE(LIST EQN) {
+LIST profile(LIST EQN) {
   LIST CODE = TL(EQN);
   if (HD(CODE) == (LIST)LINENO_C) {
     CODE = TL(TL(CODE));
   }
   {
     LIST C = CODE;
-    while (PARMY(HD(C)))
-      C = REST(C);
+    while (parmy(HD(C)))
+      C = rest(C);
     {
       LIST HOLD = C;
       while (!(HD(C) == (LIST)IF_C || HD(C) == (LIST)STOP_C))
-        C = REST(C);
+        C = rest(C);
       if (HD(C) == (LIST)IF_C) {
-        return SUBTRACT(CODE, C);
+        return subtract(CODE, C);
       } else {
-        return SUBTRACT(CODE, HOLD);
+        return subtract(CODE, HOLD);
       }
     }
   }
 }
 
-static bool PARMY(LIST X) {
+static bool parmy(LIST X) {
   return X == (LIST)MATCH_C || X == (LIST)MATCHARG_C || X == (LIST)MATCHPAIR_C;
 }
 
 // removes one complete instruction from C
-static LIST REST(LIST C) {
+static LIST rest(LIST C) {
   LIST X = HD(C);
   C = TL(C);
 
@@ -552,7 +552,7 @@ static LIST REST(LIST C) {
 }
 
 // list subtraction
-static LIST SUBTRACT(LIST X, LIST Y) {
+static LIST subtract(LIST X, LIST Y) {
   LIST Z = NIL;
 
   while (!(X == Y)) {
@@ -566,30 +566,30 @@ static LIST SUBTRACT(LIST X, LIST Y) {
 // called whenever the definiendum is subject of a
 // display,reorder or (partial)delete command - has the effect of
 // restoring the standard line numbering
-void REMOVELINENO(LIST EQN) {
+void removelineno(LIST EQN) {
   if (HD(TL(EQN)) == (LIST)LINENO_C) {
     TL(EQN) = TL(TL(TL(EQN)));
   }
 }
 
 // compiler for krc expressions and equations
-
-LIST EXP() {
-  INIT_CODEV();
-  EXPR(0);
-  PLANT0(STOP_C);
-  return COLLECTCODE();
+// renamed from exp as the name conflicts with exp(3)
+LIST expression() {
+  init_codev();
+  expr(0);
+  plant0(STOP_C);
+  return collectcode();
 }
 
 // returns a triple: cons(subject,cons(nargs,eqn))
-LIST EQUATION() {
+LIST equation() {
   LIST SUBJECT = 0, LHS = 0;
   word NARGS = 0;
-  INIT_CODEV();
+  init_codev();
   if (haveid()) {
     SUBJECT = (LIST)THE_ID, LHS = (LIST)THE_ID;
-    while (STARTFORMAL(HD(TOKENS))) {
-      LHS = CONS(LHS, FORMAL());
+    while (startformal(HD(TOKENS))) {
+      LHS = CONS(LHS, formal());
       NARGS = NARGS + 1;
     }
   } else if (HD(TOKENS) == (LIST)'=' && LASTLHS != NIL) {
@@ -600,20 +600,20 @@ LIST EQUATION() {
     syntax(), bcpl_WRITES("missing LHS\n");
     return NIL;
   }
-  COMPILELHS(LHS, NARGS);
+  compilelhs(LHS, NARGS);
   {
-    LIST CODE = COLLECTCODE();
+    LIST CODE = collectcode();
     check((TOKEN)'=');
-    EXPR(0);
-    PLANT0(STOP_C);
+    expr(0);
+    plant0(STOP_C);
     {
-      LIST EXPCODE = COLLECTCODE();
+      LIST EXPCODE = collectcode();
 
       // change from EMAS/KRC to allow guarded simple def
       if (have((TOKEN)',')) {
-        EXPR(0);
-        PLANT0(IF_C);
-        CODE = APPEND(CODE, APPEND(COLLECTCODE(), EXPCODE));
+        expr(0);
+        plant0(IF_C);
+        CODE = APPEND(CODE, APPEND(collectcode(), EXPCODE));
       } else {
         CODE = APPEND(CODE, EXPCODE);
       }
@@ -640,118 +640,118 @@ LIST EQUATION() {
 }
 
 // N is the priority level
-static void EXPR(word N) {
+static void expr(word N) {
   if (N <= 3 && (have((TOKEN)'\\') || have((TOKEN)'~'))) {
-    PLANT1(LOAD_C, (LIST)NOT_OP);
-    EXPR(3);
-    PLANT0(APPLY_C);
+    plant1(LOAD_C, (LIST)NOT_OP);
+    expr(3);
+    plant0(APPLY_C);
   } else if (N <= 5 && have((TOKEN)'+')) {
-    EXPR(5);
+    expr(5);
   } else if (N <= 5 && have((TOKEN)'-')) {
-    PLANT1(LOAD_C, (LIST)NEG_OP);
-    EXPR(5);
-    PLANT0(APPLY_C);
+    plant1(LOAD_C, (LIST)NEG_OP);
+    expr(5);
+    plant0(APPLY_C);
   } else if (have((TOKEN)'#')) {
-    PLANT1(LOAD_C, (LIST)LENGTH_OP);
-    COMBN();
-    PLANT0(APPLY_C);
-  } else if (STARTSIMPLE(HD(TOKENS)))
-    COMBN();
+    plant1(LOAD_C, (LIST)LENGTH_OP);
+    combn();
+    plant0(APPLY_C);
+  } else if (startsimple(HD(TOKENS)))
+    combn();
   else {
     syntax();
     return;
   }
   {
-    OPERATOR OP = MKINFIX(HD(TOKENS));
-    while (DIPRIO(OP) >= N) {
+    OPERATOR OP = mkinfix(HD(TOKENS));
+    while (diprio(OP) >= N) {
       // for continued relations
       word I, AND_COUNT = 0;
 
       TOKENS = TL(TOKENS);
-      EXPR(RIGHTPREC(OP));
+      expr(rightprec(OP));
 
       if (ERRORFLAG) {
         return;
       }
 
-      while (ISRELOP((LIST)OP) && ISRELOP((LIST)MKINFIX(HD(TOKENS)))) {
+      while (isrelop((LIST)OP) && isrelop((LIST)mkinfix(HD(TOKENS)))) {
         // continued relations
         AND_COUNT = AND_COUNT + 1;
-        PLANT1(CONTINUE_INFIX_C, (LIST)OP);
-        OP = MKINFIX(HD(TOKENS));
+        plant1(CONTINUE_INFIX_C, (LIST)OP);
+        OP = mkinfix(HD(TOKENS));
         TOKENS = TL(TOKENS);
-        EXPR(4);
+        expr(4);
         if (ERRORFLAG) {
           return;
         }
       }
-      PLANT1(APPLYINFIX_C, (LIST)OP);
+      plant1(APPLYINFIX_C, (LIST)OP);
       for (I = 1; I <= AND_COUNT; I++) {
-        PLANT1(APPLYINFIX_C, (LIST)AND_OP);
+        plant1(APPLYINFIX_C, (LIST)AND_OP);
       }
       // for continued relations
-      OP = MKINFIX(HD(TOKENS));
+      OP = mkinfix(HD(TOKENS));
     }
   }
 }
 
-static void COMBN() {
-  SIMPLE();
-  while (STARTSIMPLE(HD(TOKENS))) {
-    SIMPLE();
-    PLANT0(APPLY_C);
+static void combn() {
+  simple();
+  while (startsimple(HD(TOKENS))) {
+    simple();
+    plant0(APPLY_C);
   }
 }
 
-static bool STARTFORMAL(TOKEN T) {
+static bool startformal(TOKEN T) {
   return ISCONS(T) ? (HD(T) == IDENT || HD(T) == (LIST)CONST)
                    : T == (TOKEN)'(' || T == (TOKEN)'[' || T == (TOKEN)'-';
 }
 
-static bool STARTSIMPLE(TOKEN T) {
+static bool startsimple(TOKEN T) {
   return ISCONS(T) ? (HD(T) == IDENT || HD(T) == (LIST)CONST)
                    : T == (TOKEN)'(' || T == (TOKEN)'[' || T == (TOKEN)'{' ||
                          T == (TOKEN)'\'';
 }
 
-static void SIMPLE() {
+static void simple() {
   if (haveid()) {
-    COMPILENAME(THE_ID);
+    compilename(THE_ID);
   } else if (haveconst()) {
-    PLANT1(LOAD_C, (LIST)INTERNALISE(THE_CONST));
+    plant1(LOAD_C, (LIST)internalise(THE_CONST));
   } else if (have((TOKEN)'(')) {
-    EXPR(0);
+    expr(0);
     check((TOKEN)')');
   } else if (have((TOKEN)'['))
     if (have((TOKEN)']')) {
-      PLANT1(LOAD_C, NIL);
+      plant1(LOAD_C, NIL);
     } else {
       word N = 1;
-      EXPR(0);
+      expr(0);
       if (have((TOKEN)',')) {
-        EXPR(0);
+        expr(0);
         N = N + 1;
       }
       if (have(DOTDOT_SY)) {
         if (HD(TOKENS) == (TOKEN)']') {
-          PLANT1(LOAD_C, INFINITY);
+          plant1(LOAD_C, INFINITY);
         } else {
-          EXPR(0);
+          expr(0);
         }
 
         if (N == 2) {
-          PLANT0(APPLY_C);
+          plant0(APPLY_C);
         }
 
-        PLANT1(APPLYINFIX_C, (LIST)(N == 1 ? DOTDOT_OP : COMMADOTDOT_OP));
+        plant1(APPLYINFIX_C, (LIST)(N == 1 ? DOTDOT_OP : COMMADOTDOT_OP));
 
         // OK
       } else {
         while (have((TOKEN)',')) {
-          EXPR(0);
+          expr(0);
           N = N + 1;
         }
-        PLANT1(FORMLIST_C, (LIST)N);
+        plant1(FORMLIST_C, (LIST)N);
         // OK
       }
       check((TOKEN)']');
@@ -760,34 +760,34 @@ static void SIMPLE() {
     // ZF expressions bug?
     word N = 0;
     LIST HOLD = TOKENS;
-    PERFORM_ALPHA_CONVERSIONS();
-    EXPR(0);
+    perform_alpha_conversions();
+    expr(0);
     // implicit zf body no longer legal
     // if ( HD(TOKENS)==BACKARROW_SY ) TOKENS=HOLD; else
     check((TOKEN)';');
     do
-      N = N + QUALIFIER();
+      N = N + qualifier();
     while (have((TOKEN)';'));
     // OK
-    PLANT1(FORMZF_C, (LIST)N);
+    plant1(FORMZF_C, (LIST)N);
     check((TOKEN)'}');
   } else if (have((TOKEN)'\'')) {
     // operator denotation
     if (have((TOKEN)'#')) {
-      PLANT1(LOAD_C, (LIST)LENGTH_OP);
+      plant1(LOAD_C, (LIST)LENGTH_OP);
     } else if (have((TOKEN)'\\') || have((TOKEN)'~')) {
-      PLANT1(LOAD_C, (LIST)NOT_OP);
+      plant1(LOAD_C, (LIST)NOT_OP);
     } else {
-      OPERATOR OP = MKINFIX((TOKEN)(HD(TOKENS)));
-      if (ISINFIX((LIST)OP)) {
+      OPERATOR OP = mkinfix((TOKEN)(HD(TOKENS)));
+      if (isinfix((LIST)OP)) {
         TOKENS = TL(TOKENS);
       } else {
         // missing infix or prefix operator
         syntax();
       }
-      PLANT1(LOAD_C, (LIST)QUOTE_OP);
-      PLANT1(LOAD_C, (LIST)OP);
-      PLANT0(APPLY_C);
+      plant1(LOAD_C, (LIST)QUOTE_OP);
+      plant1(LOAD_C, (LIST)OP);
+      plant0(APPLY_C);
     }
     check((TOKEN)'\'');
   } else
@@ -795,109 +795,109 @@ static void SIMPLE() {
     syntax();
 }
 
-static void COMPILENAME(ATOM N) {
+static void compilename(ATOM N) {
   word I = 0;
   while (!(I > ENVP || ENV[I] == (LIST)N)) {
     I = I + 1;
   }
 
   if (I > ENVP) {
-    PLANT1(LOAD_C, (LIST)N);
+    plant1(LOAD_C, (LIST)N);
   } else {
     // OK
-    PLANT1(LOADARG_C, (LIST)I);
+    plant1(LOADARG_C, (LIST)I);
   }
 }
 
-static word QUALIFIER() {
+static word qualifier() {
   // what about more general formals?
-  if (ISGENERATOR(TL(TOKENS))) {
+  if (isgenerator(TL(TOKENS))) {
     word N = 0;
 
     do {
       haveid();
-      PLANT1(LOAD_C, (LIST)THE_ID);
+      plant1(LOAD_C, (LIST)THE_ID);
       N = N + 1;
     } while (have((TOKEN)','));
 
     check(BACKARROW_SY);
-    EXPR(0);
-    PLANT1(APPLYINFIX_C, (LIST)GENERATOR);
+    expr(0);
+    plant1(APPLYINFIX_C, (LIST)GENERATOR);
 
     if (N > 1) {
       // OK
-      PLANT1(CONT_GENERATOR_C, (LIST)(N - 1));
+      plant1(CONT_GENERATOR_C, (LIST)(N - 1));
     }
 
     return N;
   } else {
-    EXPR(0);
+    expr(0);
     return 1;
   }
 }
 
 // also recognises the "such that" bar and converts it to ';'
 // to distinguish it from "or"
-static void PERFORM_ALPHA_CONVERSIONS() {
+static void perform_alpha_conversions() {
   LIST P = TOKENS;
   while (!(HD(P) == (TOKEN)'}' || HD(P) == (TOKEN)']' || HD(P) == EOL)) {
     if (HD(P) == (TOKEN)'[' || HD(P) == (TOKEN)'{') {
-      P = SKIPCHUNK(P);
+      P = skipchunk(P);
       continue;
     }
 
-    if (HD(P) == (TOKEN)'|' && ISID(HD(TL(P))) && ISGENERATOR(TL(TL(P)))) {
+    if (HD(P) == (TOKEN)'|' && isid(HD(TL(P))) && isgenerator(TL(TL(P)))) {
       HD(P) = (TOKEN)';';
     }
 
-    if (ISID(HD(P)) && ISGENERATOR(TL(P))) {
-      ALPHA_CONVERT(HD(P), TL(P));
+    if (isid(HD(P)) && isgenerator(TL(P))) {
+      alpha_convert(HD(P), TL(P));
     }
 
     P = TL(P);
   }
 }
 
-bool ISID(LIST X) { return ISCONS(X) && HD(X) == IDENT; }
+bool isid(LIST X) { return ISCONS(X) && HD(X) == IDENT; }
 
-static bool ISGENERATOR(LIST T) {
+static bool isgenerator(LIST T) {
   return !ISCONS(T) ? false
                     : HD(T) == BACKARROW_SY ||
-                          (HD(T) == (TOKEN)',' && ISID(HD(TL(T))) &&
-                           ISGENERATOR(TL(TL(T))));
+                          (HD(T) == (TOKEN)',' && isid(HD(TL(T))) &&
+                           isgenerator(TL(TL(T))));
 }
 
-static void ALPHA_CONVERT(LIST VAR, LIST P) {
+static void alpha_convert(LIST VAR, LIST P) {
   LIST T = TOKENS;
   LIST VAR1 = CONS((LIST)ALPHA, TL(VAR));
   LIST EDGE = T;
   while (
       !(HD(EDGE) == (TOKEN)';' || HD(EDGE) == BACKARROW_SY || HD(EDGE) == EOL))
-    EDGE = SKIPCHUNK(EDGE);
+    EDGE = skipchunk(EDGE);
   while (!(T == EDGE)) {
-    CONV1(T, VAR, VAR1);
+    conv1(T, VAR, VAR1);
     T = TL(T);
   }
   T = P;
 
   while (!(HD(T) == (TOKEN)';' || HD(T) == EOL)) {
-    T = SKIPCHUNK(T);
+    T = skipchunk(T);
   }
 
   EDGE = T;
   while (
       !(HD(EDGE) == (TOKEN)'}' || HD(EDGE) == (TOKEN)']' || HD(EDGE) == EOL)) {
-    EDGE = SKIPCHUNK(EDGE);
+    EDGE = skipchunk(EDGE);
   }
 
   while (!(T == EDGE)) {
-    CONV1(T, VAR, VAR1);
+    conv1(T, VAR, VAR1);
     T = TL(T);
   }
   TL(VAR) = VAR1;
 }
 
-static LIST SKIPCHUNK(LIST P) {
+static LIST skipchunk(LIST P) {
   word KET = HD(P) == (TOKEN)'{' ? '}' : HD(P) == (TOKEN)'[' ? ']' : -1;
   P = TL(P);
 
@@ -907,7 +907,7 @@ static LIST SKIPCHUNK(LIST P) {
 
   // OK
   while (!(HD(P) == (LIST)KET || HD(P) == EOL)) {
-    P = SKIPCHUNK(P);
+    P = skipchunk(P);
   }
 
   if (!(HD(P) == EOL)) {
@@ -917,19 +917,19 @@ static LIST SKIPCHUNK(LIST P) {
   return (P);
 }
 
-static void CONV1(LIST T, LIST VAR, LIST VAR1) {
+static void conv1(LIST T, LIST VAR, LIST VAR1) {
   if (EQUAL(HD(T), VAR) && HD(T) != VAR) {
     TL(HD(T)) = VAR1;
   }
 }
 
-static LIST FORMAL() {
+static LIST formal() {
   if (haveid()) {
     return (LIST)THE_ID;
   } else if (haveconst()) {
-    return INTERNALISE(THE_CONST);
+    return internalise(THE_CONST);
   } else if (have((TOKEN)'(')) {
-    LIST P = PATTERN();
+    LIST P = pattern();
     check((TOKEN)')');
     return P;
   } else if (have((TOKEN)'[')) {
@@ -940,7 +940,7 @@ static LIST FORMAL() {
     }
 
     do {
-      PLIST = CONS(PATTERN(), PLIST);
+      PLIST = CONS(pattern(), PLIST);
     } while (have((TOKEN)','));
     // note they are in reverse order
 
@@ -962,24 +962,24 @@ static LIST FORMAL() {
   }
 }
 
-static LIST INTERNALISE(LIST VAL) {
+static LIST internalise(LIST VAL) {
   return VAL == TL(TRUTH)
              ? TRUTH
              : VAL == TL(FALSITY) ? FALSITY
                                   : ISATOM(VAL) ? CONS((LIST)QUOTE, VAL) : VAL;
 }
 
-static LIST PATTERN() {
-  LIST P = FORMAL();
+static LIST pattern() {
+  LIST P = formal();
 
   if (have((TOKEN)':')) {
-    P = CONS((LIST)COLON_OP, CONS(P, PATTERN()));
+    P = CONS((LIST)COLON_OP, CONS(P, pattern()));
   }
 
   return P;
 }
 
-static void COMPILELHS(LIST LHS, word NARGS) {
+static void compilelhs(LIST LHS, word NARGS) {
   word I;
   ENVP = NARGS - 1;
   for (I = 1; I <= NARGS; I++) {
@@ -987,11 +987,11 @@ static void COMPILELHS(LIST LHS, word NARGS) {
     LHS = HD(LHS);
   }
   for (I = 0; I <= NARGS - 1; I++) {
-    COMPILEFORMAL(ENV[I], I);
+    compileformal(ENV[I], I);
   }
 }
 
-static void COMPILEFORMAL(LIST X, word I) {
+static void compileformal(LIST X, word I) {
 
   // identifier
   if (ISATOM(X)) {
@@ -1006,49 +1006,49 @@ static void COMPILEFORMAL(LIST X, word I) {
       // no, no code compiled
       return;
     } else {
-      PLANT2(MATCHARG_C, (LIST)I, (LIST)J);
+      plant2(MATCHARG_C, (LIST)I, (LIST)J);
     }
 
   } else if (ISNUM(X) || X == NIL || (ISCONS(X) && HD(X) == (LIST)QUOTE)) {
-    PLANT2(MATCH_C, (LIST)I, X);
+    plant2(MATCH_C, (LIST)I, X);
   } else if (ISCONS(X) && HD(X) == (TOKEN)COLON_OP && ISCONS(TL(X))) {
     // OK
-    PLANT1(MATCHPAIR_C, (LIST)I);
+    plant1(MATCHPAIR_C, (LIST)I);
     ENVP = ENVP + 2;
     {
       word A = ENVP - 1, B = ENVP;
       ENV[A] = HD(TL(X)), ENV[B] = TL(TL(X));
-      COMPILEFORMAL(ENV[A], A);
-      COMPILEFORMAL(ENV[B], B);
+      compileformal(ENV[A], A);
+      compileformal(ENV[B], B);
     }
   } else {
-    bcpl_WRITES("Impossible event in \"COMPILEFORMAL\"\n");
+    bcpl_WRITES("Impossible event in \"compileformal\"\n");
   }
 }
 
-// PLANT stores INSTRUCTIONs and their operands in the code vector
+// plant stores INSTRUCTIONs and their operands in the code vector
 // OP is always an instruction code (*_C);
 // A and B can be operators (*_OP), INTs, CONSTs, IDs (names) or
 // the address of a C function - all are mapped to LIST type.
 
 // APPLY_C IF_C STOP_C
-static void PLANT0(INSTRUCTION OP) { CODEV = CONS((LIST)OP, CODEV); }
+static void plant0(INSTRUCTION OP) { CODEV = CONS((LIST)OP, CODEV); }
 
 // everything else
-static void PLANT1(INSTRUCTION OP, LIST A) {
+static void plant1(INSTRUCTION OP, LIST A) {
   CODEV = CONS((LIST)OP, CODEV);
   CODEV = CONS(A, CODEV);
 }
 
 // MATCH_C MATCHARG_C
-static void PLANT2(INSTRUCTION OP, LIST A, LIST B) {
+static void plant2(INSTRUCTION OP, LIST A, LIST B) {
   CODEV = CONS((LIST)OP, CODEV);
   CODEV = CONS(A, CODEV);
   CODEV = CONS(B, CODEV);
 }
 
 // flushes the code buffer
-static LIST COLLECTCODE() {
+static LIST collectcode() {
   LIST TMP = CODEV;
   CODEV = NIL;
 

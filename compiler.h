@@ -184,16 +184,16 @@ extern word havenum(void);
 extern void syntax_error(char *);
 
 // defined in compiler.c
-extern void INIT_CODEV(void);
-extern LIST EQUATION(void);
-extern LIST PROFILE(LIST);
-extern void PRINTEXP(LIST, word);
-extern LIST EXP(void);
-extern void REMOVELINENO(LIST);
-extern bool ISID(LIST);
-extern void DISPLAY(ATOM ID, bool WITHNOS, bool DOUBLESPACING);
-extern void DISPLAYEQN(ATOM ID, word NARGS, LIST EQN);
-extern void DISPLAYRHS(LIST LHS, word NARGS, LIST CODE);
+extern void init_codev(void);
+extern LIST equation(void);
+extern LIST profile(LIST);
+extern void printexp(LIST, word);
+extern LIST expression(void);
+extern void removelineno(LIST);
+extern bool isid(LIST);
+extern void display(ATOM ID, bool WITHNOS, bool DOUBLESPACING);
+extern void displayeqn(ATOM ID, word NARGS, LIST EQN);
+extern void displayrhs(LIST LHS, word NARGS, LIST CODE);
 
 // defined in reducer.c
 extern void PRINTATOM(ATOM A, bool FORMAT);

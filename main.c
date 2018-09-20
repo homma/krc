@@ -168,7 +168,7 @@ void ESCAPETONEXTCOMMAND() {
     SCRIPT = HOLDSCRIPT, HOLDSCRIPT = NIL;
     CHECK_HITS();
   }
-  INIT_CODEV();
+  init_codev();
   INIT_ARGSPACE();
   longjmp(nextcommand, 1);
 }
@@ -184,7 +184,7 @@ void GO() {
   // first-time initialization
   if (setjmp(nextcommand) == 0) {
 
-    INIT_CODEV();
+    init_codev();
     INIT_ARGSPACE();
     INITIALISE();
 
@@ -615,33 +615,34 @@ FILE *FINDCHANNEL(char *F) {
 // <THINGY> ::= <NAME> | <NAME> .. <NAME> | <NAME> ..
 // <PART> ::= <INT> | <INT>..<INT> | <INT>..
 
-// static char *HELP[] = { //replaced by HELPCOM() see below
-//"/                  displays the whole script",
-//"/delete NAMES      deletes the named functions. /d deletes everything",
-//"/delete NAME PARTS deletes the numbered equations from function NAME",
-//"/reorder NAME NAMES moves the equations for NAMES after those for NAME",
-//"/reorder NAME PARTS redefines the order of NAME's equations",
-//"/aborder           sorts the script into alphabetical order",
-//"/rename FROMs,TOs  changes the names of one or more functions",
-//"/save FILENAME     saves the script in the named file",
-//"/get FILENAME      adds the contents of a file to the script",
-//"/list FILENAME     displays the contents of a disk file",
-//"/file (or /f)      shows the current default filename",
-//"/file FILENAME     changes the default filename",
-//"/dir               list filenames in current directory/folder",
-//"/quit (or /q)      ends this KRC session",
-//"/names             displays the names defined in your script",
-//"/openlib           allows you to modify equations in the prelude/library",
-//"/clear             clears the memo fields for all variables",
-//"/lib               displays the names defined in the prelude/library",
-//"NAME               displays the equations defined for the function NAME",
-//"NAME..NAME         displays a section of the script",
-//"EXP?               evaluates an expression and pretty-print the result",
-//"EXP!               the same but with unformatted output",
-//"EQUATION           adds an equation to the script",
-//"   NAMES ::= NAME | NAME..NAME | NAME..   PARTS ::= INT | INT..INT | INT..",
-// NULL,
-//};
+// // replaced by HELPCOM() see below
+// static char *HELP[] = {
+// "/                  displays the whole script",
+// "/delete NAMES      deletes the named functions. /d deletes everything",
+// "/delete NAME PARTS deletes the numbered equations from function NAME",
+// "/reorder NAME NAMES moves the equations for NAMES after those for NAME",
+// "/reorder NAME PARTS redefines the order of NAME's equations",
+// "/aborder           sorts the script into alphabetical order",
+// "/rename FROMs,TOs  changes the names of one or more functions",
+// "/save FILENAME     saves the script in the named file",
+// "/get FILENAME      adds the contents of a file to the script",
+// "/list FILENAME     displays the contents of a disk file",
+// "/file (or /f)      shows the current default filename",
+// "/file FILENAME     changes the default filename",
+// "/dir               list filenames in current directory/folder",
+// "/quit (or /q)      ends this KRC session",
+// "/names             displays the names defined in your script",
+// "/openlib           allows you to modify equations in the prelude/library",
+// "/clear             clears the memo fields for all variables",
+// "/lib               displays the names defined in the prelude/library",
+// "NAME               displays the equations defined for the function NAME",
+// "NAME..NAME         displays a section of the script",
+// "EXP?               evaluates an expression and pretty-print the result",
+// "EXP!               the same but with unformatted output",
+// "EQUATION           adds an equation to the script",
+// "   NAMES ::= NAME | NAME..NAME | NAME..   PARTS ::= INT | INT..INT | INT..",
+//  NULL,
+// };
 //
 // static void
 // showhelp()
@@ -776,7 +777,7 @@ static void DISPLAYCOM() {
 
     if (have(EOL)) {
 
-      DISPLAY(THE_ID, true, false);
+      display(THE_ID, true, false);
 
     } else if (have((TOKEN)DOTDOT_SY)) {
 
@@ -792,7 +793,7 @@ static void DISPLAYCOM() {
       }
 
       while (!(X == NIL)) {
-        DISPLAY((ATOM)HD(X), false, false);
+        display((ATOM)HD(X), false, false);
         X = TL(X);
       }
 
@@ -816,7 +817,7 @@ static void DISPLAYALL(bool DOUBLESPACING) {
   while (!(P == NIL)) {
     // don't display builtin fns (relevant only in /openlib)
     if (!(PRIMITIVE((ATOM)HD(P)))) {
-      DISPLAY((ATOM)HD(P), false, false);
+      display((ATOM)HD(P), false, false);
     }
 
     P = TL(P);
@@ -1343,7 +1344,7 @@ static void NEWEQUATION() {
   }
 
   {
-    LIST X = EQUATION();
+    LIST X = equation();
     if (ERRORFLAG) {
       return;
     }
@@ -1381,10 +1382,10 @@ static void NEWEQUATION() {
       } else if (EQNO == -1) {
         // unnumbered EQN
         LIST EQNS = TL(VAL(SUBJECT));
-        LIST P = PROFILE(EQN);
+        LIST P = profile(EQN);
 
         do {
-          if (EQUAL(P, PROFILE(HD(EQNS)))) {
+          if (EQUAL(P, profile(HD(EQNS)))) {
             LIST CODE = TL(HD(EQNS));
             if (HD(CODE) == (LIST)LINENO_C) {
               // if old EQN has line no,
@@ -1504,7 +1505,7 @@ static void COMMENT() {
 }
 
 static void EVALUATION() {
-  LIST CODE = EXP();
+  LIST CODE = expression();
   word CH = (word)HD(TOKENS);
 
   // static SO INVISIBLE TO GARBAGE COLLECTOR
@@ -1588,8 +1589,8 @@ static LIST SORT(LIST X) {
 }
 
 static void REORDERCOM() {
-  if (ISID(HD(TOKENS)) &&
-      (ISID(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (LIST)DOTDOT_SY)) {
+  if (isid(HD(TOKENS)) &&
+      (isid(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (LIST)DOTDOT_SY)) {
     SCRIPTREORDER();
   } else if (haveid() && HD(TOKENS) != EOL) {
     LIST NOS = NIL;
@@ -1614,7 +1615,7 @@ static void REORDERCOM() {
     }
 
     if (VAL(THE_ID) == NIL) {
-      DISPLAY(THE_ID, false, false);
+      display(THE_ID, false, false);
       return;
     }
 
@@ -1638,14 +1639,14 @@ static void REORDERCOM() {
       LIST EQNS = TL(VAL(THE_ID));
       while (!(NOS == NIL)) {
         LIST EQN = ELEM(EQNS, (word)HD(NOS));
-        REMOVELINENO(EQN);
+        removelineno(EQN);
         NEW = CONS(EQN, NEW);
         NOS = TL(NOS);
       }
 
       // note that the EQNS in "NEW" are now in the correct order
       TL(VAL(THE_ID)) = NEW;
-      DISPLAY(THE_ID, true, false);
+      display(THE_ID, true, false);
       SAVED = false;
       CLEARMEMORY();
     }
@@ -1827,7 +1828,7 @@ static void DELETECOM() {
         LIST NEW = NIL;
         DLIST = TL(DLIST);
         if (VAL(NAME) == NIL) {
-          DISPLAY(NAME, false, false);
+          display(NAME, false, false);
           continue;
         }
 
@@ -1846,7 +1847,7 @@ static void DELETECOM() {
               DELS = DELS + 1;
             } else {
               LIST EQN = ELEM(TL(VAL(NAME)), I);
-              REMOVELINENO(EQN);
+              removelineno(EQN);
               NEW = CONS(EQN, NEW);
             }
         }
