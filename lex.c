@@ -90,7 +90,7 @@ void readline() {
 #define NOTCH(CH) (CH == '\\' || CH == '~' && LEGACY)
 
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
-//|CONS(IDENT, ATOM) | CONS(CONST, <ATOM | NUM >)
+//          | CONS(IDENT, ATOM) | CONS(CONST, <ATOM | NUM>)
 static TOKEN readtoken(void) {
   word CH = (*_RDCH)();
 
@@ -105,10 +105,10 @@ static TOKEN readtoken(void) {
     return (TOKEN)ENDSTREAMCH;
   }
 
-  if (('a' <= CH && CH <= 'z') ||
-      ('A' <= CH && CH <= 'Z')
-      // ||(CH == '_' && peekalpha()) // expt to allow _ID, discontinued
-      || (EXPECTFILE && !isspace(CH))) {
+  if (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z') ||
+      (EXPECTFILE && !isspace(CH))) {
+    // expt to allow _ID, discontinued
+    // ||(CH == '_' && peekalpha())
 
     do {
       BUFCH(CH);
@@ -130,7 +130,7 @@ static TOKEN readtoken(void) {
   }
 #if DECIMALS
   // EMAS's READN gobbles the first char after the number and leaves it in
-  // global variable "TERMINATOR".obcpl also eats the following char but
+  // global variable "TERMINATOR". obcpl also eats the following char but
   // doesn't have "TERMINATOR" while Richards' 2013 BCPL doesn't gobble it.
   // conclusion: don't use READN()
   if (isdigit(CH) || CH == '.' && TOKENS == NIL && peekdigit()) {
