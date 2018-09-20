@@ -5,6 +5,7 @@
 #include <stdint.h>   // for int64_t
 #include <inttypes.h> // for PRId64
 #include <limits.h>   // for __WORDSIZE
+#include <stdbool.h>  // for bool, true, false
 
 #if __WORDSIZE == 64
 
@@ -29,18 +30,6 @@ typedef int WORD;
 // && __GNUC_PATCHLEVEL__  < 3
 # error "KRC is broken when compiled with GCC 4.9. Earlier GCCs, clang and TinyC work.".
 #endif
-
-//// bool replaced from WORD to bool
-
-// bool
-// typedef WORD BOOL;
-// #define FALSE 0
-// #define TRUE 1
-
-#include <stdbool.h>
-typedef bool BOOL;
-#define TRUE true
-#define FALSE false
 
 #define COMMON_H
 #endif

@@ -52,12 +52,12 @@ static LIST *STACKBASE;
 static ATOM ATOMBASE;
 static ATOM ATOMP, ATOMLIMIT;
 static WORD NOGCS = 0, RECLAIMS = 0;
-BOOL ATGC;
+bool ATGC;
 char *USERLIB;
 
 #ifdef INSTRUMENT_KRC_GC
 // ARE WE CURRENTLY IN THE GARBAGE COLLECTOR?
-BOOL COLLECTING = FALSE;
+bool COLLECTING = false;
 #endif
 
 static ATOM HASHV[128];
@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
     if (ARGV[I][0] == '-') {
       switch (ARGV[I][1]) {
       case 'g':
-        ATGC = TRUE;
+        ATGC = true;
         break;
       case 'h':
         if (++I >= ARGC || (SPACE = atoi(ARGV[I])) <= 0) {
@@ -225,9 +225,9 @@ WORD HAVEPARAM(WORD CH) {
   CH = toupper(CH);
   for (I = 1; I < ARGC; I++)
     if (ARGV[I][0] == '-' && toupper(ARGV[I][1]) == toupper(CH)) {
-      return TRUE;
+      return true;
     }
-  return FALSE;
+  return false;
 }
 
 LIST CONS(LIST X, LIST Y) {
@@ -293,7 +293,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 #endif
 
 #ifdef INSTRUMENT_KRC_GC
-  COLLECTING = TRUE;
+  COLLECTING = true;
 #endif
   HOLD_INTERRUPTS();
   NOGCS = NOGCS + 1;
@@ -404,7 +404,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   }
 
 #ifdef INSTRUMENT_KRC_GC
-  COLLECTING = FALSE;
+  COLLECTING = false;
 #endif
   longjmp(*envp, 1);
 }
@@ -448,15 +448,15 @@ WORD ISCONS(LIST X)
   if (CONSBASE <= X && X < CONSLIMIT) {
     if (((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0) {
       fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in ISCONS\n", X);
-      return FALSE;
+      return false;
     }
     return HD(X) != FULLWORD;
   }
-  return FALSE;
+  return false;
 }
 #else
 {
-  return CONSBASE <= X && X < CONSLIMIT ? HD(X) != FULLWORD : FALSE;
+  return CONSBASE <= X && X < CONSLIMIT ? HD(X) != FULLWORD : false;
 }
 #endif
 
@@ -468,15 +468,15 @@ WORD ISNUM(LIST X)
   if (CONSBASE <= X && X < CONSLIMIT) {
     if (((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0) {
       fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in ISNUM\n", X);
-      return FALSE;
+      return false;
     }
     return HD(X) == FULLWORD;
   }
-  return FALSE;
+  return false;
 }
 #else
 {
-  return CONSBASE <= X && X < CONSLIMIT ? HD(X) == FULLWORD : FALSE;
+  return CONSBASE <= X && X < CONSLIMIT ? HD(X) == FULLWORD : false;
 }
 #endif
 
@@ -554,7 +554,7 @@ ATOM PACKBUFFER() {
 }
 
 // does string A sort before string B?
-BOOL ALFA_LS(ATOM A, ATOM B) // A,B ARE ATOMS
+bool ALFA_LS(ATOM A, ATOM B) // A,B ARE ATOMS
 {
   return strcmp(PRINTNAME(A), PRINTNAME(B)) < 0;
 }
@@ -667,7 +667,7 @@ LIST SUB1(LIST X, ATOM A) {
 WORD EQUAL(LIST X, LIST Y) {
   do {
     if (X == Y) {
-      return TRUE;
+      return true;
     }
 
     if (ISNUM(X) && ISNUM(Y)) {
@@ -675,7 +675,7 @@ WORD EQUAL(LIST X, LIST Y) {
     }
 
     if (!(ISCONS(X) && ISCONS(Y) && EQUAL(HD(X), HD(Y)))) {
-      return FALSE;
+      return false;
     }
 
     X = TL(X), Y = TL(Y);

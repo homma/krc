@@ -1,6 +1,6 @@
 // global function declarations
 void SETUP_PRIMFNS_ETC(void);
-void PRINTVAL(LIST E, BOOL FORMAT);
+void PRINTVAL(LIST E, bool FORMAT);
 LIST BUILDEXP(LIST CODE);
 
 // global functions in reducer

@@ -14,30 +14,30 @@
 //----------------------------------------------------------------------
 
 // local function declarations
-static BOOL ISOP(LIST X);
-static BOOL ISINFIX(LIST X);
-static BOOL ISRELOP(LIST X);
+static bool ISOP(LIST X);
+static bool ISINFIX(LIST X);
+static bool ISRELOP(LIST X);
 static WORD DIPRIO(OPERATOR OP);
 static OPERATOR MKINFIX(TOKEN T);
 static void PRINTZF_EXP(LIST X);
-static BOOL ISLISTEXP(LIST E);
-static BOOL ISRELATION(LIST X);
-static BOOL ISRELATION_BEGINNING(LIST A, LIST X);
+static bool ISLISTEXP(LIST E);
+static bool ISRELATION(LIST X);
+static bool ISRELATION_BEGINNING(LIST A, LIST X);
 static WORD LEFTPREC(OPERATOR OP);
 static WORD RIGHTPREC(OPERATOR OP);
-static BOOL ROTATE(LIST E);
-static BOOL PARMY(LIST X);
+static bool ROTATE(LIST E);
+static bool PARMY(LIST X);
 static LIST REST(LIST C);
 static LIST SUBTRACT(LIST X, LIST Y);
 static void EXPR(WORD N);
-static BOOL STARTFORMAL(TOKEN T);
-static BOOL STARTSIMPLE(TOKEN T);
+static bool STARTFORMAL(TOKEN T);
+static bool STARTSIMPLE(TOKEN T);
 static void COMBN(void);
 static void SIMPLE(void);
 static void COMPILENAME(ATOM N);
 static WORD QUALIFIER(void);
 static void PERFORM_ALPHA_CONVERSIONS();
-static BOOL ISGENERATOR(LIST T);
+static bool ISGENERATOR(LIST T);
 static void ALPHA_CONVERT(LIST VAR, LIST P);
 static LIST SKIPCHUNK(LIST P);
 static void CONV1(LIST T, LIST VAR, LIST VAR1);
@@ -83,14 +83,14 @@ void INIT_CODEV() {
   CODEV = NIL;
 }
 
-static BOOL ISOP(LIST X) {
+static bool ISOP(LIST X) {
   return X == (LIST)ALPHA || X == (LIST)INDIR ||
          ((LIST)QUOTE <= X && X <= (LIST)QUOTE_OP);
 }
 
-static BOOL ISINFIX(LIST X) { return (LIST)COLON_OP <= X && X <= (LIST)DOT_OP; }
+static bool ISINFIX(LIST X) { return (LIST)COLON_OP <= X && X <= (LIST)DOT_OP; }
 
-static BOOL ISRELOP(LIST X) { return (LIST)GR_OP <= X && X <= (LIST)LS_OP; }
+static bool ISRELOP(LIST X) { return (LIST)GR_OP <= X && X <= (LIST)LS_OP; }
 
 // return the priority of an operator from its index in INFIX*
 static WORD DIPRIO(OPERATOR OP) { return OP == -1 ? -1 : INFIXPRIOVEC[OP]; }
@@ -149,7 +149,7 @@ void PRINTEXP(LIST E, WORD N) {
         (*_WRCH)(' ');
         PRINTEXP(TL(E), 8);
       } else if (OP == (LIST)QUOTE) {
-        PRINTATOM((ATOM)TL(E), TRUE);
+        PRINTATOM((ATOM)TL(E), true);
       } else if (OP == (LIST)INDIR || OP == (LIST)ALPHA) {
         PRINTEXP(TL(E), N);
       } else if (OP == (LIST)DOTDOT_OP || OP == (LIST)COMMADOTDOT_OP) {
@@ -273,7 +273,7 @@ static void PRINTZF_EXP(LIST X) {
   }
 }
 
-static BOOL ISLISTEXP(LIST E) {
+static bool ISLISTEXP(LIST E) {
   while (ISCONS(E) && HD(E) == (LIST)COLON_OP) {
     LIST E1 = TL(TL(E));
 
@@ -287,9 +287,9 @@ static BOOL ISLISTEXP(LIST E) {
   return E == NIL;
 }
 
-static BOOL ISRELATION(LIST X) { return ISCONS(X) && ISRELOP(HD(X)); }
+static bool ISRELATION(LIST X) { return ISCONS(X) && ISRELOP(HD(X)); }
 
-static BOOL ISRELATION_BEGINNING(LIST A, LIST X) {
+static bool ISRELATION_BEGINNING(LIST A, LIST X) {
   return (ISRELATION(X) && EQUAL(HD(TL(X)), A)) ||
          (ISCONS(X) && HD(X) == (LIST)AND_OP &&
           ISRELATION_BEGINNING(A, HD(TL(X))));
@@ -316,20 +316,20 @@ static WORD RIGHTPREC(OPERATOR OP) {
 
 // puts nested and's into rightist form to ensure
 // detection of continued relations
-static BOOL ROTATE(LIST E) {
+static bool ROTATE(LIST E) {
   while (ISCONS(HD(TL(E))) && HD(HD(TL(E))) == (LIST)AND_OP) {
     LIST X = TL(HD(TL(E))), C = TL(TL(E));
     LIST A = HD(X), B = TL(X);
     HD(TL(E)) = A, TL(TL(E)) = CONS((LIST)AND_OP, CONS(B, C));
   }
-  return TRUE;
+  return true;
 }
 
 // decompiler
 
 // the val field of each user defined name
 // contains - cons(cons(nargs,comment),<list of eqns>)
-void DISPLAY(ATOM ID, BOOL WITHNOS, BOOL DOUBLESPACING) {
+void DISPLAY(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
   if (VAL(ID) == NIL) {
     fprintf(bcpl_OUTPUT, "\"%s\" - not defined\n", PRINTNAME(ID));
     return;
@@ -413,7 +413,7 @@ void DISPLAYEQN(ATOM ID, WORD NARGS, LIST EQN) {
 void DISPLAYRHS(LIST LHS, WORD NARGS, LIST CODE) {
   LIST V[100];
   WORD I = NARGS, J;
-  BOOL IF_FLAG = FALSE;
+  bool IF_FLAG = false;
 
   // unpack formal parameters into v
   while (I > 0) {
@@ -452,7 +452,7 @@ void DISPLAYRHS(LIST LHS, WORD NARGS, LIST CODE) {
       // new expression
       break;
     case IF_C:
-      IF_FLAG = TRUE;
+      IF_FLAG = true;
       break;
     case FORMLIST_C:
       CODE = TL(CODE);
@@ -529,7 +529,7 @@ LIST PROFILE(LIST EQN) {
   }
 }
 
-static BOOL PARMY(LIST X) {
+static bool PARMY(LIST X) {
   return X == (LIST)MATCH_C || X == (LIST)MATCHARG_C || X == (LIST)MATCHPAIR_C;
 }
 
@@ -701,12 +701,12 @@ static void COMBN() {
   }
 }
 
-static BOOL STARTFORMAL(TOKEN T) {
+static bool STARTFORMAL(TOKEN T) {
   return ISCONS(T) ? (HD(T) == IDENT || HD(T) == (LIST)CONST)
                    : T == (TOKEN)'(' || T == (TOKEN)'[' || T == (TOKEN)'-';
 }
 
-static BOOL STARTSIMPLE(TOKEN T) {
+static bool STARTSIMPLE(TOKEN T) {
   return ISCONS(T) ? (HD(T) == IDENT || HD(T) == (LIST)CONST)
                    : T == (TOKEN)'(' || T == (TOKEN)'[' || T == (TOKEN)'{' ||
                          T == (TOKEN)'\'';
@@ -856,10 +856,10 @@ static void PERFORM_ALPHA_CONVERSIONS() {
   }
 }
 
-BOOL ISID(LIST X) { return ISCONS(X) && HD(X) == IDENT; }
+bool ISID(LIST X) { return ISCONS(X) && HD(X) == IDENT; }
 
-static BOOL ISGENERATOR(LIST T) {
-  return !ISCONS(T) ? FALSE
+static bool ISGENERATOR(LIST T) {
+  return !ISCONS(T) ? false
                     : HD(T) == BACKARROW_SY ||
                           (HD(T) == (TOKEN)',' && ISID(HD(TL(T))) &&
                            ISGENERATOR(TL(TL(T))));

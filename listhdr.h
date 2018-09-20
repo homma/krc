@@ -62,7 +62,7 @@ extern int ARGC;
 extern char **ARGV;
 // for picking up system parameters passed to program
 
-extern BOOL ATGC;
+extern bool ATGC;
 
 // PACKAGE SPECIFICATIONS:
 
@@ -127,7 +127,7 @@ WORD ISNUM(LIST X);
 // "REVERSE(X)" reverses the list X
 // "SHUNT(X,Y)" appends REVERSE(X) to the list Y
 // "SUB1(X,A)" removes A from the list X (destructively) if present
-BOOL ALFA_LS(ATOM A, ATOM B);
+bool ALFA_LS(ATOM A, ATOM B);
 WORD LENGTH(LIST X);
 WORD MEMBER(LIST X, LIST A);
 LIST APPEND(LIST X, LIST Y);

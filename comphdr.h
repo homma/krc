@@ -44,7 +44,7 @@ extern TOKEN MISSEDTOK;
 extern WORD caseconv(WORD CH);
 extern WORD COMMENTFLAG;
 extern LIST FILECOMMANDS;
-extern BOOL LEGACY;
+extern bool LEGACY;
 extern void writetoken(TOKEN T);
 
 // KRC expression representations
@@ -175,7 +175,7 @@ typedef enum {
 
 // defined in lex.c
 extern void readline(void);
-extern BOOL have(TOKEN);
+extern bool have(TOKEN);
 extern WORD haveid(void);
 extern void syntax(void);
 extern void check(TOKEN);
@@ -190,13 +190,13 @@ extern LIST PROFILE(LIST);
 extern void PRINTEXP(LIST, WORD);
 extern LIST EXP(void);
 extern void REMOVELINENO(LIST);
-extern BOOL ISID(LIST);
-extern void DISPLAY(ATOM ID, BOOL WITHNOS, BOOL DOUBLESPACING);
+extern bool ISID(LIST);
+extern void DISPLAY(ATOM ID, bool WITHNOS, bool DOUBLESPACING);
 extern void DISPLAYEQN(ATOM ID, WORD NARGS, LIST EQN);
 extern void DISPLAYRHS(LIST LHS, WORD NARGS, LIST CODE);
 
 // defined in reducer.c
-extern void PRINTATOM(ATOM A, BOOL FORMAT);
+extern void PRINTATOM(ATOM A, bool FORMAT);
 
 // others
 extern void (*TRUEWRCH)(WORD C);

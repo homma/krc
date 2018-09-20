@@ -22,7 +22,7 @@ WORD REDS;
 // base for list indexing
 WORD LISTBASE = 0;
 
-WORD ABORTED = FALSE;
+WORD ABORTED = false;
 
 static ATOM ETC, SILLYNESS, GUARD, LISTDIFF, BADFILE, READFN, WRITEFN,
     INTERLEAVEFN;
@@ -82,15 +82,15 @@ static void SEQ(LIST E);
 
 // local function delarations
 static void PRINTFUNCTION(LIST E);
-static BOOL EQUALVAL(LIST A, LIST B);
+static bool EQUALVAL(LIST A, LIST B);
 static void BADEXP(LIST E);
 static void OVERFLOW(LIST E);
 static void OBEY(LIST EQNS, LIST E);
-static BOOL ISFUN(LIST X);
+static bool ISFUN(LIST X);
 
 static LIST REDUCE(LIST E);
 static LIST SUBSTITUTE(LIST ACTUAL, LIST FORMAL, LIST EXP);
-static BOOL BINDS(LIST FORMAL, LIST X);
+static bool BINDS(LIST FORMAL, LIST X);
 
 // DT 2015
 static void SHOWCH(unsigned char c);
@@ -179,7 +179,7 @@ void OUTSTATS() { fprintf(bcpl_OUTPUT, "reductions = %" W "\n", REDS); }
 //  LIST:= NIL | CONS(COLON_OP,CONS(EXP,EXP))
 //  FUNCTION:= NAME | CONS(E1,E2)
 
-void PRINTVAL(LIST E, BOOL FORMAT) {
+void PRINTVAL(LIST E, bool FORMAT) {
 
   E = REDUCE(E);
 
@@ -276,7 +276,7 @@ void PRINTVAL(LIST E, BOOL FORMAT) {
   }
 }
 
-void PRINTATOM(ATOM A, BOOL FORMAT) {
+void PRINTATOM(ATOM A, bool FORMAT) {
 
   if (FORMAT) {
 
@@ -359,13 +359,13 @@ static void PRINTFUNCTION(LIST E) {
 }
 
 // unpredictable results if A,B both functions
-static BOOL EQUALVAL(LIST A, LIST B) {
+static bool EQUALVAL(LIST A, LIST B) {
   do {
     A = REDUCE(A);
     B = REDUCE(B);
 
     if (A == B) {
-      return TRUE;
+      return true;
     }
 
     if (ISNUM(A) && ISNUM(B)) {
@@ -373,7 +373,7 @@ static BOOL EQUALVAL(LIST A, LIST B) {
     }
 
     if (!(ISCONS(A) && ISCONS(B) && (HD(A) == HD(B)))) {
-      return FALSE;
+      return false;
     }
 
     if (HD(A) == (LIST)QUOTE || HD(A) == (LIST)QUOTE_OP) {
@@ -382,12 +382,12 @@ static BOOL EQUALVAL(LIST A, LIST B) {
 
     if (!(HD(A) == (LIST)COLON_OP)) {
       // UH ?
-      return FALSE;
+      return false;
     }
 
     A = TL(A), B = TL(B);
     if (!(EQUALVAL(HD(A), HD(B)))) {
-      return FALSE;
+      return false;
     }
 
     A = TL(A), B = TL(B);
@@ -616,7 +616,7 @@ static void FUNCTIONP(LIST E) {
   TL(E) = ISFUN(*ARG) ? TRUTH : FALSITY;
 }
 
-static BOOL ISFUN(LIST X) {
+static bool ISFUN(LIST X) {
   return ISATOM(X) || (ISCONS(X) && QUOTE != HD(X) && HD(X) != (LIST)COLON_OP);
 }
 
@@ -634,7 +634,7 @@ static void COUNTCH(WORD CH) { COUNT = COUNT + 1; }
 static void SIZE(LIST E) {
   COUNT = 0;
   _WRCH = COUNTCH;
-  PRINTVAL(*ARG, FALSE);
+  PRINTVAL(*ARG, false);
   _WRCH = TRUEWRCH;
   HD(E) = (LIST)INDIR, TL(E) = STONUM(COUNT);
 }
@@ -731,10 +731,10 @@ static void ABORT(LIST E) {
   FILE *HOLD = bcpl_OUTPUT;
   bcpl_OUTPUT_fp = (stderr);
   bcpl_WRITES("\nprogram error: ");
-  PRINTVAL(TL(E), FALSE);
+  PRINTVAL(TL(E), false);
   (*_WRCH)('\n');
   bcpl_OUTPUT_fp = (HOLD);
-  ABORTED = TRUE;
+  ABORTED = true;
   raise(SIGINT);
 }
 
@@ -1069,9 +1069,9 @@ static LIST REDUCE(LIST E) {
       {
         // strict operators
         LIST A = NIL, B = NIL;
-        BOOL STRINGS = FALSE;
+        bool STRINGS = false;
 
-        // The values of M and N when STRINGS == TRUE
+        // The values of M and N when STRINGS == true
         ATOM SM, SN;
 
         if ((WORD)E >= LENGTH_OP) {
@@ -1095,7 +1095,7 @@ static LIST REDUCE(LIST E) {
                        HD(A) == (LIST)QUOTE && (LIST)QUOTE == HD(B)) {
               // relops
 
-              STRINGS = TRUE, SM = (ATOM)TL(A), SN = (ATOM)TL(B);
+              STRINGS = true, SM = (ATOM)TL(A), SN = (ATOM)TL(B);
 
             } else if (E == (LIST)DOTDOT_OP && ISNUM(A) && B == INFINITY) {
 
@@ -1343,7 +1343,7 @@ static LIST SUBSTITUTE(LIST ACTUAL, LIST FORMAL, LIST EXP) {
   }
 }
 
-static BOOL BINDS(LIST FORMAL, LIST X) {
+static bool BINDS(LIST FORMAL, LIST X) {
   return ISCONS(X) && HD(X) == (LIST)GENERATOR && HD(TL(X)) == FORMAL;
 }
 

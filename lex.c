@@ -18,7 +18,7 @@
 
 // global variables owned by lex.c
 WORD ERRORFLAG, EQNFLAG, EXPFLAG, COMMENTFLAG;
-BOOL SKIPCOMMENTS;
+bool SKIPCOMMENTS;
 LIST TOKENS = 0;
 ATOM THE_ID = 0;
 LIST THE_CONST = 0;
@@ -35,7 +35,7 @@ static WORD read_decimals(void);
 static WORD peekalpha(void);
 
 // local variables
-static BOOL EXPECTFILE = FALSE;
+static bool EXPECTFILE = false;
 static TOKEN MISSING;
 
 // reads the next line into "TOKENS"
@@ -47,18 +47,18 @@ void readline() {
     MISSING = 0;
     TOKENS = NIL;
     THE_DECIMALS = 0;
-    ERRORFLAG = FALSE;
+    ERRORFLAG = false;
 
     // will get set if the line contains "?" or "!"
-    EXPFLAG = FALSE;
+    EXPFLAG = false;
 
     // >0 records number of lines in the comment
     COMMENTFLAG = 0;
 
-    EXPECTFILE = FALSE;
+    EXPECTFILE = false;
 
     // will get set if the line contains "="
-    EQNFLAG = FALSE;
+    EQNFLAG = false;
 
     do {
       T = readtoken();
@@ -81,7 +81,7 @@ void readline() {
     }
 
     bcpl_WRITES("Closing quote missing - line ignored\n");
-    ERRORFLAG = TRUE;
+    ERRORFLAG = true;
 
     return;
   } while (1);
@@ -123,7 +123,7 @@ static TOKEN readtoken(void) {
       LIST X = (LIST)PACKBUFFER();
       if (TOKENS != NIL && HD(TOKENS) == (TOKEN)'/' && TL(TOKENS) == NIL &&
           MEMBER(FILECOMMANDS, X)) {
-        EXPECTFILE = TRUE;
+        EXPECTFILE = true;
       }
       return CONS((LIST)IDENT, X);
     }
@@ -326,11 +326,11 @@ static TOKEN readtoken(void) {
     (*_UNRDCH)(CH2);
 
     if (CH == '?' || CH == '!') {
-      EXPFLAG = TRUE;
+      EXPFLAG = true;
     }
 
     if (CH == '=' && !LEGACY) {
-      EQNFLAG = TRUE;
+      EQNFLAG = true;
     }
 
     // GCC warning expected
@@ -430,13 +430,13 @@ void writetoken(TOKEN T) {
   }
 }
 
-BOOL have(TOKEN T) {
+bool have(TOKEN T) {
   if (TOKENS == NIL || HD(TOKENS) != T) {
-    return FALSE;
+    return false;
   }
 
   TOKENS = TL(TOKENS);
-  return TRUE;
+  return true;
 }
 
 void check(TOKEN T) {
@@ -444,47 +444,47 @@ void check(TOKEN T) {
     return;
   }
 
-  ERRORFLAG = TRUE;
+  ERRORFLAG = true;
 
   if (MISSING == 0) {
     MISSING = T;
   }
 }
 
-void syntax() { ERRORFLAG = TRUE; }
+void syntax() { ERRORFLAG = true; }
 
 WORD haveid() {
   while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
-    return FALSE;
+    return false;
   }
 
   THE_ID = (ATOM)TL(HD(TOKENS));
   TOKENS = TL(TOKENS);
 
-  return TRUE;
+  return true;
 }
 
 WORD haveconst() {
   while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
-    return FALSE;
+    return false;
   }
 
   THE_CONST = TL(HD(TOKENS));
   TOKENS = TL(TOKENS);
 
-  return TRUE;
+  return true;
 }
 
 WORD havenum() {
   while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == CONST &&
            ISNUM(TL(HD(TOKENS))))) {
-    return FALSE;
+    return false;
   }
 
   THE_NUM = GETNUM(TL(HD(TOKENS)));
   TOKENS = TL(TOKENS);
 
-  return TRUE;
+  return true;
 }
 
 // syntax error diagnosis(needs refining)
