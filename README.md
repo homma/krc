@@ -41,6 +41,7 @@ make it looks like a plain C software.
 
 - remove BCPL dependency completely
 - CAPITAL LETTER to small letter
+- remove global variables if unnecessary to be exposed
 - separate main() from listlib
 - separate commands into their own file
 - fix write function to properly output into files
