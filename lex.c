@@ -249,7 +249,7 @@ static token readtoken(void) {
         }
 
       if (CH == EOF) {
-        fprintf(bcpl_OUTPUT, "%s :- ...", PRINTNAME((atom)SUBJECT)),
+        fprintf(bcpl_OUTPUT, "%s :- ...", NAME((atom)SUBJECT)),
             bcpl_writes(" missing \";\"\n");
         COMMENTFLAG--;
         syntax();
@@ -360,12 +360,12 @@ void writetoken(token T) {
       if (!(iscons(T) && (HD(T) == IDENT || HD(T) == CONST)))
         fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", T);
       else if (HD(T) == IDENT)
-        bcpl_writes(PRINTNAME((atom)(
+        bcpl_writes(NAME((atom)(
             iscons(TL(T)) && HD(TL(T)) == (list)ALPHA ? TL(TL(T)) : TL(T))));
       else if (isnum(TL(T)))
         bcpl_writen(getnum(TL(T)));
       else
-        fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((atom)TL(T)));
+        fprintf(bcpl_OUTPUT, "\"%s\"", NAME((atom)TL(T)));
     }
   }
 }

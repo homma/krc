@@ -524,7 +524,7 @@ atom mkatomn(char *S, int LEN) {
 
   // search the appropriate bucket
   while (!(*P == 0)) {
-    if (LEN == LEN(*P) && memcmp(S, PRINTNAME(*P), (size_t)LEN) == 0) {
+    if (LEN == LEN(*P) && memcmp(S, NAME(*P), (size_t)LEN) == 0) {
       return (atom)*P;
     }
     P = &(LINK(*P));
@@ -605,7 +605,7 @@ atom packbuffer() {
 
 // tests atoms for alphabetical order
 // A, B are atoms
-bool alfa_ls(atom A, atom B) { return strcmp(PRINTNAME(A), PRINTNAME(B)) < 0; }
+bool alfa_ls(atom A, atom B) { return strcmp(NAME(A), NAME(B)) < 0; }
 
 static void gcstats() {
 
@@ -661,7 +661,7 @@ void listpm() {
       fprintf(bcpl_OUTPUT, "%d :\t", (int)I);
 
       while (!(P == 0)) {
-        bcpl_writes(PRINTNAME(P));
+        bcpl_writes(NAME(P));
 
         if (!(VAL(P) == NIL)) {
           bcpl_writes(" = ");
@@ -787,7 +787,7 @@ void printobj(list X) {
 
   } else if (isatom(X)) {
 
-    fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((atom)X));
+    fprintf(bcpl_OUTPUT, "\"%s\"", NAME((atom)X));
 
   } else if (isnum(X)) {
 

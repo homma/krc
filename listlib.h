@@ -67,9 +67,6 @@ typedef struct atom {
 // unit of allocation for ATOMSPACE
 #define atomsize (sizeof(struct atom))
 
-// The C string version of the name
-#define PRINTNAME(X) NAME(X)
-
 // unused
 // word haveparam(word CH);
 

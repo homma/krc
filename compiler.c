@@ -120,7 +120,7 @@ void printexp(list E, word N) {
   if (E == NIL) {
     bcpl_writes("[]");
   } else if (isatom(E)) {
-    bcpl_writes(PRINTNAME((atom)E));
+    bcpl_writes(NAME((atom)E));
   } else if (isnum(E)) {
     word X = getnum(E);
     if (X < 0 && N > 5) {
@@ -331,7 +331,7 @@ static bool rotate(list E) {
 // contains - cons(cons(nargs,comment),<list of eqns>)
 void display(atom ID, bool WITHNOS, bool DOUBLESPACING) {
   if (VAL(ID) == NIL) {
-    fprintf(bcpl_OUTPUT, "\"%s\" - not defined\n", PRINTNAME(ID));
+    fprintf(bcpl_OUTPUT, "\"%s\" - not defined\n", NAME(ID));
     return;
   }
   {
@@ -342,9 +342,9 @@ void display(atom ID, bool WITHNOS, bool DOUBLESPACING) {
     LASTLHS = NIL;
     if (!(COMMENT == NIL)) {
       list C = COMMENT;
-      fprintf(bcpl_OUTPUT, "    %s :-", PRINTNAME(ID));
+      fprintf(bcpl_OUTPUT, "    %s :-", NAME(ID));
       while (!(C == NIL)) {
-        bcpl_writes(PRINTNAME((atom)HD(C)));
+        bcpl_writes(NAME((atom)HD(C)));
         C = TL(C);
         if (!(C == NIL)) {
           (*_WRCH)('\n');
@@ -386,7 +386,7 @@ void displayeqn(atom ID, word NARGS, list EQN) {
   list LHS = HD(EQN), CODE = TL(EQN);
 
   if (NARGS == 0) {
-    bcpl_writes(PRINTNAME(ID));
+    bcpl_writes(NAME(ID));
     LASTLHS = (list)ID;
   } else {
 

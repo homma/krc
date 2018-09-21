@@ -251,7 +251,7 @@ void printval(list E, bool FORMAT) {
       }
 
       {
-        char *F = PRINTNAME((atom)TL(TL(H)));
+        char *F = NAME((atom)TL(TL(H)));
         FILE *OUT = findchannel(F);
         FILE *HOLD = bcpl_OUTPUT;
 
@@ -759,7 +759,7 @@ static void prim_startread(list E) {
   }
 
   {
-    FILE *IN = bcpl_findinput(PRINTNAME((atom)TL(*ARG)));
+    FILE *IN = bcpl_findinput(NAME((atom)TL(*ARG)));
 
     if (!(IN != NULL)) {
       badexp(cons((list)BADFILE, *ARG));

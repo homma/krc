@@ -669,7 +669,7 @@ static void helpcom() {
     return;
   }
 
-  topic = haveid() ? PRINTNAME(THE_ID) : NULL;
+  topic = haveid() ? NAME(THE_ID) : NULL;
 
   if (!(topic && have(EOL))) {
     bcpl_writes("/h What? `/h' for options\n");
@@ -724,7 +724,7 @@ static void command() {
       list P = COMMANDS;
 
       if (haveid()) {
-        THE_ID = mkatom(scaseconv(PRINTNAME(THE_ID)));
+        THE_ID = mkatom(scaseconv(NAME(THE_ID)));
         // always accept commands in either case
       } else {
         P = NIL;
@@ -927,7 +927,7 @@ static void savecom() {
       switch (fork()) {
       case 0:
         // child process
-        execlp("mv", "mv", "T#SCRIPT", PRINTNAME(THE_ID), (char *)0);
+        execlp("mv", "mv", "T#SCRIPT", NAME(THE_ID), (char *)0);
       default:
         // parent process
         wait(&status);
@@ -971,7 +971,7 @@ static void filecom() {
     if (LASTFILE == 0) {
       bcpl_writes("No files used\n");
     } else {
-      fprintf(bcpl_OUTPUT, "File = %s\n", PRINTNAME(LASTFILE));
+      fprintf(bcpl_OUTPUT, "File = %s\n", NAME(LASTFILE));
     }
   } else {
     filename();
@@ -998,7 +998,7 @@ static void getcom() {
   }
 
   HOLDSCRIPT = SCRIPT, SCRIPT = NIL, GET_HITS = NIL;
-  getfile(PRINTNAME(THE_ID));
+  getfile(NAME(THE_ID));
   check_hits();
 
   SCRIPT = append(HOLDSCRIPT, SCRIPT), SAVED = CLEAN, HOLDSCRIPT = NIL;
@@ -1075,7 +1075,7 @@ static void listcom() {
   }
 
   {
-    char *FNAME = PRINTNAME(THE_ID);
+    char *FNAME = NAME(THE_ID);
     FILE *IN = bcpl_findinput(FNAME);
 
     if (!(okfile(IN, FNAME))) {
@@ -1183,7 +1183,7 @@ static void scriptlist(list S) {
 #define LINEWIDTH 68
 
   while (!(S == NIL)) {
-    char *N = PRINTNAME((atom)HD(S));
+    char *N = NAME((atom)HD(S));
 
     if (primitive((atom)HD(S))) {
       S = TL(S);
@@ -1284,7 +1284,7 @@ static void renamecom() {
       bcpl_writes("/rename illegal because of conflicting uses of ");
 
       while (!(DUPS == NIL)) {
-        bcpl_writes(PRINTNAME((atom)HD(DUPS)));
+        bcpl_writes(NAME((atom)HD(DUPS)));
         (*_WRCH)(' ');
         DUPS = TL(DUPS);
       }
@@ -1407,8 +1407,7 @@ static void newequation() {
         // VAL(SUBJECT)=cons(cons(0,TL(HD(VAL(SUBJECT)))),cons(EQN,NIL));
         //            clearmemory(); } else
 
-        fprintf(bcpl_OUTPUT, "Wrong no of args for \"%s\"\n",
-                PRINTNAME(SUBJECT));
+        fprintf(bcpl_OUTPUT, "Wrong no of args for \"%s\"\n", NAME(SUBJECT));
         bcpl_writes("Equation rejected\n");
         return;
       } else if (EQNO == -1) {
@@ -1724,7 +1723,7 @@ static void scriptreorder() {
 
     } else {
 
-      fprintf(bcpl_OUTPUT, "\"%s\" not in script\n", PRINTNAME(THE_ID));
+      fprintf(bcpl_OUTPUT, "\"%s\" not in script\n", NAME(THE_ID));
       syntax();
     }
   }
@@ -1765,8 +1764,7 @@ static bool protected(atom A) {
     }
     return false;
   }
-  fprintf(bcpl_OUTPUT, "\"%s\" is predefined and cannot be altered\n",
-          PRINTNAME(A));
+  fprintf(bcpl_OUTPUT, "\"%s\" is predefined and cannot be altered\n", NAME(A));
   return true;
 }
 
@@ -1800,8 +1798,8 @@ static list extract(atom A, atom B) {
   }
 
   if (X == NIL) {
-    fprintf(bcpl_OUTPUT, "\"%s..%s\" not in script\n", PRINTNAME(A),
-            B == (atom)EOL ? "" : PRINTNAME(B));
+    fprintf(bcpl_OUTPUT, "\"%s..%s\" not in script\n", NAME(A),
+            B == (atom)EOL ? "" : NAME(B));
   }
 
   return reverse(X);
