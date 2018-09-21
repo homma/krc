@@ -60,7 +60,8 @@ add features and extend.
 - add record type
 - add unicode string support
 - add char literal ('c' as special string)
-- add tuple literal (as a special array)
+- add tuple literal (as a special list)
+- add array type
 - add floating point numeral
 - add user defined operator (infix)
 - add date library
