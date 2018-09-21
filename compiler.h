@@ -51,12 +51,12 @@ extern void writetoken(TOKEN T);
 // the internal representations of expressions is as follows
 // EXP::= ID|CONST|APPLN|OTHER
 // ID::= ATOM
-// CONST::= NUM|CONS(QUOTE,ATOM)|NIL
-// APPLN::= CONS(EXP,EXP)
-// OTHER::= CONS(OPERATOR,OPERANDS)
-// note that the internal form of ZF exessions is CONS(ZF_OP,BODY) :-
-//  BODY::= CONS(EXP,NIL) | CONS(QUALIFIER,BODY)
-//  QUALIFIER::= EXP | CONS(GENERATOR,CONS(ID,EXP))
+// CONST::= NUM|cons(QUOTE,ATOM)|NIL
+// APPLN::= cons(EXP,EXP)
+// OTHER::= cons(OPERATOR,OPERANDS)
+// note that the internal form of ZF exessions is cons(ZF_OP,BODY) :-
+//  BODY::= cons(EXP,NIL) | cons(QUALIFIER,BODY)
+//  QUALIFIER::= EXP | cons(GENERATOR,cons(ID,EXP))
 
 // operator values:
 typedef enum {
@@ -97,13 +97,13 @@ typedef enum {
 } OPERATOR;
 
 // internal representation of KRC equations
-// VAL FIELD OF ATOM ::= CONS(CONS(NARGS,COMMENT),LISTOF(EQN))
-// COMMENT ::= NIL | CONS(ATOM,COMMENT)
-// EQN ::= CONS(LHS,CODE)
+// VAL FIELD OF ATOM ::= cons(cons(NARGS,COMMENT),LISTOF(EQN))
+// COMMENT ::= NIL | cons(ATOM,COMMENT)
+// EQN ::= cons(LHS,CODE)
 //(if NARGS=0 there is only one equation in the list and its lhs field
 // is used to remember the value of the variable)
-// LHS ::= ID | CONS(LHS,FORMAL)
-// FORMAL ::= ID | CONST | CONS(COLON_OP,CONS(FORMAL,FORMAL))
+// LHS ::= ID | cons(LHS,FORMAL)
+// FORMAL ::= ID | CONST | cons(COLON_OP,cons(FORMAL,FORMAL))
 // CODE ::= INSTR*
 // INSTR ::= LOAD_C <ID|CONST|MONOP> |
 //           LOADARG_C INT |

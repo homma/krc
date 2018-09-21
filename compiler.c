@@ -320,7 +320,7 @@ static bool rotate(LIST E) {
   while (ISCONS(HD(TL(E))) && HD(HD(TL(E))) == (LIST)AND_OP) {
     LIST X = TL(HD(TL(E))), C = TL(TL(E));
     LIST A = HD(X), B = TL(X);
-    HD(TL(E)) = A, TL(TL(E)) = CONS((LIST)AND_OP, CONS(B, C));
+    HD(TL(E)) = A, TL(TL(E)) = cons((LIST)AND_OP, cons(B, C));
   }
   return true;
 }
@@ -438,16 +438,16 @@ void displayrhs(LIST LHS, word NARGS, LIST CODE) {
       break;
     case APPLY_C:
       I = I - 1;
-      V[I] = CONS(V[I], V[I + 1]);
+      V[I] = cons(V[I], V[I + 1]);
       break;
     case APPLYINFIX_C:
       CODE = TL(CODE);
       I = I - 1;
-      V[I] = CONS(HD(CODE), CONS(V[I], V[I + 1]));
+      V[I] = cons(HD(CODE), cons(V[I], V[I + 1]));
       break;
     case CONTINUE_INFIX_C:
       CODE = TL(CODE);
-      V[I - 1] = CONS(HD(CODE), CONS(V[I - 1], V[I]));
+      V[I - 1] = cons(HD(CODE), cons(V[I - 1], V[I]));
       // note that 2nd arg is left in place above
       // new expression
       break;
@@ -460,21 +460,21 @@ void displayrhs(LIST LHS, word NARGS, LIST CODE) {
       V[I] = NIL;
       for (J = 1; J <= (word)(HD(CODE)); J++) {
         I = I - 1;
-        V[I] = CONS((LIST)COLON_OP, CONS(V[I], V[I + 1]));
+        V[I] = cons((LIST)COLON_OP, cons(V[I], V[I + 1]));
       }
       break;
     case FORMZF_C:
       CODE = TL(CODE);
       I = I - (word)(HD(CODE));
-      V[I] = CONS(V[I], NIL);
+      V[I] = cons(V[I], NIL);
       for (J = (word)(HD(CODE)); J >= 1; J = J - 1)
-        V[I] = CONS(V[I + J], V[I]);
-      V[I] = CONS((LIST)ZF_OP, V[I]);
+        V[I] = cons(V[I + J], V[I]);
+      V[I] = cons((LIST)ZF_OP, V[I]);
       break;
     case CONT_GENERATOR_C:
       CODE = TL(CODE);
       for (J = 1; J <= (word)(HD(CODE)); J++)
-        V[I - J] = CONS((LIST)GENERATOR, CONS(V[I - J], TL(TL(V[I]))));
+        V[I - J] = cons((LIST)GENERATOR, cons(V[I - J], TL(TL(V[I]))));
       break;
     case MATCH_C:
     case MATCHARG_C:
@@ -556,7 +556,7 @@ static LIST subtract(LIST X, LIST Y) {
   LIST Z = NIL;
 
   while (!(X == Y)) {
-    Z = CONS(HD(X), Z), X = TL(X);
+    Z = cons(HD(X), Z), X = TL(X);
   }
 
   // note the result is reversed - for our purposes this does not matter
@@ -589,7 +589,7 @@ LIST equation() {
   if (haveid()) {
     SUBJECT = (LIST)THE_ID, LHS = (LIST)THE_ID;
     while (startformal(HD(TOKENS))) {
-      LHS = CONS(LHS, formal());
+      LHS = cons(LHS, formal());
       NARGS = NARGS + 1;
     }
   } else if (HD(TOKENS) == (LIST)'=' && LASTLHS != NIL) {
@@ -634,7 +634,7 @@ LIST equation() {
       // the value of the variable - 0 means not yet set
 
       // OK
-      return CONS(SUBJECT, CONS((LIST)NARGS, CONS(LHS, CODE)));
+      return cons(SUBJECT, cons((LIST)NARGS, cons(LHS, CODE)));
     }
   }
 }
@@ -869,7 +869,7 @@ static bool isgenerator(LIST T) {
 
 static void alpha_convert(LIST VAR, LIST P) {
   LIST T = TOKENS;
-  LIST VAR1 = CONS((LIST)ALPHA, TL(VAR));
+  LIST VAR1 = cons((LIST)ALPHA, TL(VAR));
   LIST EDGE = T;
   while (
       !(HD(EDGE) == (TOKEN)';' || HD(EDGE) == BACKARROW_SY || HD(EDGE) == EOL))
@@ -940,14 +940,14 @@ static LIST formal() {
     }
 
     do {
-      PLIST = CONS(pattern(), PLIST);
+      PLIST = cons(pattern(), PLIST);
     } while (have((TOKEN)','));
     // note they are in reverse order
 
     check((TOKEN)']');
 
     while (!(PLIST == NIL)) {
-      P = CONS((TOKEN)COLON_OP, CONS(HD(PLIST), P));
+      P = cons((TOKEN)COLON_OP, cons(HD(PLIST), P));
       PLIST = TL(PLIST);
     }
     // now they are in correct order
@@ -966,14 +966,14 @@ static LIST internalise(LIST VAL) {
   return VAL == TL(TRUTH)
              ? TRUTH
              : VAL == TL(FALSITY) ? FALSITY
-                                  : ISATOM(VAL) ? CONS((LIST)QUOTE, VAL) : VAL;
+                                  : ISATOM(VAL) ? cons((LIST)QUOTE, VAL) : VAL;
 }
 
 static LIST pattern() {
   LIST P = formal();
 
   if (have((TOKEN)':')) {
-    P = CONS((LIST)COLON_OP, CONS(P, pattern()));
+    P = cons((LIST)COLON_OP, cons(P, pattern()));
   }
 
   return P;
@@ -1032,19 +1032,19 @@ static void compileformal(LIST X, word I) {
 // the address of a C function - all are mapped to LIST type.
 
 // APPLY_C IF_C STOP_C
-static void plant0(INSTRUCTION OP) { CODEV = CONS((LIST)OP, CODEV); }
+static void plant0(INSTRUCTION OP) { CODEV = cons((LIST)OP, CODEV); }
 
 // everything else
 static void plant1(INSTRUCTION OP, LIST A) {
-  CODEV = CONS((LIST)OP, CODEV);
-  CODEV = CONS(A, CODEV);
+  CODEV = cons((LIST)OP, CODEV);
+  CODEV = cons(A, CODEV);
 }
 
 // MATCH_C MATCHARG_C
 static void plant2(INSTRUCTION OP, LIST A, LIST B) {
-  CODEV = CONS((LIST)OP, CODEV);
-  CODEV = CONS(A, CODEV);
-  CODEV = CONS(B, CODEV);
+  CODEV = cons((LIST)OP, CODEV);
+  CODEV = cons(A, CODEV);
+  CODEV = cons(B, CODEV);
 }
 
 // flushes the code buffer

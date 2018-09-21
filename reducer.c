@@ -97,13 +97,13 @@ static void R(char *S, void (*F)(LIST), word N) {
 
   // ((atom sym) . (c_call . fun))
   ATOM A = MKATOM(S);
-  LIST EQN = CONS((LIST)A, CONS((LIST)CALL_C, (LIST)F));
+  LIST EQN = cons((LIST)A, cons((LIST)CALL_C, (LIST)F));
 
   if (!(F == prim_read)) {
     ENTERSCRIPT(A);
   }
 
-  VAL(A) = CONS(CONS((LIST)N, NIL), CONS(EQN, NIL));
+  VAL(A) = cons(cons((LIST)N, NIL), cons(EQN, NIL));
 }
 
 void setup_primfns_etc(void) {
@@ -116,10 +116,10 @@ void setup_primfns_etc(void) {
 
   SILLYNESS = MKATOM("<unfounded recursion>");
   GUARD = MKATOM("<non truth-value used as guard:>");
-  TRUTH = CONS((LIST)QUOTE, (LIST)MKATOM("TRUE"));
-  FALSITY = CONS((LIST)QUOTE, (LIST)MKATOM("FALSE"));
+  TRUTH = cons((LIST)QUOTE, (LIST)MKATOM("TRUE"));
+  FALSITY = cons((LIST)QUOTE, (LIST)MKATOM("FALSE"));
   LISTDIFF = MKATOM("listdiff");
-  INFINITY = CONS((LIST)QUOTE, (LIST)-3);
+  INFINITY = cons((LIST)QUOTE, (LIST)-3);
 
   // primitive functions
   R("function__", prim_functionp, 1);
@@ -175,9 +175,9 @@ void outstats() { fprintf(bcpl_OUTPUT, "reductions = %" W "\n", REDS); }
 
 // the possible values of a reduced expression are:
 //  VAL:= CONST | FUNCTION | LIST
-//  CONST:= NUM | CONS(QUOTE,ATOM)
-//  LIST:= NIL | CONS(COLON_OP,CONS(EXP,EXP))
-//  FUNCTION:= NAME | CONS(E1,E2)
+//  CONST:= NUM | cons(QUOTE,ATOM)
+//  LIST:= NIL | cons(COLON_OP,cons(EXP,EXP))
+//  FUNCTION:= NAME | cons(E1,E2)
 
 void printval(LIST E, bool FORMAT) {
 
@@ -239,7 +239,7 @@ void printval(LIST E, bool FORMAT) {
 
       } else {
 
-        badexp(CONS((LIST)COLON_OP, CONS((LIST)ETC, E)));
+        badexp(cons((LIST)COLON_OP, cons((LIST)ETC, E)));
       }
 
     } else if (ISCONS(H) && HD(H) == (LIST)WRITEFN) {
@@ -256,7 +256,7 @@ void printval(LIST E, bool FORMAT) {
         FILE *HOLD = bcpl_OUTPUT;
 
         if (!(OUT != NULL)) {
-          badexp(CONS((LIST)BADFILE, TL(H)));
+          badexp(cons((LIST)BADFILE, TL(H)));
         }
 
         bcpl_OUTPUT_fp = (OUT);
@@ -427,8 +427,8 @@ static void overflow(LIST E) {
 LIST buildexp(LIST CODE) {
 
   // a bogus piece of graph
-  LIST E = CONS(NIL, NIL);
-  obey(CONS(CONS(NIL, CODE), NIL), E);
+  LIST E = cons(NIL, NIL);
+  obey(cons(cons(NIL, CODE), NIL), E);
 
   // reset ARG stack
   ARGP = ARG - 1;
@@ -479,7 +479,7 @@ static void obey(LIST EQNS, LIST E) {
         CODE = TL(CODE);
         break;
       case APPLYINFIX_C:
-        *ARGP = CONS(*(ARGP - 1), *ARGP);
+        *ARGP = cons(*(ARGP - 1), *ARGP);
         *(ARGP - 1) = HD(CODE);
         CODE = TL(CODE);
       case APPLY_C:
@@ -488,10 +488,10 @@ static void obey(LIST EQNS, LIST E) {
           HD(E) = *ARGP, TL(E) = *(ARGP + 1);
           return;
         }
-        *ARGP = CONS(*ARGP, *(ARGP + 1));
+        *ARGP = cons(*ARGP, *(ARGP + 1));
         break;
       case CONTINUE_INFIX_C:
-        *(ARGP - 1) = CONS(HD(CODE), CONS(*(ARGP - 1), *ARGP));
+        *(ARGP - 1) = cons(HD(CODE), cons(*(ARGP - 1), *ARGP));
         CODE = TL(CODE);
         break;
       case IF_C:
@@ -500,7 +500,7 @@ static void obey(LIST EQNS, LIST E) {
           goto BREAK_DECODE_LOOP;
         }
         if (!(*ARGP == TRUTH)) {
-          badexp(CONS((LIST)GUARD, *ARGP));
+          badexp(cons((LIST)GUARD, *ARGP));
         }
         break;
       case FORMLIST_C:
@@ -508,25 +508,25 @@ static void obey(LIST EQNS, LIST E) {
         *ARGP = NIL;
         for (I = 1; I <= (word)HD(CODE); I++) {
           ARGP = ARGP - 1;
-          *ARGP = CONS((LIST)COLON_OP, CONS(*ARGP, *(ARGP + 1)));
+          *ARGP = cons((LIST)COLON_OP, cons(*ARGP, *(ARGP + 1)));
         }
         CODE = TL(CODE);
         break;
       case FORMZF_C: {
-        LIST X = CONS(*(ARGP - (word)HD(CODE)), NIL);
+        LIST X = cons(*(ARGP - (word)HD(CODE)), NIL);
         LIST *P;
         for (P = ARGP; P >= ARGP - (word)HD(CODE) + 1; P = P - 1) {
-          X = CONS(*P, X);
+          X = cons(*P, X);
         }
 
         ARGP = ARGP - (word)HD(CODE);
-        *ARGP = CONS((LIST)ZF_OP, X);
+        *ARGP = cons((LIST)ZF_OP, X);
         CODE = TL(CODE);
         break;
       }
       case CONT_GENERATOR_C:
         for (I = 1; I <= (word)HD(CODE); I++) {
-          *(ARGP - I) = CONS((LIST)GENERATOR, CONS(*(ARGP - I), TL(TL(*ARGP))));
+          *(ARGP - I) = cons((LIST)GENERATOR, cons(*(ARGP - I), TL(TL(*ARGP))));
         }
 
         CODE = TL(CODE);
@@ -667,7 +667,7 @@ static void prim_decode(LIST E) {
   }
 
   BUFCH((word)TL(*ARG));
-  HD(E) = (LIST)INDIR, TL(E) = CONS((LIST)QUOTE, (LIST)PACKBUFFER());
+  HD(E) = (LIST)INDIR, TL(E) = cons((LIST)QUOTE, (LIST)PACKBUFFER());
 }
 
 static void prim_concat(LIST E) {
@@ -707,7 +707,7 @@ static void prim_concat(LIST E) {
     A = (LIST)PACKBUFFER();
     HD(E) = (LIST)INDIR,
     TL(E) = A == TL(TRUTH) ? TRUTH
-                           : A == TL(FALSITY) ? FALSITY : CONS((LIST)QUOTE, A);
+                           : A == TL(FALSITY) ? FALSITY : cons((LIST)QUOTE, A);
   }
 }
 
@@ -726,7 +726,7 @@ static void prim_explode(LIST E) {
     int I;
     for (I = NAME(A)[0]; I > 0; I--) {
       BUFCH(NAME(A)[I]);
-      X = CONS((LIST)COLON_OP, CONS(CONS((LIST)QUOTE, (LIST)PACKBUFFER()), X));
+      X = cons((LIST)COLON_OP, cons(cons((LIST)QUOTE, (LIST)PACKBUFFER()), X));
     }
 
     HD(E) = (LIST)INDIR, TL(E) = X;
@@ -761,7 +761,7 @@ static void prim_startread(LIST E) {
     FILE *IN = bcpl_FINDINPUT(PRINTNAME((ATOM)TL(*ARG)));
 
     if (!(IN != NULL)) {
-      badexp(CONS((LIST)BADFILE, *ARG));
+      badexp(cons((LIST)BADFILE, *ARG));
     }
 
     HD(E) = (LIST)READFN, TL(E) = (LIST)IN;
@@ -772,7 +772,7 @@ static void prim_read(LIST E) {
 
   FILE *IN = (FILE *)TL(E);
   bcpl_INPUT_fp = (IN);
-  HD(E) = (LIST)INDIR, TL(E) = CONS((LIST)READFN, TL(E));
+  HD(E) = (LIST)INDIR, TL(E) = cons((LIST)READFN, TL(E));
 
   {
     LIST *X = &(TL(E));
@@ -781,8 +781,8 @@ static void prim_read(LIST E) {
     // read one character
     if (C != EOF) {
       char c = C;
-      *X = CONS((LIST)COLON_OP,
-                CONS(CONS((LIST)QUOTE, (LIST)MKATOMN(&c, 1)), *X));
+      *X = cons((LIST)COLON_OP,
+                cons(cons((LIST)QUOTE, (LIST)MKATOMN(&c, 1)), *X));
       X = &(TL(TL(*X)));
     }
 
@@ -860,7 +860,7 @@ static LIST reduce(LIST E) {
           // memo not set
           if (HD(EQN) == 0) {
             HD(EQN) = buildexp(TL(EQN));
-            MEMORIES = CONS(E, MEMORIES);
+            MEMORIES = cons(E, MEMORIES);
           }
 
           E = HD(EQN);
@@ -936,11 +936,11 @@ static LIST reduce(LIST E) {
           HD(S) = E, E = S, S = HOLD;
           HOLD = HD(S);
           HD(S) = E, E = S, S = HOLD;
-          TL(S) = CONS(TL(E), TL(S)), E = OP;
+          TL(S) = cons(TL(E), TL(S)), E = OP;
           continue;
         }
       case LISTDIFF_OP:
-        E = CONS((LIST)LISTDIFF, HD(TL(S)));
+        E = cons((LIST)LISTDIFF, HD(TL(S)));
         TL(S) = TL(TL(S));
         continue;
       case COLON_OP:
@@ -969,7 +969,7 @@ static LIST reduce(LIST E) {
             E = reduce(TL(TL(E)));
 
             if (!(ISCONS(E) && HD(E) == (LIST)COLON_OP)) {
-              badexp(CONS(E, STONUM(M + 1)));
+              badexp(cons(E, STONUM(M + 1)));
             }
           }
 
@@ -985,7 +985,7 @@ static LIST reduce(LIST E) {
         HD(S) = E, E = S, S = HOLD;
 
         if (TL(TL(E)) == NIL) {
-          HD(E) = (LIST)COLON_OP, TL(E) = CONS(HD(TL(E)), NIL);
+          HD(E) = (LIST)COLON_OP, TL(E) = cons(HD(TL(E)), NIL);
           continue;
         }
 
@@ -1002,19 +1002,19 @@ static LIST reduce(LIST E) {
               HD(E) = (LIST)INDIR, TL(E) = NIL, E = NIL;
             } else if (ISCONS(SOURCE) && HD(SOURCE) == (LIST)COLON_OP) {
 
-              HD(E) = CONS(
+              HD(E) = cons(
                   (LIST)INTERLEAVEFN,
-                  CONS((LIST)ZF_OP, substitute(HD(TL(SOURCE)), FORMAL, REST)));
+                  cons((LIST)ZF_OP, substitute(HD(TL(SOURCE)), FORMAL, REST)));
 
               TL(E) =
-                  CONS((LIST)ZF_OP,
-                       CONS(CONS((LIST)GENERATOR, CONS(FORMAL, TL(TL(SOURCE)))),
+                  cons((LIST)ZF_OP,
+                       cons(cons((LIST)GENERATOR, cons(FORMAL, TL(TL(SOURCE)))),
                             REST));
 
               //                            ) HD!E,TL!E:=APPEND.OP,
-              //                                            CONS(
-              //            CONS(ZF.OP,substitute(HD!(TL!SOURCE),FORMAL,REST)),
-              //    CONS(ZF.OP,CONS(CONS(GENERATOR,CONS(FORMAL,TL!(TL!SOURCE))),REST))
+              //                                            cons(
+              //            cons(ZF.OP,substitute(HD!(TL!SOURCE),FORMAL,REST)),
+              //    cons(ZF.OP,cons(cons(GENERATOR,cons(FORMAL,TL!(TL!SOURCE))),REST))
               //                                                )
             } else {
               badexp(E);
@@ -1031,7 +1031,7 @@ static LIST reduce(LIST E) {
             } else if (QUALIFIER == FALSITY) {
               HD(E) = (LIST)INDIR, TL(E) = NIL, E = NIL;
             } else {
-              badexp(CONS((LIST)GUARD, QUALIFIER));
+              badexp(cons((LIST)GUARD, QUALIFIER));
             }
           }
 
@@ -1044,7 +1044,7 @@ static LIST reduce(LIST E) {
           LIST A = reduce(HD(TL(S))), B = reduce(TL(TL(S)));
 
           if (!(isfun(A) && isfun(B))) {
-            badexp(CONS(E, CONS(A, B)));
+            badexp(cons(E, cons(A, B)));
           }
 
           goto BREAK_MAIN_LOOP;
@@ -1053,7 +1053,7 @@ static LIST reduce(LIST E) {
         {
           LIST HOLD = HD(S);
           NARGS = NARGS - 1;
-          E = HD(TL(S)), TL(HOLD) = CONS(TL(TL(S)), TL(HOLD));
+          E = HD(TL(S)), TL(HOLD) = cons(TL(TL(S)), TL(HOLD));
           HD(S) = (LIST)DOT_OP, S = HOLD;
           REDS = REDS + 1;
           continue;
@@ -1116,8 +1116,8 @@ static LIST reduce(LIST E) {
 
             } else {
 
-              badexp(CONS(E, CONS(A, E == (LIST)COMMADOTDOT_OP
-                                         ? CONS(B, TL(TL(TL(S))))
+              badexp(cons(E, cons(A, E == (LIST)COMMADOTDOT_OP
+                                         ? cons(B, TL(TL(TL(S))))
                                          : B)));
             }
           }
@@ -1133,7 +1133,7 @@ static LIST reduce(LIST E) {
           } else if (A == TRUTH) {
             E = B;
           } else {
-            badexp(CONS(E, CONS(A, B)));
+            badexp(cons(E, cons(A, B)));
           }
           break;
         case OR_OP:
@@ -1142,7 +1142,7 @@ static LIST reduce(LIST E) {
           } else if (A == FALSITY) {
             E = B;
           } else {
-            badexp(CONS(E, CONS(A, B)));
+            badexp(cons(E, cons(A, B)));
           }
           break;
         case APPEND_OP:
@@ -1152,11 +1152,11 @@ static LIST reduce(LIST E) {
           }
 
           if (!(ISCONS(A) && HD(A) == (LIST)COLON_OP)) {
-            badexp(CONS(E, CONS(A, B)));
+            badexp(cons(E, cons(A, B)));
           }
 
           E = (LIST)COLON_OP;
-          TL(TL(S)) = CONS((LIST)APPEND_OP, CONS(TL(TL(A)), B));
+          TL(TL(S)) = cons((LIST)APPEND_OP, cons(TL(TL(A)), B));
           HD(TL(S)) = HD(TL(A));
           REDS = REDS + 1;
           continue;
@@ -1166,7 +1166,7 @@ static LIST reduce(LIST E) {
             break;
           }
           E = (LIST)COLON_OP;
-          TL(TL(S)) = CONS((LIST)DOTDOT_OP, CONS(STONUM(M + 1), B));
+          TL(TL(S)) = cons((LIST)DOTDOT_OP, cons(STONUM(M + 1), B));
           REDS = REDS + 1;
           continue;
         case COMMADOTDOT_OP: {
@@ -1180,7 +1180,7 @@ static LIST reduce(LIST E) {
           } else if (C == INFINITY) {
             P = N1;
           } else {
-            badexp(CONS(E, CONS(A, CONS(B, C))));
+            badexp(cons(E, cons(A, cons(B, C))));
           }
 
           if ((N1 - M1) * (P - M1) < 0) {
@@ -1189,7 +1189,7 @@ static LIST reduce(LIST E) {
           }
           E = (LIST)COLON_OP;
           HD(TL(TL(S))) = STONUM(N1 + N1 - M1);
-          TL(TL(S)) = CONS((LIST)COMMADOTDOT_OP, CONS(B, TL(TL(S))));
+          TL(TL(S)) = cons((LIST)COMMADOTDOT_OP, cons(B, TL(TL(S))));
           REDS = REDS + 1;
           continue;
         }
@@ -1199,12 +1199,12 @@ static LIST reduce(LIST E) {
           } else if (A == FALSITY) {
             E = TRUTH;
           } else {
-            badexp(CONS(E, A));
+            badexp(cons(E, A));
           }
           break;
         case NEG_OP:
           if (!(ISNUM(A))) {
-            badexp(CONS(E, A));
+            badexp(cons(E, A));
           }
           E = STONUM(-GETNUM(A));
           break;
@@ -1219,14 +1219,14 @@ static LIST reduce(LIST E) {
             E = STONUM(L);
             break;
           }
-          badexp(CONS((LIST)COLON_OP, CONS((LIST)ETC, A)));
+          badexp(cons((LIST)COLON_OP, cons((LIST)ETC, A)));
         }
         case PLUS_OP: {
           word X = M + N;
           if ((M > 0 && N > 0 && X <= 0) || (M < 0 && N < 0 && X >= 0) ||
               (X == -X && X != 0)) {
             // This checks for -(2**31)
-            overflow(CONS((LIST)PLUS_OP, CONS(A, B)));
+            overflow(cons((LIST)PLUS_OP, cons(A, B)));
           }
           E = STONUM(X);
           break;
@@ -1236,7 +1236,7 @@ static LIST reduce(LIST E) {
 
           if ((M < 0 && N > 0 && X > 0) || (M > 0 && N < 0 && X < 0) ||
               (X == -X && X != 0)) {
-            overflow(CONS((LIST)MINUS_OP, CONS(A, B)));
+            overflow(cons((LIST)MINUS_OP, cons(A, B)));
           }
 
           E = STONUM(X);
@@ -1249,7 +1249,7 @@ static LIST reduce(LIST E) {
           if ((M > 0 && N > 0 && X <= 0) || (M < 0 && N < 0 && X <= 0) ||
               (M < 0 && N > 0 && X >= 0) || (M > 0 && N < 0 && X >= 0) ||
               (X == -X && X != 0)) {
-            overflow(CONS((LIST)TIMES_OP, CONS(A, B)));
+            overflow(cons((LIST)TIMES_OP, cons(A, B)));
           }
 
           E = STONUM(X);
@@ -1257,21 +1257,21 @@ static LIST reduce(LIST E) {
         }
         case DIV_OP:
           if (N == 0) {
-            badexp(CONS((LIST)DIV_OP, CONS(A, B)));
+            badexp(cons((LIST)DIV_OP, cons(A, B)));
           }
 
           E = STONUM(M / N);
           break;
         case REM_OP:
           if (N == 0) {
-            badexp(CONS((LIST)REM_OP, CONS(A, B)));
+            badexp(cons((LIST)REM_OP, cons(A, B)));
           }
 
           E = STONUM(M % N);
           break;
         case EXP_OP:
           if (N < 0) {
-            badexp(CONS((LIST)EXP_OP, CONS(A, B)));
+            badexp(cons((LIST)EXP_OP, cons(A, B)));
           }
 
           {
@@ -1283,7 +1283,7 @@ static LIST reduce(LIST E) {
               if ((M > 0 && P > 0 && X <= 0) || (M < 0 && P < 0 && X <= 0) ||
                   (M < 0 && P > 0 && X >= 0) || (M > 0 && P < 0 && X >= 0) ||
                   (X == -X && X != 0)) {
-                overflow(CONS((LIST)EXP_OP, CONS(A, B)));
+                overflow(cons((LIST)EXP_OP, cons(A, B)));
               }
 
               P = X, N = N - 1;
@@ -1352,7 +1352,7 @@ static LIST substitute(LIST ACTUAL, LIST FORMAL, LIST EXP) {
   } else {
     LIST H = substitute(ACTUAL, FORMAL, HD(EXP));
     LIST T = substitute(ACTUAL, FORMAL, TL(EXP));
-    return H == HD(EXP) && T == TL(EXP) ? EXP : CONS(H, T);
+    return H == HD(EXP) && T == TL(EXP) ? EXP : cons(H, T);
   }
 }
 

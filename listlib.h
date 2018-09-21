@@ -60,7 +60,9 @@ typedef struct ATOM {
 // The C string version of the name
 #define PRINTNAME(X) (NAME(X) + 1)
 
-word HAVEPARAM(word CH);
+// unused
+// word haveparam(word CH);
+
 extern int ARGC;
 extern char **ARGV;
 // for picking up system parameters passed to program
@@ -84,9 +86,9 @@ extern void GO(void);
 extern void BASES(void (*f)(LIST *));
 extern void SPACE_ERROR(char *MESSAGE);
 
-// "CONS(X,Y)" creates a list cell, Z say, with X and Y for its fields
+// "cons(X,Y)" creates a list cell, Z say, with X and Y for its fields
 // and "HD!Z", "TL!Z" give access to the fields
-LIST CONS(LIST X, LIST Y);
+LIST cons(LIST X, LIST Y);
 
 // "STONUM(N)" stores away the number N as a list object and "GETNUM(X)"
 // gets it out again.  see NOTE 2 below.

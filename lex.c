@@ -58,7 +58,7 @@ void readline() {
       T = readtoken();
 
       // GCC
-      *P = CONS((LIST)T, NIL);
+      *P = cons((LIST)T, NIL);
       P = &(TL(*P));
 
     } while (
@@ -84,7 +84,7 @@ void readline() {
 #define NOTCH(CH) (CH == '\\' || CH == '~' && LEGACY)
 
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
-//          | CONS(IDENT, ATOM) | CONS(CONST, <ATOM | NUM>)
+//          | cons(IDENT, ATOM) | cons(CONST, <ATOM | NUM>)
 static TOKEN readtoken(void) {
   word CH = (*_RDCH)();
 
@@ -120,7 +120,7 @@ static TOKEN readtoken(void) {
           MEMBER(FILECOMMANDS, X)) {
         EXPECTFILE = true;
       }
-      return CONS((LIST)IDENT, X);
+      return cons((LIST)IDENT, X);
     }
   }
 
@@ -140,7 +140,7 @@ static TOKEN readtoken(void) {
       (*_UNRDCH)(CH);
     }
 
-    return CONS((TOKEN)CONST, STONUM(THE_NUM));
+    return cons((TOKEN)CONST, STONUM(THE_NUM));
   }
 
   if (CH == '"') {
@@ -200,7 +200,7 @@ static TOKEN readtoken(void) {
       CH = (*_RDCH)();
     }
     A = PACKBUFFER();
-    return CH != '"' ? (TOKEN)BADTOKEN : CONS(CONST, (LIST)A);
+    return CH != '"' ? (TOKEN)BADTOKEN : cons(CONST, (LIST)A);
   }
   {
     word CH2 = (*_RDCH)();
@@ -234,7 +234,7 @@ static TOKEN readtoken(void) {
 
       while (!(CH == ';' || CH == EOF))
         if (CH == '\n') {
-          C = CONS((LIST)PACKBUFFER(), C);
+          C = cons((LIST)PACKBUFFER(), C);
           do {
             COMMENTFLAG++;
             CH = (*_RDCH)();
@@ -251,7 +251,7 @@ static TOKEN readtoken(void) {
         COMMENTFLAG--;
         syntax();
       } else {
-        C = CONS((LIST)PACKBUFFER(), C);
+        C = cons((LIST)PACKBUFFER(), C);
       }
 
       return REVERSE(C);

@@ -1,5 +1,6 @@
 // list processing package (for 2960/EMAS)    DAT 23/11/79
 // warning - much of this code is machine dependent
+
 #include "listlib.h"
 
 //----------------------------------------------------------------------
@@ -37,7 +38,7 @@ static int ATOMSPACE;
 // max no of chars in an ATOM
 #define ATOMSIZE 255
 
-// Non-pointer value for the HD of an entry in CONS space,
+// non-pointer value for the HD of an entry in cons space,
 // indicating that it is an integer, stored in the TL field.
 #define FULLword (NIL - 1)
 
@@ -67,10 +68,10 @@ static word BUFP = 0;
 
 int ARGC;
 
-//  Program parameters
+// program parameters
 char **ARGV;
 
-// Forward declarations
+// forward declarations
 static word HASH(char *S, int LEN);
 static void GC(void);
 static void COPY(LIST *P);
@@ -89,17 +90,22 @@ int main(int argc, char **argv) {
   //         argv[1]="-n -e primes?"
   //         argv[2]="path/to/script"
   //         argv[3..]=args passed to the script
+
   if (argc > 1 && argv[1][0] == '-' && strchr(argv[1], ' ') != NULL) {
+
     int nspaces = 0;
     char *cp;
+
     // allocate space for new ARGV
     for (cp = argv[1] + 1; *cp; cp++) {
       if (*cp == ' ') {
         nspaces++;
       }
     }
+
     // each space generates one more argument
     ARGV = calloc(argc + nspaces, sizeof(char *));
+
     if (ARGV == NULL) {
       exit(1);
     }
@@ -209,18 +215,22 @@ int main(int argc, char **argv) {
   main2();
 }
 
-// A separate function finds STACKBASE, to avoid inclusion of any
-// locals, temporaries and stacked stuff belonging to main().
+// a separate function finds STACKBASE, to avoid inclusion of any locals,
+// temporaries and stacked stuff belonging to main().
 void main2() {
+
   // marker to find stack base
   LIST N;
   STACKBASE = &N;
 
   // "GO" is the user's start routine
   GO();
+
 }
 
-word HAVEPARAM(word CH) {
+/*** unused
+word haveparam(word CH) {
+
   word I;
   CH = toupper(CH);
   for (I = 1; I < ARGC; I++)
@@ -228,9 +238,11 @@ word HAVEPARAM(word CH) {
       return true;
     }
   return false;
-}
 
-LIST CONS(LIST X, LIST Y) {
+}
+***/
+
+LIST cons(LIST X, LIST Y) {
   if (CONSP >= (CONSLIMIT - 1)) {
     GC();
   }
@@ -245,7 +257,7 @@ void GC3(jmp_buf *, LIST *STACKEND);
 
 void GC() {
   // Put all registers onto the stack so that any pointers into
-  // the CONS space will be updated during the GC and put back
+  // the cons space will be updated during the GC and put back
   // in the registers when GC3() returns here with longjmp.
   jmp_buf env;
   if (setjmp(env) == 0) {
@@ -481,7 +493,7 @@ word ISNUM(LIST X)
 #endif
 
 // GCC warning expected
-LIST STONUM(word N) { return CONS(FULLword, (LIST)N); }
+LIST STONUM(word N) { return cons(FULLword, (LIST)N); }
 
 // GCC warning expected
 word GETNUM(LIST X) { return (word)(TL(X)); }
@@ -634,7 +646,7 @@ LIST REVERSE(LIST X) { return SHUNT(X, NIL); }
 
 LIST SHUNT(LIST X, LIST Y) {
   while (!(X == NIL)) {
-    Y = CONS(HD(X), Y);
+    Y = cons(HD(X), Y);
     X = TL(X);
   }
   return Y;
