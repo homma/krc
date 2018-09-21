@@ -115,9 +115,9 @@ static void catchinterrupt(int signum) {
   closechannels();
 
   // die quietly if running as script or ABORT() called
-  // bcpl_WRITES("\n**break in - return to KRC command level**\n");
+  // bcpl_writes("\n**break in - return to KRC command level**\n");
   if (!(QUIET || ABORTED)) {
-    bcpl_WRITES("<interrupt>\n");
+    bcpl_writes("<interrupt>\n");
   }
 
   ABORTED = false;
@@ -226,7 +226,7 @@ void GO() {
     if (EXPFLAG) {
       evaluation();
     } else {
-      bcpl_WRITES("-e takes an expression followed by ? or !\n");
+      bcpl_writes("-e takes an expression followed by ? or !\n");
     }
 
     if (ERRORFLAG) {
@@ -249,7 +249,7 @@ void GO() {
 
 static char *input_line;
 
-// alternative version of RDCH that gets its chars from a string
+// alternative version of rdch that gets its chars from a string
 static int str_rdch(void) {
 
   if (input_line == NULL) {
@@ -283,7 +283,7 @@ static void parseline(char *line) {
 
   readline();
 
-  _RDCH = bcpl_RDCH, _UNRDCH = bcpl_UNRDCH;
+  _RDCH = bcpl_rdch, _UNRDCH = bcpl_unrdch;
 }
 
 // ----- end of parseline
@@ -348,11 +348,11 @@ static void initialise() {
         break;
       case 'e':
         if (++I >= ARGC || ARGV[I][0] == '-') {
-          bcpl_WRITES("krc: -e What?\n");
+          bcpl_writes("krc: -e What?\n");
           exit(0);
         }
         if (EVALUATE) {
-          bcpl_WRITES("krc: Only one -e flag allowed\n");
+          bcpl_writes("krc: Only one -e flag allowed\n");
           exit(0);
         }
         EVALUATE = ARGV[I];
@@ -361,7 +361,7 @@ static void initialise() {
       case 'z':
         LISTBASE = 1;
         LEGACY = true;
-        bcpl_WRITES("LISTBASE=1\n");
+        bcpl_writes("LISTBASE=1\n");
         break;
       case 'L':
         OLDLIB = 1;
@@ -394,7 +394,7 @@ static void initialise() {
 
   } else if (USERARGC > 1) {
 
-    bcpl_WRITES("krc: too many arguments\n");
+    bcpl_writes("krc: too many arguments\n");
     exit(0);
   }
 
@@ -421,9 +421,9 @@ static void initialise() {
   } else {
 
     // if ( USERLIB || OLDLIB )
-    // { bcpl_WRITES("krc: invalid combination -n and -l or -L\n"); exit(0); }
+    // { bcpl_writes("krc: invalid combination -n and -l or -L\n"); exit(0); }
     // else
-    bcpl_WRITES("\"PRELUDE\" suppressed\n");
+    bcpl_writes("\"PRELUDE\" suppressed\n");
   }
 
   // effective only for prelude
@@ -433,11 +433,11 @@ static void initialise() {
 
   if (USERSCRIPT) {
 
-    // if ( LISTSCRIPT ) _RDCH=echo_RDCH;
+    // if ( LISTSCRIPT ) _RDCH=echo_rdch;
     getfile(USERSCRIPT);
     SAVED = true;
 
-    // if ( LISTSCRIPT ) _RDCH=bcpl_RDCH;
+    // if ( LISTSCRIPT ) _RDCH=bcpl_rdch;
     LASTFILE = mkatom(USERSCRIPT);
   }
 
@@ -609,7 +609,7 @@ FILE *findchannel(char *F) {
   }
 
   if (P == NIL) {
-    FILE *OUT = bcpl_FINDOUTPUT(F);
+    FILE *OUT = bcpl_findoutput(F);
 
     if (OUT != NULL) {
       OUTFILES = cons(cons((LIST)F, (LIST)OUT), OUTFILES);
@@ -672,7 +672,7 @@ static void helpcom() {
   topic = haveid() ? PRINTNAME(THE_ID) : NULL;
 
   if (!(topic && have(EOL))) {
-    bcpl_WRITES("/h What? `/h' for options\n");
+    bcpl_writes("/h What? `/h' for options\n");
     return;
   }
 
@@ -736,7 +736,7 @@ static void command() {
 
       if (P == NIL) {
 
-        bcpl_WRITES("command not recognised\nfor help type /h\n");
+        bcpl_writes("command not recognised\nfor help type /h\n");
 
       } else {
 
@@ -816,7 +816,7 @@ static void displayall(bool DOUBLESPACING) {
 
   LIST P = SCRIPT;
   if (P == NIL) {
-    bcpl_WRITES("Script=empty\n");
+    bcpl_writes("Script=empty\n");
   }
 
   while (!(P == NIL)) {
@@ -856,7 +856,7 @@ static void quitcom() {
   }
 
   if (makesure()) {
-    bcpl_WRITES("krc logout\n");
+    bcpl_writes("krc logout\n");
     exit(0);
   }
 }
@@ -867,7 +867,7 @@ static bool makesure() {
     return true;
   }
 
-  bcpl_WRITES("Are you sure? ");
+  bcpl_writes("Are you sure? ");
 
   {
     word CH = (*_RDCH)(), C;
@@ -880,7 +880,7 @@ static bool makesure() {
       return true;
     }
 
-    bcpl_WRITES("Command ignored\n");
+    bcpl_writes("Command ignored\n");
 
     return false;
   }
@@ -906,12 +906,12 @@ static void savecom() {
   }
 
   if (SCRIPT == NIL) {
-    bcpl_WRITES("Cannot save empty script\n");
+    bcpl_writes("Cannot save empty script\n");
     return;
   }
 
   {
-    FILE *OUT = bcpl_FINDOUTPUT("T#SCRIPT");
+    FILE *OUT = bcpl_findoutput("T#SCRIPT");
     bcpl_OUTPUT_fp = (OUT);
     displayall(true);
 
@@ -933,7 +933,7 @@ static void savecom() {
         wait(&status);
         if (status == 0) {
           SAVED = true;
-          bcpl_WRITES("File saved in T#SCRIPT.\n");
+          bcpl_writes("File saved in T#SCRIPT.\n");
         }
         // else /* Drop into... */
         break;
@@ -949,7 +949,7 @@ static void filename() {
 
   if (have(EOL)) {
     if (LASTFILE == 0) {
-      bcpl_WRITES("(No file set)\n");
+      bcpl_writes("(No file set)\n");
       syntax();
     } else {
       THE_ID = LASTFILE;
@@ -958,7 +958,7 @@ static void filename() {
     LASTFILE = THE_ID;
   } else {
     if (haveconst() && have(EOL) && !isnum(THE_CONST)) {
-      bcpl_WRITES("(Warning - quotation marks no longer expected around "
+      bcpl_writes("(Warning - quotation marks no longer expected around "
                   "filenames in file commands - DT, Nov 81)\n");
     }
     syntax();
@@ -969,7 +969,7 @@ static void filecom() {
 
   if (have(EOL)) {
     if (LASTFILE == 0) {
-      bcpl_WRITES("No files used\n");
+      bcpl_writes("No files used\n");
     } else {
       fprintf(bcpl_OUTPUT, "File = %s\n", PRINTNAME(LASTFILE));
     }
@@ -1007,7 +1007,7 @@ static void getcom() {
 static void check_hits() {
 
   if (!(GET_HITS == NIL)) {
-    bcpl_WRITES("Warning - /get has overwritten or modified:\n");
+    bcpl_writes("Warning - /get has overwritten or modified:\n");
     scriptlist(reverse(GET_HITS));
     GET_HITS = NIL;
   }
@@ -1015,7 +1015,7 @@ static void check_hits() {
 
 static bool getfile(char *FILENAME) {
 
-  FILE *IN = bcpl_FINDINPUT(FILENAME);
+  FILE *IN = bcpl_findinput(FILENAME);
   if (!(okfile(IN, FILENAME))) {
     return false;
   }
@@ -1076,7 +1076,7 @@ static void listcom() {
 
   {
     char *FNAME = PRINTNAME(THE_ID);
-    FILE *IN = bcpl_FINDINPUT(FNAME);
+    FILE *IN = bcpl_findinput(FNAME);
 
     if (!(okfile(IN, FNAME))) {
       return;
@@ -1140,7 +1140,7 @@ static void find_undefs() {
   }
 
   if (!(UNDEFS == NIL)) {
-    bcpl_WRITES("\nNames used but not defined:\n");
+    bcpl_writes("\nNames used but not defined:\n");
     scriptlist(reverse(UNDEFS));
   }
 }
@@ -1158,7 +1158,7 @@ static void libcom() {
   }
 
   if (LIBSCRIPT == NIL) {
-    bcpl_WRITES("library = empty\n");
+    bcpl_writes("library = empty\n");
   } else {
     scriptlist(LIBSCRIPT);
   }
@@ -1196,7 +1196,7 @@ static void scriptlist(LIST S) {
       (*_WRCH)('\n');
     }
 
-    bcpl_WRITES(N);
+    bcpl_writes(N);
     (*_WRCH)(' ');
     I = I + 1, S = TL(S);
   }
@@ -1281,10 +1281,10 @@ static void renamecom() {
     }
 
     if (!(DUPS == NIL)) {
-      bcpl_WRITES("/rename illegal because of conflicting uses of ");
+      bcpl_writes("/rename illegal because of conflicting uses of ");
 
       while (!(DUPS == NIL)) {
-        bcpl_WRITES(PRINTNAME((ATOM)HD(DUPS)));
+        bcpl_writes(PRINTNAME((ATOM)HD(DUPS)));
         (*_WRCH)(' ');
         DUPS = TL(DUPS);
       }
@@ -1409,7 +1409,7 @@ static void newequation() {
 
         fprintf(bcpl_OUTPUT, "Wrong no of args for \"%s\"\n",
                 PRINTNAME(SUBJECT));
-        bcpl_WRITES("Equation rejected\n");
+        bcpl_writes("Equation rejected\n");
         return;
       } else if (EQNO == -1) {
         // unnumbered EQN

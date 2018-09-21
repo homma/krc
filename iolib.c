@@ -13,7 +13,7 @@
 FILE *bcpl_INPUT_fp = (FILE *)0;
 FILE *bcpl_OUTPUT_fp = (FILE *)0;
 
-FILE *bcpl_FINDINPUT(char *file) {
+FILE *bcpl_findinput(char *file) {
 
   if (strcmp(file, ".IN") == 0) {
     file = "/dev/stdin";
@@ -22,7 +22,7 @@ FILE *bcpl_FINDINPUT(char *file) {
   return fopen(file, "r");
 }
 
-FILE *bcpl_FINDOUTPUT(char *file) {
+FILE *bcpl_findoutput(char *file) {
 
   if (strcmp(file, ".OUT") == 0) {
     file = "/dev/stdout";
@@ -39,7 +39,7 @@ FILE *bcpl_FINDOUTPUT(char *file) {
 static int UNREADCH = -1;
 
 // the standard function for RDCH(c)
-int bcpl_RDCH() {
+int bcpl_rdch() {
 
   if (UNREADCH >= 0) {
     int CH = UNREADCH;
@@ -50,8 +50,8 @@ int bcpl_RDCH() {
   return getc(bcpl_INPUT);
 }
 
-// a version of RDCH that echoes what it reads
-int echo_RDCH() {
+// a version of rdch that echoes what it reads
+int echo_rdch() {
   int CH;
 
   if (UNREADCH >= 0) {
@@ -66,10 +66,10 @@ int echo_RDCH() {
   return CH;
 }
 
-int bcpl_UNRDCH(int c) { return (UNREADCH = c & 0xff); }
+int bcpl_unrdch(int c) { return (UNREADCH = c & 0xff); }
 
 // the standard function for WRCH(c)
-void bcpl_WRCH(word C) { putc(C, bcpl_OUTPUT); }
+void bcpl_wrch(word C) { putc(C, bcpl_OUTPUT); }
 
 // _RDCH and _WRCH are the function pointers used to perform
 // RDCH() and WRCH() and may be modified to attain special effects.
@@ -77,13 +77,13 @@ void bcpl_WRCH(word C) { putc(C, bcpl_OUTPUT); }
 // but in C, WRCH and WRCH() would conflict so
 // say _WRCH=WHATEVER to change it,
 
-int (*_RDCH)() = bcpl_RDCH;
-int (*_UNRDCH)(int) = bcpl_UNRDCH;
-void (*_WRCH)(word C) = bcpl_WRCH;
+int (*_RDCH)() = bcpl_rdch;
+int (*_UNRDCH)(int) = bcpl_unrdch;
+void (*_WRCH)(word C) = bcpl_wrch;
 
 // other output functions must go through WRCH so that
 // callers may redirect it to some other function.
-void bcpl_WRITES(char *s) {
+void bcpl_writes(char *s) {
 
   while (*s) {
     (*_WRCH)(*s++);
@@ -91,21 +91,21 @@ void bcpl_WRITES(char *s) {
 }
 
 // helper function writes positive integers
-static void bcpl_WRITEP(word n) {
+static void bcpl_writep(word n) {
 
   if (n / 10) {
-    bcpl_WRITEP(n / 10);
+    bcpl_writep(n / 10);
   }
 
   (*_WRCH)(n % 10 + '0');
 }
 
-void bcpl_WRITEN(word n) {
+void bcpl_writen(word n) {
 
   if (n < 0) {
     (*_WRCH)('-');
     n = -n;
   }
 
-  bcpl_WRITEP(n);
+  bcpl_writep(n);
 }

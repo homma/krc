@@ -77,7 +77,7 @@ void readline() {
       return;
     }
 
-    bcpl_WRITES("Closing quote missing - line ignored\n");
+    bcpl_writes("Closing quote missing - line ignored\n");
     ERRORFLAG = true;
 
     return;
@@ -133,7 +133,7 @@ static TOKEN readtoken(void) {
     while (isdigit(CH)) {
       THE_NUM = THE_NUM * 10 + CH - '0';
       if (THE_NUM < 0) {
-        bcpl_WRITES("\n**integer overflow**\n");
+        bcpl_writes("\n**integer overflow**\n");
         escapetonextcommand();
       }
       CH = (*_RDCH)();
@@ -250,7 +250,7 @@ static TOKEN readtoken(void) {
 
       if (CH == EOF) {
         fprintf(bcpl_OUTPUT, "%s :- ...", PRINTNAME((ATOM)SUBJECT)),
-            bcpl_WRITES(" missing \";\"\n");
+            bcpl_writes(" missing \";\"\n");
         COMMENTFLAG--;
         syntax();
       } else {
@@ -327,43 +327,43 @@ void writetoken(TOKEN T) {
   } else {
     switch ((word)T) {
     case (word)'\n':
-      bcpl_WRITES("newline");
+      bcpl_writes("newline");
       break;
     case (word)PLUSPLUS_SY:
-      bcpl_WRITES("++");
+      bcpl_writes("++");
       break;
     case (word)DASHDASH_SY:
-      bcpl_WRITES("--");
+      bcpl_writes("--");
       break;
     case (word)STARSTAR_SY:
-      bcpl_WRITES("**");
+      bcpl_writes("**");
       break;
     case (word)GE_SY:
-      bcpl_WRITES(">=");
+      bcpl_writes(">=");
       break;
     case (word)LE_SY:
-      bcpl_WRITES("<=");
+      bcpl_writes("<=");
       break;
     case (word)NE_SY:
-      bcpl_WRITES("\\=");
+      bcpl_writes("\\=");
       break;
     case (word)EQ_SY:
-      bcpl_WRITES("==");
+      bcpl_writes("==");
       break;
     case (word)BACKARROW_SY:
-      bcpl_WRITES("<-");
+      bcpl_writes("<-");
       break;
     case (word)DOTDOT_SY:
-      bcpl_WRITES("..");
+      bcpl_writes("..");
       break;
     default:
       if (!(iscons(T) && (HD(T) == IDENT || HD(T) == CONST)))
         fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", T);
       else if (HD(T) == IDENT)
-        bcpl_WRITES(PRINTNAME((ATOM)(
+        bcpl_writes(PRINTNAME((ATOM)(
             iscons(TL(T)) && HD(TL(T)) == (LIST)ALPHA ? TL(TL(T)) : TL(T))));
       else if (isnum(TL(T)))
-        bcpl_WRITEN(getnum(TL(T)));
+        bcpl_writen(getnum(TL(T)));
       else
         fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((ATOM)TL(T)));
     }
@@ -416,6 +416,7 @@ word haveconst() {
 }
 
 word havenum() {
+
   while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST &&
            isnum(TL(HD(TOKENS))))) {
     return false;
@@ -429,19 +430,20 @@ word havenum() {
 
 // syntax error diagnosis(needs refining)
 void syntax_error(char *message) {
+
   // unclosed string quotes
   if (iscons(TOKENS) && HD(TOKENS) != BADTOKEN) {
-    bcpl_WRITES("**unexpected `"), writetoken(HD(TOKENS)), (*_WRCH)('\'');
+    bcpl_writes("**unexpected `"), writetoken(HD(TOKENS)), (*_WRCH)('\'');
     if (MISSING && MISSING != EOL && MISSING != (TOKEN)';' &&
         MISSING != (TOKEN)'\'') {
 
-      bcpl_WRITES(", missing `"), writetoken(MISSING), (*_WRCH)('\'');
+      bcpl_writes(", missing `"), writetoken(MISSING), (*_WRCH)('\'');
 
       if (MISSING == (TOKEN)'?') {
-        bcpl_WRITES(" or `!'");
+        bcpl_writes(" or `!'");
       }
     }
     (*_WRCH)('\n');
   }
-  bcpl_WRITES(message);
+  bcpl_writes(message);
 }

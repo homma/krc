@@ -170,21 +170,21 @@ int main(int argc, char **argv) {
         break;
       case 'h':
         if (++I >= ARGC || (SPACE = atoi(ARGV[I])) <= 0) {
-          bcpl_WRITES("krc: -h What?\n");
+          bcpl_writes("krc: -h What?\n");
           exit(0);
         }
         break;
       case 'l':
         // doesn't logically belong in listlib
         if (++I >= ARGC) {
-          bcpl_WRITES("krc: -l What?\n");
+          bcpl_writes("krc: -l What?\n");
           exit(0);
         } else
           USERLIB = ARGV[I];
         break;
       case 'd':
         if (++I >= ARGC || (DICMAX = atoi(ARGV[I])) <= 0) {
-          bcpl_WRITES("krc: -d What?\n");
+          bcpl_writes("krc: -d What?\n");
           exit(0);
         }
         break;
@@ -312,7 +312,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   hold_interrupts();
   NOGCS = NOGCS + 1;
   if (ATGC) {
-    bcpl_WRITES("<gc called>\n");
+    bcpl_writes("<gc called>\n");
   }
   CONSP = OTHERBASE;
   // user's static variables etc.
@@ -407,9 +407,9 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   // don't call printf, as if leaves unaligned pointers into
   // cons space on the stack.
   if (ATGC) {
-    bcpl_WRITES("<");
-    bcpl_WRITEN((word)(CONSP - CONSBASE));
-    bcpl_WRITES(" cells in use>\n");
+    bcpl_writes("<");
+    bcpl_writen((word)(CONSP - CONSBASE));
+    bcpl_writes(" cells in use>\n");
   }
 #endif
   release_interrupts();
@@ -427,7 +427,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 
 // p is the address of a list field
 static void copy(LIST *P) {
-  //   do $( bcpl_WRITES("copying ")
+  //   do $( bcpl_writes("copying ")
   //         printobj(*P)
   //         (*_WRCH)('\n')  $) <>
   while (CONSBASE <= *P && *P < CONSLIMIT) {
@@ -535,7 +535,7 @@ ATOM mkatomn(char *S, int LEN) {
   N = (1 + LEN + 1 + (sizeof(word *)) - 1) / sizeof(word *);
 
   if ((word **)ATOMP + OFFSET + N > (word **)ATOMLIMIT) {
-    bcpl_WRITES("<string space exhausted>\n");
+    bcpl_writes("<string space exhausted>\n");
     exit(0);
   }
 
@@ -639,19 +639,19 @@ void listpm() {
   word EMPTY = 0;
   word I;
 
-  bcpl_WRITES("\n LIST POST MORTEM\n");
+  bcpl_writes("\n LIST POST MORTEM\n");
   gcstats();
   fprintf(bcpl_OUTPUT, ", current cells = %d\n", (int)((CONSP - CONSBASE) / 2));
 
   if (BUFP > 0) {
-    bcpl_WRITES("Buffer: ");
+    bcpl_writes("Buffer: ");
     for (I = 0; I < BUFP; I++) {
       (*_WRCH)(BUFFER[I]);
     }
     (*_WRCH)('\n');
   }
 
-  bcpl_WRITES("Atom buckets:\n");
+  bcpl_writes("Atom buckets:\n");
 
   for (I = 0; I < 128; I++) {
 
@@ -661,17 +661,17 @@ void listpm() {
       fprintf(bcpl_OUTPUT, "%d :\t", (int)I);
 
       while (!(P == 0)) {
-        bcpl_WRITES(PRINTNAME(P));
+        bcpl_writes(PRINTNAME(P));
 
         if (!(VAL(P) == NIL)) {
-          bcpl_WRITES(" = ");
+          bcpl_writes(" = ");
           printobj(VAL(P));
         }
 
         P = LINK(P);
 
         if (P != 0) {
-          bcpl_WRITES("\n\t");
+          bcpl_writes("\n\t");
         }
       }
 
@@ -783,7 +783,7 @@ void printobj(LIST X) {
 
   if (X == NIL) {
 
-    bcpl_WRITES("NIL");
+    bcpl_writes("NIL");
 
   } else if (isatom(X)) {
 
@@ -791,7 +791,7 @@ void printobj(LIST X) {
 
   } else if (isnum(X)) {
 
-    bcpl_WRITEN(getnum(X));
+    bcpl_writen(getnum(X));
 
   } else if (iscons(X)) {
 

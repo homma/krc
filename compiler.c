@@ -52,7 +52,7 @@ static void plant2(INSTRUCTION OP, LIST A, LIST B);
 static LIST collectcode(void);
 
 // global variables
-void (*TRUEWRCH)(word C) = bcpl_WRCH;
+void (*TRUEWRCH)(word C) = bcpl_wrch;
 LIST LASTLHS = NIL;
 LIST TRUTH, FALSITY, INFINITY;
 
@@ -118,24 +118,24 @@ static OPERATOR mkinfix(TOKEN T) {
 // N is the priority level
 void printexp(LIST E, word N) {
   if (E == NIL) {
-    bcpl_WRITES("[]");
+    bcpl_writes("[]");
   } else if (isatom(E)) {
-    bcpl_WRITES(PRINTNAME((ATOM)E));
+    bcpl_writes(PRINTNAME((ATOM)E));
   } else if (isnum(E)) {
     word X = getnum(E);
     if (X < 0 && N > 5) {
       (*_WRCH)('(');
-      bcpl_WRITEN(X);
+      bcpl_writen(X);
       (*_WRCH)(')');
     } else {
-      bcpl_WRITEN(X);
+      bcpl_writen(X);
     }
   } else {
     if (!(iscons(E))) {
       if (E == (LIST)NOT_OP) {
-        bcpl_WRITES("'\\'");
+        bcpl_writes("'\\'");
       } else if (E == (LIST)LENGTH_OP) {
-        bcpl_WRITES("'#'");
+        bcpl_writes("'#'");
       } else {
         fprintf(bcpl_OUTPUT, "<internal value:%p>", E);
       }
@@ -161,7 +161,7 @@ void printexp(LIST E, word N) {
           E = TL(E);
           printexp(HD(E), 0);
         }
-        bcpl_WRITES("..");
+        bcpl_writes("..");
         if (!(TL(E) == INFINITY)) {
           printexp(TL(E), 0);
         }
@@ -261,7 +261,7 @@ static void printzf_exp(LIST X) {
         (*_WRCH)(',');
         printexp(HD(TL(qualifier)), 0);
       }
-      bcpl_WRITES("<-");
+      bcpl_writes("<-");
       printexp(TL(TL(qualifier)), 0);
     } else {
       printexp(qualifier, 0);
@@ -344,7 +344,7 @@ void display(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
       LIST C = COMMENT;
       fprintf(bcpl_OUTPUT, "    %s :-", PRINTNAME(ID));
       while (!(C == NIL)) {
-        bcpl_WRITES(PRINTNAME((ATOM)HD(C)));
+        bcpl_writes(PRINTNAME((ATOM)HD(C)));
         C = TL(C);
         if (!(C == NIL)) {
           (*_WRCH)('\n');
@@ -353,7 +353,7 @@ void display(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
           }
         }
       }
-      bcpl_WRITES(";\n");
+      bcpl_writes(";\n");
       if (DOUBLESPACING) {
         (*_WRCH)('\n');
       }
@@ -366,7 +366,7 @@ void display(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
       if (WITHNOS && (N > 1 || COMMENT != NIL)) {
         fprintf(bcpl_OUTPUT, "%2" W ") ", I);
       } else {
-        bcpl_WRITES("    ");
+        bcpl_writes("    ");
       }
 
       removelineno(HD(EQNS));
@@ -386,7 +386,7 @@ void displayeqn(ATOM ID, word NARGS, LIST EQN) {
   LIST LHS = HD(EQN), CODE = TL(EQN);
 
   if (NARGS == 0) {
-    bcpl_WRITES(PRINTNAME(ID));
+    bcpl_writes(PRINTNAME(ID));
     LASTLHS = (LIST)ID;
   } else {
 
@@ -399,10 +399,10 @@ void displayeqn(ATOM ID, word NARGS, LIST EQN) {
     _WRCH = TRUEWRCH;
   }
 
-  bcpl_WRITES(" = ");
+  bcpl_writes(" = ");
 
   if (HD(CODE) == (LIST)CALL_C) {
-    bcpl_WRITES("<primitive function>");
+    bcpl_writes("<primitive function>");
   } else {
     displayrhs(LHS, NARGS, CODE);
   }
@@ -494,11 +494,11 @@ void displayrhs(LIST LHS, word NARGS, LIST CODE) {
       if (!(IF_FLAG)) {
         return;
       }
-      bcpl_WRITES(", ");
+      bcpl_writes(", ");
       printexp(V[I - 1], 0);
       return;
     default:
-      bcpl_WRITES("IMPOSSIBLE INSTRUCTION IN \"displayrhs\"\n");
+      bcpl_writes("IMPOSSIBLE INSTRUCTION IN \"displayrhs\"\n");
     }
     // end of switch
     CODE = TL(CODE);
@@ -597,7 +597,7 @@ LIST equation() {
     while (iscons(SUBJECT))
       SUBJECT = HD(SUBJECT), NARGS = NARGS + 1;
   } else {
-    syntax(), bcpl_WRITES("missing LHS\n");
+    syntax(), bcpl_writes("missing LHS\n");
     return NIL;
   }
   compilelhs(LHS, NARGS);
@@ -1022,7 +1022,7 @@ static void compileformal(LIST X, word I) {
       compileformal(ENV[B], B);
     }
   } else {
-    bcpl_WRITES("Impossible event in \"compileformal\"\n");
+    bcpl_writes("Impossible event in \"compileformal\"\n");
   }
 }
 

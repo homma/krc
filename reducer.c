@@ -186,12 +186,12 @@ void printval(LIST E, bool FORMAT) {
   if (E == NIL) {
 
     if (FORMAT) {
-      bcpl_WRITES("[]");
+      bcpl_writes("[]");
     }
 
   } else if (isnum(E)) {
 
-    bcpl_WRITEN(getnum(E));
+    bcpl_writen(getnum(E));
 
   } else if (iscons(E)) {
 
@@ -399,16 +399,16 @@ static void badexp(LIST E) {
 
   _WRCH = TRUEWRCH;
   closechannels();
-  bcpl_WRITES("\n**undefined expression**\n  ");
+  bcpl_writes("\n**undefined expression**\n  ");
   printexp(E, 0);
 
   // could insert more detailed diagnostics here,
   // depending on nature of HD!E, for example:
   if (iscons(E) && (HD(E) == (LIST)COLON_OP || HD(E) == (LIST)APPEND_OP)) {
-    bcpl_WRITES("\n  (non-list encountered where list expected)");
+    bcpl_writes("\n  (non-list encountered where list expected)");
   }
 
-  bcpl_WRITES("\n**evaluation abandoned**\n");
+  bcpl_writes("\n**evaluation abandoned**\n");
   escapetonextcommand();
 }
 
@@ -417,9 +417,9 @@ static void overflow(LIST E) {
 
   _WRCH = TRUEWRCH;
   closechannels();
-  bcpl_WRITES("\n**integer overflow**\n  ");
+  bcpl_writes("\n**integer overflow**\n  ");
   printexp(E, 0);
-  bcpl_WRITES("\n**evaluation abandoned**\n");
+  bcpl_writes("\n**evaluation abandoned**\n");
   escapetonextcommand();
 }
 
@@ -738,7 +738,7 @@ static void prim_abort(LIST E) {
   FILE *HOLD = bcpl_OUTPUT;
   bcpl_OUTPUT_fp = (stderr);
 
-  bcpl_WRITES("\nprogram error: ");
+  bcpl_writes("\nprogram error: ");
 
   printval(TL(E), false);
 
@@ -758,7 +758,7 @@ static void prim_startread(LIST E) {
   }
 
   {
-    FILE *IN = bcpl_FINDINPUT(PRINTNAME((ATOM)TL(*ARG)));
+    FILE *IN = bcpl_findinput(PRINTNAME((ATOM)TL(*ARG)));
 
     if (!(IN != NULL)) {
       badexp(cons((LIST)BADFILE, *ARG));
@@ -1306,7 +1306,7 @@ static LIST reduce(LIST E) {
           E = (STRINGS ? alfa_ls(SM, SN) : M < N) ? TRUTH : FALSITY;
           break;
         default:
-          bcpl_WRITES("IMPOSSIBLE OPERATOR IN \"reduce\"\n");
+          bcpl_writes("IMPOSSIBLE OPERATOR IN \"reduce\"\n");
         }
         // end of switch
 
