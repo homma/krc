@@ -78,7 +78,7 @@ extern bool ATGC;
 
 // package specifications:
 
-// "GO", "bases", "SPACE.ERROR" must be defined by the user
+// "GO", "bases", "space_error" must be defined by the user
 // all the other functions etc are defined by the package
 
 // "GO()" is the main routine of the users program (necessary because
