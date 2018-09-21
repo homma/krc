@@ -255,7 +255,7 @@ static void printzf_exp(LIST X) {
              iscons(HD(TL(X))) &&
 #endif
              HD(HD(TL(X))) == (LIST)GENERATOR &&
-             EQUAL(TL(TL(HD(TL(X)))), TL(TL(qualifier)))) {
+             equal(TL(TL(HD(TL(X)))), TL(TL(qualifier)))) {
         X = TL(X);
         qualifier = HD(X);
         (*_WRCH)(',');
@@ -290,7 +290,7 @@ static bool islistexp(LIST E) {
 static bool isrelation(LIST X) { return iscons(X) && isrelop(HD(X)); }
 
 static bool isrelation_beginning(LIST A, LIST X) {
-  return (isrelation(X) && EQUAL(HD(TL(X)), A)) ||
+  return (isrelation(X) && equal(HD(TL(X)), A)) ||
          (iscons(X) && HD(X) == (LIST)AND_OP &&
           isrelation_beginning(A, HD(TL(X))));
 }
@@ -338,7 +338,7 @@ void display(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
     LIST X = HD(VAL(ID)), EQNS = TL(VAL(ID));
     word NARGS = (word)(HD(X));
     LIST COMMENT = TL(X);
-    word N = LENGTH(EQNS), I;
+    word N = length(EQNS), I;
     LASTLHS = NIL;
     if (!(COMMENT == NIL)) {
       LIST C = COMMENT;
@@ -390,7 +390,7 @@ void displayeqn(ATOM ID, word NARGS, LIST EQN) {
     LASTLHS = (LIST)ID;
   } else {
 
-    if (EQUAL(LHS, LASTLHS)) {
+    if (equal(LHS, LASTLHS)) {
       _WRCH = SHCH;
     } else {
       LASTLHS = LHS;
@@ -613,9 +613,9 @@ LIST equation() {
       if (have((TOKEN)',')) {
         expr(0);
         plant0(IF_C);
-        CODE = APPEND(CODE, APPEND(collectcode(), EXPCODE));
+        CODE = append(CODE, append(collectcode(), EXPCODE));
       } else {
-        CODE = APPEND(CODE, EXPCODE);
+        CODE = append(CODE, EXPCODE);
       }
 
       if (!(HD(TOKENS) == ENDSTREAMCH)) {
@@ -918,7 +918,7 @@ static LIST skipchunk(LIST P) {
 }
 
 static void conv1(LIST T, LIST VAR, LIST VAR1) {
-  if (EQUAL(HD(T), VAR) && HD(T) != VAR) {
+  if (equal(HD(T), VAR) && HD(T) != VAR) {
     TL(HD(T)) = VAR1;
   }
 }
@@ -1052,7 +1052,7 @@ static LIST collectcode() {
   LIST TMP = CODEV;
   CODEV = NIL;
 
-  return REVERSE(TMP);
+  return reverse(TMP);
 }
 
 // mark elements in CODEV and ENV for preservation by the GC.

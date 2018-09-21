@@ -106,7 +106,7 @@ static TOKEN readtoken(void) {
     // ||(CH == '_' && peekalpha())
 
     do {
-      BUFCH(CH);
+      bufch(CH);
       CH = (*_RDCH)();
     } while (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z') ||
              isdigit(CH) || CH == '\'' || CH == '_' ||
@@ -115,9 +115,9 @@ static TOKEN readtoken(void) {
     (*_UNRDCH)(CH);
 
     {
-      LIST X = (LIST)PACKBUFFER();
+      LIST X = (LIST)packbuffer();
       if (TOKENS != NIL && HD(TOKENS) == (TOKEN)'/' && TL(TOKENS) == NIL &&
-          MEMBER(FILECOMMANDS, X)) {
+          member(FILECOMMANDS, X)) {
         EXPECTFILE = true;
       }
       return cons((LIST)IDENT, X);
@@ -153,34 +153,34 @@ static TOKEN readtoken(void) {
         CH = (*_RDCH)();
         switch (CH) {
         case 'a':
-          BUFCH('\a');
+          bufch('\a');
           break;
         case 'b':
-          BUFCH('\b');
+          bufch('\b');
           break;
         case 'f':
-          BUFCH('\f');
+          bufch('\f');
           break;
         case 'n':
-          BUFCH('\n');
+          bufch('\n');
           break;
         case 'r':
-          BUFCH('\r');
+          bufch('\r');
           break;
         case 't':
-          BUFCH('\t');
+          bufch('\t');
           break;
         case 'v':
-          BUFCH('\v');
+          bufch('\v');
           break;
         case '\\':
-          BUFCH('\\');
+          bufch('\\');
           break;
         case '\'':
-          BUFCH('\'');
+          bufch('\'');
           break;
         case '\"':
-          BUFCH('\"');
+          bufch('\"');
           break;
         case '\n':
           return (TOKEN)BADTOKEN;
@@ -191,15 +191,15 @@ static TOKEN readtoken(void) {
             while (--i && '0' <= CH && CH <= '9' &&
                    (n1 = 10 * n + CH - '0') < 256)
               n = n1, CH = (*_RDCH)();
-            BUFCH(n);
+            bufch(n);
             (*_UNRDCH)(CH);
           }
         }
       } else
-        BUFCH(CH);
+        bufch(CH);
       CH = (*_RDCH)();
     }
-    A = PACKBUFFER();
+    A = packbuffer();
     return CH != '"' ? (TOKEN)BADTOKEN : cons(CONST, (LIST)A);
   }
   {
@@ -234,14 +234,14 @@ static TOKEN readtoken(void) {
 
       while (!(CH == ';' || CH == EOF))
         if (CH == '\n') {
-          C = cons((LIST)PACKBUFFER(), C);
+          C = cons((LIST)packbuffer(), C);
           do {
             COMMENTFLAG++;
             CH = (*_RDCH)();
           } while (CH == '\n');
-          // IGNORE BLANK LINES
+          // ignore blank lines
         } else {
-          BUFCH(CH);
+          bufch(CH);
           CH = (*_RDCH)();
         }
 
@@ -251,10 +251,10 @@ static TOKEN readtoken(void) {
         COMMENTFLAG--;
         syntax();
       } else {
-        C = cons((LIST)PACKBUFFER(), C);
+        C = cons((LIST)packbuffer(), C);
       }
 
-      return REVERSE(C);
+      return reverse(C);
     }
 
     if (CH == CH2) {

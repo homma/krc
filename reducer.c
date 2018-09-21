@@ -96,7 +96,7 @@ static void showch(unsigned char c);
 static void R(char *S, void (*F)(LIST), word N) {
 
   // ((atom sym) . (c_call . fun))
-  ATOM A = MKATOM(S);
+  ATOM A = mkatom(S);
   LIST EQN = cons((LIST)A, cons((LIST)CALL_C, (LIST)F));
 
   if (!(F == prim_read)) {
@@ -112,13 +112,13 @@ void setup_primfns_etc(void) {
   S = (LIST)ENDOFSTACK;
 
   // miscellaneous initialisations
-  ETC = MKATOM("... ");
+  ETC = mkatom("... ");
 
-  SILLYNESS = MKATOM("<unfounded recursion>");
-  GUARD = MKATOM("<non truth-value used as guard:>");
-  TRUTH = cons((LIST)QUOTE, (LIST)MKATOM("TRUE"));
-  FALSITY = cons((LIST)QUOTE, (LIST)MKATOM("FALSE"));
-  LISTDIFF = MKATOM("listdiff");
+  SILLYNESS = mkatom("<unfounded recursion>");
+  GUARD = mkatom("<non truth-value used as guard:>");
+  TRUTH = cons((LIST)QUOTE, (LIST)mkatom("TRUE"));
+  FALSITY = cons((LIST)QUOTE, (LIST)mkatom("FALSE"));
+  LISTDIFF = mkatom("listdiff");
   INFINITY = cons((LIST)QUOTE, (LIST)-3);
 
   // primitive functions
@@ -137,10 +137,10 @@ void setup_primfns_etc(void) {
   R("read ", prim_read, 1);
   R("seq__", prim_seq, 2);
   R("write__", prim_writeap, 3);
-  BADFILE = MKATOM("<cannot open file:>");
-  READFN = MKATOM("read ");
-  WRITEFN = MKATOM("write");
-  INTERLEAVEFN = MKATOM("interleave");
+  BADFILE = mkatom("<cannot open file:>");
+  READFN = mkatom("read ");
+  WRITEFN = mkatom("write");
+  INTERLEAVEFN = mkatom("interleave");
 }
 
 // little routine to avoid s having to be global, just because
@@ -666,8 +666,8 @@ static void prim_decode(LIST E) {
     badexp(E);
   }
 
-  BUFCH((word)TL(*ARG));
-  HD(E) = (LIST)INDIR, TL(E) = cons((LIST)QUOTE, (LIST)PACKBUFFER());
+  bufch((word)TL(*ARG));
+  HD(E) = (LIST)INDIR, TL(E) = cons((LIST)QUOTE, (LIST)packbuffer());
 }
 
 static void prim_concat(LIST E) {
@@ -699,12 +699,12 @@ static void prim_concat(LIST E) {
       int I;
 
       for (I = 1; I <= LEN(N); I++) {
-        BUFCH(NAME(N)[I]);
+        bufch(NAME(N)[I]);
       }
 
       A = TL(TL(A));
     }
-    A = (LIST)PACKBUFFER();
+    A = (LIST)packbuffer();
     HD(E) = (LIST)INDIR,
     TL(E) = A == TL(TRUTH) ? TRUTH
                            : A == TL(FALSITY) ? FALSITY : cons((LIST)QUOTE, A);
@@ -725,8 +725,8 @@ static void prim_explode(LIST E) {
 
     int I;
     for (I = NAME(A)[0]; I > 0; I--) {
-      BUFCH(NAME(A)[I]);
-      X = cons((LIST)COLON_OP, cons(cons((LIST)QUOTE, (LIST)PACKBUFFER()), X));
+      bufch(NAME(A)[I]);
+      X = cons((LIST)COLON_OP, cons(cons((LIST)QUOTE, (LIST)packbuffer()), X));
     }
 
     HD(E) = (LIST)INDIR, TL(E) = X;
@@ -782,7 +782,7 @@ static void prim_read(LIST E) {
     if (C != EOF) {
       char c = C;
       *X = cons((LIST)COLON_OP,
-                cons(cons((LIST)QUOTE, (LIST)MKATOMN(&c, 1)), *X));
+                cons(cons((LIST)QUOTE, (LIST)mkatomn(&c, 1)), *X));
       X = &(TL(TL(*X)));
     }
 
@@ -1292,18 +1292,18 @@ static LIST reduce(LIST E) {
             break;
           }
         case GR_OP:
-          E = (STRINGS ? ALFA_LS(SN, SM) : M > N) ? TRUTH : FALSITY;
+          E = (STRINGS ? alfa_ls(SN, SM) : M > N) ? TRUTH : FALSITY;
           break;
         case GE_OP:
-          E = (STRINGS ? ALFA_LS(SN, SM) || SN == SM : M >= N) ? TRUTH
+          E = (STRINGS ? alfa_ls(SN, SM) || SN == SM : M >= N) ? TRUTH
                                                                : FALSITY;
           break;
         case LE_OP:
-          E = (STRINGS ? ALFA_LS(SM, SN) || SM == SN : M <= N) ? TRUTH
+          E = (STRINGS ? alfa_ls(SM, SN) || SM == SN : M <= N) ? TRUTH
                                                                : FALSITY;
           break;
         case LS_OP:
-          E = (STRINGS ? ALFA_LS(SM, SN) : M < N) ? TRUTH : FALSITY;
+          E = (STRINGS ? alfa_ls(SM, SN) : M < N) ? TRUTH : FALSITY;
           break;
         default:
           bcpl_WRITES("IMPOSSIBLE OPERATOR IN \"reduce\"\n");

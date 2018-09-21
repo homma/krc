@@ -205,7 +205,7 @@ void GO() {
     // inside the CONS space.
     bool HOLDATGC = ATGC;
     ATGC = false;
-    FORCE_GC();
+    force_gc();
     ATGC = HOLDATGC;
   }
 
@@ -372,7 +372,7 @@ static void INITIALISE() {
         USERSCRIPT = ARGV[I];
       }
 
-      USERARGV = cons((LIST)MKATOM(ARGV[I]), USERARGV), USERARGC++;
+      USERARGV = cons((LIST)mkatom(ARGV[I]), USERARGV), USERARGC++;
     }
   }
   if (EVALUATE) {
@@ -416,7 +416,7 @@ static void INITIALISE() {
     SAVED = true;
 
     // if ( LISTSCRIPT ) _RDCH=bcpl_RDCH;
-    LASTFILE = MKATOM(USERSCRIPT);
+    LASTFILE = mkatom(USERSCRIPT);
   }
 
   SETUP_COMMANDS();
@@ -440,7 +440,7 @@ static void INITIALISE() {
 //     FORMLIST.0x03.STOP.NIL ).
 //   NIL )
 static void ENTERARGV(int USERARGC, LIST USERARGV) {
-  ATOM A = MKATOM("argv");
+  ATOM A = mkatom("argv");
   LIST CODE =
       cons((LIST)FORMLIST_C, cons((LIST)USERARGC, cons((LIST)STOP_C, NIL)));
 
@@ -501,10 +501,10 @@ void BASES(void (*F)(LIST *)) {
 
 static void SETUP_COMMANDS() {
 #define F(S, R)                                                                \
-  { COMMANDS = cons(cons((LIST)MKATOM(S), (LIST)R), COMMANDS); }
+  { COMMANDS = cons(cons((LIST)mkatom(S), (LIST)R), COMMANDS); }
 #define FF(S, R)                                                               \
   {                                                                            \
-    FILECOMMANDS = cons((LIST)MKATOM(S), FILECOMMANDS);                        \
+    FILECOMMANDS = cons((LIST)mkatom(S), FILECOMMANDS);                        \
     F(S, R);                                                                   \
   }
 
@@ -530,9 +530,9 @@ static void SETUP_COMMANDS() {
   F("object", OBJECTCOM); // these last commands are for use in
   F("reset", RESETCOM);   // debugging the system
   F("gc", GCCOM);
-  F("dic", REPORTDIC);
+  F("dic", reportdic);
   F("count", COUNTCOM);
-  F("lpm", LISTPM);
+  F("lpm", listpm);
 #undef FF
 #undef F
 }
@@ -677,7 +677,7 @@ static void COMMAND() {
     if (have(EOL)) {
 
       DISPLAYALL(false);
-      // if ( have((TOKEN)'@') && have(EOL) ) LISTPM(); else
+      // if ( have((TOKEN)'@') && have(EOL) ) listpm(); else
       // for debugging the system
 
     } else {
@@ -685,7 +685,7 @@ static void COMMAND() {
       LIST P = COMMANDS;
 
       if (haveid()) {
-        THE_ID = MKATOM(scaseconv(PRINTNAME(THE_ID)));
+        THE_ID = mkatom(scaseconv(PRINTNAME(THE_ID)));
         // always accept commands in either case
       } else {
         P = NIL;
@@ -845,7 +845,7 @@ static void RESETCOM() { ATOBJECT = false, ATCOUNT = false, ATGC = false; }
 
 static void GCCOM() {
   ATGC = true;
-  FORCE_GC();
+  force_gc();
 }
 
 static void COUNTCOM() { ATCOUNT = true; }
@@ -945,13 +945,13 @@ static void GETCOM() {
   HOLDSCRIPT = SCRIPT, SCRIPT = NIL, GET_HITS = NIL;
   GETFILE(PRINTNAME(THE_ID));
   CHECK_HITS();
-  SCRIPT = APPEND(HOLDSCRIPT, SCRIPT), SAVED = CLEAN, HOLDSCRIPT = NIL;
+  SCRIPT = append(HOLDSCRIPT, SCRIPT), SAVED = CLEAN, HOLDSCRIPT = NIL;
 }
 
 static void CHECK_HITS() {
   if (!(GET_HITS == NIL)) {
     bcpl_WRITES("Warning - /get has overwritten or modified:\n");
-    SCRIPTLIST(REVERSE(GET_HITS));
+    SCRIPTLIST(reverse(GET_HITS));
     GET_HITS = NIL;
   }
 }
@@ -1066,7 +1066,7 @@ static void FIND_UNDEFS() {
       while (iscons(CODE)) {
         LIST A = HD(CODE);
 
-        if (isatom(A) && !ISDEFINED((ATOM)A) && !MEMBER(UNDEFS, A)) {
+        if (isatom(A) && !ISDEFINED((ATOM)A) && !member(UNDEFS, A)) {
           UNDEFS = cons(A, UNDEFS);
         }
 
@@ -1078,7 +1078,7 @@ static void FIND_UNDEFS() {
   }
   if (!(UNDEFS == NIL)) {
     bcpl_WRITES("\nNames used but not defined:\n");
-    SCRIPTLIST(REVERSE(UNDEFS));
+    SCRIPTLIST(reverse(UNDEFS));
   }
 }
 
@@ -1150,7 +1150,7 @@ static void OPENLIBCOM() {
   }
 
   SAVED = SCRIPT == NIL;
-  SCRIPT = APPEND(SCRIPT, LIBSCRIPT);
+  SCRIPT = append(SCRIPT, LIBSCRIPT);
   LIBSCRIPT = NIL;
 }
 
@@ -1191,12 +1191,12 @@ static void RENAMECOM() {
     LIST Z1 = Z, POSTDEFS = NIL, DUPS = NIL;
 
     while (!(Z1 == NIL)) {
-      if (MEMBER(SCRIPT, HD(HD(Z1)))) {
+      if (member(SCRIPT, HD(HD(Z1)))) {
         POSTDEFS = cons(TL(HD(Z1)), POSTDEFS);
       }
 
       if (ISDEFINED((ATOM)TL(HD(Z1))) &&
-          (!MEMBER(X, TL(HD(Z1))) || !MEMBER(SCRIPT, TL(HD(Z1))))) {
+          (!member(X, TL(HD(Z1))) || !member(SCRIPT, TL(HD(Z1))))) {
         POSTDEFS = cons(TL(HD(Z1)), POSTDEFS);
       }
 
@@ -1205,7 +1205,7 @@ static void RENAMECOM() {
 
     while (!(POSTDEFS == NIL)) {
 
-      if (MEMBER(TL(POSTDEFS), HD(POSTDEFS)) && !MEMBER(DUPS, HD(POSTDEFS))) {
+      if (member(TL(POSTDEFS), HD(POSTDEFS)) && !member(DUPS, HD(POSTDEFS))) {
         DUPS = cons(HD(POSTDEFS), DUPS);
       }
 
@@ -1234,7 +1234,7 @@ static void RENAMECOM() {
     LIST X1 = X, XVALS = NIL, TARGETS = NIL;
     while (!(X1 == NIL)) {
 
-      if (MEMBER(SCRIPT, HD(X1))) {
+      if (member(SCRIPT, HD(X1))) {
         XVALS = cons(VAL((ATOM)HD(X1)), XVALS), TARGETS = cons(HD(Y), TARGETS);
       }
 
@@ -1267,7 +1267,7 @@ static void RENAMECOM() {
           EQNS = TL(EQNS);
         }
 
-        if (MEMBER(X, HD(S))) {
+        if (member(X, HD(S))) {
           VAL((ATOM)HD(S)) = NIL;
         }
 
@@ -1317,7 +1317,7 @@ static void NEWEQUATION() {
       word NARGS = (word)HD(TL(X));
       LIST EQN = TL(TL(X));
       if (ATOBJECT) {
-        PRINTOB(EQN);
+        printobj(EQN);
         (*_WRCH)('\n');
       }
 
@@ -1348,7 +1348,7 @@ static void NEWEQUATION() {
         LIST P = profile(EQN);
 
         do {
-          if (EQUAL(P, profile(HD(EQNS)))) {
+          if (equal(P, profile(HD(EQNS)))) {
             LIST CODE = TL(HD(EQNS));
             if (HD(CODE) == (LIST)LINENO_C) {
               // if old EQN has line no,
@@ -1485,14 +1485,14 @@ static void EVALUATION() {
   check(EOL);
 
   if (ATOBJECT) {
-    PRINTOB(CODE);
+    printobj(CODE);
     (*_WRCH)('\n');
   }
 
   E = buildexp(CODE);
 
   if (ATCOUNT) {
-    RESETGCSTATS();
+    resetgcstats();
   }
 
   initstats();
@@ -1532,7 +1532,7 @@ static LIST SORT(LIST X) {
 
     // now merge the two halves back together
     while (!(A == NIL || B == NIL)) {
-      if (ALFA_LS((ATOM)HD(A), (ATOM)HD(B))) {
+      if (alfa_ls((ATOM)HD(A), (ATOM)HD(B))) {
         X = cons(HD(A), X), A = TL(A);
       } else {
         X = cons(HD(B), X), B = TL(B);
@@ -1547,7 +1547,7 @@ static LIST SORT(LIST X) {
       X = cons(HD(A), X), A = TL(A);
     }
 
-    return REVERSE(X);
+    return reverse(X);
   }
 }
 
@@ -1565,7 +1565,7 @@ static void REORDERCOM() {
       word I;
 
       for (I = A; I <= B; I++) {
-        if (!MEMBER(NOS, (LIST)I) && 1 <= I && I <= MAX) {
+        if (!member(NOS, (LIST)I) && 1 <= I && I <= MAX) {
           NOS = cons((LIST)I, NOS);
         }
       }
@@ -1589,7 +1589,7 @@ static void REORDERCOM() {
     {
       word I;
       for (I = 1; I <= MAX; I++) {
-        if (!(MEMBER(NOS, (LIST)I))) {
+        if (!(member(NOS, (LIST)I))) {
           NOS = cons((LIST)I, NOS);
         }
       }
@@ -1601,7 +1601,7 @@ static void REORDERCOM() {
       LIST NEW = NIL;
       LIST EQNS = TL(VAL(THE_ID));
       while (!(NOS == NIL)) {
-        LIST EQN = ELEM(EQNS, (word)HD(NOS));
+        LIST EQN = elem(EQNS, (word)HD(NOS));
         removelineno(EQN);
         NEW = cons(EQN, NEW);
         NOS = TL(NOS);
@@ -1620,6 +1620,7 @@ static void REORDERCOM() {
 static void SCRIPTREORDER() {
   LIST R = NIL;
   while ((haveid())) {
+
     if (have(DOTDOT_SY)) {
       ATOM A = THE_ID, B = 0;
       LIST X = NIL;
@@ -1640,10 +1641,14 @@ static void SCRIPTREORDER() {
         syntax();
       }
 
-      R = SHUNT(X, R);
-    } else if (MEMBER(SCRIPT, (LIST)THE_ID)) {
+      R = shunt(X, R);
+
+    } else if (member(SCRIPT, (LIST)THE_ID)) {
+
       R = cons((LIST)THE_ID, R);
+
     } else {
+
       fprintf(bcpl_OUTPUT, "\"%s\" not in script\n", PRINTNAME(THE_ID));
       syntax();
     }
@@ -1657,29 +1662,30 @@ static void SCRIPTREORDER() {
   {
     LIST R1 = NIL;
     while (!(TL(R) == NIL)) {
-      if (!(MEMBER(TL(R), HD(R))))
-        SCRIPT = SUB1(SCRIPT, (ATOM)HD(R)), R1 = cons(HD(R), R1);
+      if (!(member(TL(R), HD(R))))
+        SCRIPT = sub1(SCRIPT, (ATOM)HD(R)), R1 = cons(HD(R), R1);
       R = TL(R);
     }
-    SCRIPT = APPEND(EXTRACT((ATOM)HD(SCRIPT), (ATOM)HD(R)),
-                    APPEND(R1, TL(EXTRACT((ATOM)HD(R), (ATOM)EOL))));
+    SCRIPT = append(EXTRACT((ATOM)HD(SCRIPT), (ATOM)HD(R)),
+                    append(R1, TL(EXTRACT((ATOM)HD(R), (ATOM)EOL))));
     SAVED = false;
   }
 }
 
 static word NO_OF_EQNS(ATOM A) {
-  return VAL(A) == NIL ? 0 : LENGTH(TL(VAL(A)));
+
+  return VAL(A) == NIL ? 0 : length(TL(VAL(A)));
 }
 
 // library functions are recognisable by not being part of the script
 static bool PROTECTED(ATOM A) {
 
-  if (MEMBER(SCRIPT, (LIST)A)) {
+  if (member(SCRIPT, (LIST)A)) {
     return false;
   }
 
-  if (MEMBER(HOLDSCRIPT, (LIST)A)) {
-    if (!(MEMBER(GET_HITS, (LIST)A))) {
+  if (member(HOLDSCRIPT, (LIST)A)) {
+    if (!(member(GET_HITS, (LIST)A))) {
       GET_HITS = cons((LIST)A, GET_HITS);
     }
     return false;
@@ -1691,7 +1697,7 @@ static bool PROTECTED(ATOM A) {
 
 // removes "A" from the script
 static void REMOVE(ATOM A) {
-  SCRIPT = SUB1(SCRIPT, A);
+  SCRIPT = sub1(SCRIPT, A);
   VAL(A) = NIL;
 }
 
@@ -1720,7 +1726,7 @@ static LIST EXTRACT(ATOM A, ATOM B) {
             B == (ATOM)EOL ? "" : PRINTNAME(B));
   }
 
-  return REVERSE(X);
+  return reverse(X);
 }
 
 static void DELETECOM() {
@@ -1806,10 +1812,10 @@ static void DELETECOM() {
         } else {
           word I;
           for (I = NO_OF_EQNS(NAME); I >= 1; I = I - 1)
-            if (MEMBER(NOS, (LIST)I)) {
+            if (member(NOS, (LIST)I)) {
               DELS = DELS + 1;
             } else {
-              LIST EQN = ELEM(TL(VAL(NAME)), I);
+              LIST EQN = elem(TL(VAL(NAME)), I);
               removelineno(EQN);
               NEW = cons(EQN, NEW);
             }

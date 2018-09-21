@@ -72,7 +72,7 @@ int ARGC;
 char **ARGV;
 
 // forward declarations
-static word HASH(char *S, int LEN);
+static word hash(char *S, int LEN);
 static void GC(void);
 static void copy(LIST *P);
 static void copyheads(void);
@@ -241,7 +241,9 @@ word haveparam(word CH) {
 }
 ***/
 
+// creates a list cell with X and Y for its fields
 LIST cons(LIST X, LIST Y) {
+
   if (CONSP >= (CONSLIMIT - 1)) {
     GC();
   }
@@ -389,11 +391,13 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 #endif
 
   copyheads();
+
   // now swap semi-spaces
   {
     LIST HOLD = CONSBASE;
     CONSBASE = OTHERBASE, CONSLIMIT = OTHERBASE + SPACE, OTHERBASE = HOLD;
   }
+
   RECLAIMS = RECLAIMS + (CONSLIMIT - CONSP);
 #if 0
       if( ATGC ) {
@@ -424,7 +428,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 // p is the address of a list field
 static void copy(LIST *P) {
   //   do $( bcpl_WRITES("copying ")
-  //         PRINTOB(*P)
+  //         printobj(*P)
   //         (*_WRCH)('\n')  $) <>
   while (CONSBASE <= *P && *P < CONSLIMIT) {
     if (HD(*P) == GONETO) {
@@ -493,6 +497,11 @@ word isnum(LIST X)
 }
 #endif
 
+// "stonum(N)" stores away the number N as a list object
+// "getnum(X)" gets it out again.
+// the numbers stored and recovered by mknum and getnum are 32 bit integers
+// - take care not to leave them on the stack.
+
 // GCC warning expected
 LIST stonum(word N) { return cons(FULLWORD, (LIST)N); }
 
@@ -500,16 +509,20 @@ LIST stonum(word N) { return cons(FULLWORD, (LIST)N); }
 word getnum(LIST X) { return (word)(TL(X)); }
 
 // make an ATOM from a C string
-ATOM MKATOM(char *S) { return MKATOMN(S, strlen(S)); }
+// atoms are stored uniquely,
+// mkatom uses a hashing algorithm to accomplish this efficiently.
+ATOM mkatom(char *S) { return mkatomn(S, strlen(S)); }
 
 // make an ATOM which might contain NULs
-ATOM MKATOMN(char *S, int LEN) {
-  ATOM *BUCKET = &(HASHV[HASH(S, LEN)]);
+ATOM mkatomn(char *S, int LEN) {
+
+  ATOM *BUCKET = &(HASHV[hash(S, LEN)]);
   ATOM *P = BUCKET;
+
   // N is size of string counted as the number of pointers it occupies
   word N;
 
-  // SEARCH THE APPROPRIATE BUCKET
+  // search the appropriate bucket
   while (!(*P == 0)) {
     if (LEN == LEN(*P) && memcmp(S, PRINTNAME(*P), (size_t)LEN) == 0) {
       return (ATOM)*P;
@@ -517,34 +530,53 @@ ATOM MKATOMN(char *S, int LEN) {
     P = &(LINK(*P));
   }
 
-  // CREATE NEW ATOM
+  // create new atom
   // +1 for the BCPL size, +1 for the \0, then round up to element size
   N = (1 + LEN + 1 + (sizeof(word *)) - 1) / sizeof(word *);
+
   if ((word **)ATOMP + OFFSET + N > (word **)ATOMLIMIT) {
     bcpl_WRITES("<string space exhausted>\n");
     exit(0);
   }
-  *P = ATOMP, LINK(ATOMP) = 0, VAL(ATOMP) = NIL;
-  NAME(ATOMP)
-  [0] = LEN,
- memcpy(NAME(ATOMP) + 1, S, (size_t)LEN), NAME(ATOMP)[LEN + 1] = '\0';
+
+  // *P = ATOMP, LINK(ATOMP) = 0, VAL(ATOMP) = NIL;
+  // (NAME(ATOMP))[0] = LEN,
+  // memcpy(NAME(ATOMP) + 1, S, (size_t)LEN),
+  // NAME(ATOMP)[LEN + 1] = '\0';
+
+  *P = ATOMP;
+  LINK(ATOMP) = 0;
+  VAL(ATOMP) = NIL;
+  (NAME(ATOMP))[0] = LEN;
+  memcpy(NAME(ATOMP) + 1, S, (size_t)LEN);
+  NAME(ATOMP)[LEN + 1] = '\0';
+
   ATOMP = (ATOM)((word **)ATOMP + OFFSET + N);
+
   return *P;
 }
 
 // takes a name and returns a value in 0..127
-static word HASH(char *S, int LEN) {
+static word hash(char *S, int LEN) {
   int H = LEN;
+
   if (LEN && S[0]) {
+
     H = H + S[0] * 37;
     LEN = LEN - 1;
+
     if (LEN && S[1]) {
+
       H = H + S[1];
       LEN = LEN - 1;
+
       if (LEN && S[2]) {
+
         H = H + S[2];
         LEN = LEN - 1;
+
         if (LEN && S[3])
+
           H = H + S[3];
       }
     }
@@ -553,53 +585,64 @@ static word HASH(char *S, int LEN) {
   return H & 0x7F;
 }
 
-void BUFCH(word CH) {
+// puts the character ch into a buffer,
+void bufch(word ch) {
   if (BUFP >= ATOMSIZE) {
     SPACE_ERROR("Atom too big");
   }
-  BUFFER[BUFP++] = CH;
+  BUFFER[BUFP++] = ch;
 }
 
-ATOM PACKBUFFER() {
-  ATOM RESULT = MKATOMN(BUFFER, BUFP);
+// empties the buffer and returns an atom formed from the characters
+// which had been placed in it(by calling "mkatom")
+ATOM packbuffer() {
+  ATOM RESULT = mkatomn(BUFFER, BUFP);
   BUFP = 0;
   return RESULT;
 }
 
 // does string A sort before string B?
-bool ALFA_LS(ATOM A, ATOM B) // A,B ARE ATOMS
-{
-  return strcmp(PRINTNAME(A), PRINTNAME(B)) < 0;
-}
 
-static void GCSTATS() {
+// tests atoms for alphabetical order
+// A, B are atoms
+bool alfa_ls(ATOM A, ATOM B) { return strcmp(PRINTNAME(A), PRINTNAME(B)) < 0; }
+
+static void gcstats() {
+
   fprintf(bcpl_OUTPUT, "Cells claimed = %d, no of gc's = %d",
           (int)(RECLAIMS + (CONSP - CONSBASE) / 2), (int)NOGCS);
 }
 
-void RESETGCSTATS() { NOGCS = 0, RECLAIMS = -(CONSP - CONSBASE); }
+void resetgcstats() { NOGCS = 0, RECLAIMS = -(CONSP - CONSBASE); }
 
-void FORCE_GC() {
+// forces a garbage collection
+void force_gc() {
+
   // to compensate for calling too early
   RECLAIMS = RECLAIMS - (CONSLIMIT - CONSP);
+
   if (ATGC) {
     fprintf(bcpl_OUTPUT, "Max cells available = %d\n", SPACE);
   }
   GC();
 }
 
-void REPORTDIC() {
+void reportdic() {
+
   fprintf(bcpl_OUTPUT, "string space = %ld bytes",
           (long)(ATOMSPACE * atomsize));
   fprintf(bcpl_OUTPUT, ", used %ld\n", (long)((ATOMP - ATOMBASE) * atomsize));
 }
 
-void LISTPM() {
+void listpm() {
+
   word EMPTY = 0;
   word I;
+
   bcpl_WRITES("\n LIST POST MORTEM\n");
-  GCSTATS();
+  gcstats();
   fprintf(bcpl_OUTPUT, ", current cells = %d\n", (int)((CONSP - CONSBASE) / 2));
+
   if (BUFP > 0) {
     bcpl_WRITES("Buffer: ");
     for (I = 0; I < BUFP; I++) {
@@ -607,45 +650,73 @@ void LISTPM() {
     }
     (*_WRCH)('\n');
   }
+
   bcpl_WRITES("Atom buckets:\n");
-  for (I = 0; I < 128; I++)
+
+  for (I = 0; I < 128; I++) {
+
     if (HASHV[I] != 0) {
+
       ATOM P = HASHV[I];
       fprintf(bcpl_OUTPUT, "%d :\t", (int)I);
+
       while (!(P == 0)) {
         bcpl_WRITES(PRINTNAME(P));
+
         if (!(VAL(P) == NIL)) {
           bcpl_WRITES(" = ");
-          PRINTOB(VAL(P));
+          printobj(VAL(P));
         }
+
         P = LINK(P);
-        if (P != 0)
+
+        if (P != 0) {
           bcpl_WRITES("\n\t");
+        }
       }
+
       (*_WRCH)('\n');
-    } else
+
+    } else {
+
       EMPTY = EMPTY + 1;
+    }
+  }
+
   fprintf(bcpl_OUTPUT, "Empty buckets = %d\n", (int)EMPTY);
 }
 
-word LENGTH(LIST X) {
+// gives the length of list X
+word length(LIST X) {
+
   word N = 0;
-  while (!(X == NIL))
+
+  while (!(X == NIL)) {
     X = TL(X), N = N + 1;
+  }
+
   return N;
 }
 
-word MEMBER(LIST X, LIST A) {
-  while (!(X == NIL || HD(X) == A))
+// says if "A" is = an element of X
+word member(LIST X, LIST A) {
+
+  while (!(X == NIL || HD(X) == A)) {
     X = TL(X);
+  }
+
   return X != NIL;
 }
 
-LIST APPEND(LIST X, LIST Y) { return SHUNT(SHUNT(X, NIL), Y); }
+// appends (a copy of) list X to the front of list Y
+LIST append(LIST X, LIST Y) { return shunt(shunt(X, NIL), Y); }
 
-LIST REVERSE(LIST X) { return SHUNT(X, NIL); }
+// reverses the list X
+LIST reverse(LIST X) { return shunt(X, NIL); }
 
-LIST SHUNT(LIST X, LIST Y) {
+// appends reverse(X) to the list Y
+LIST shunt(LIST X, LIST Y) {
+
   while (!(X == NIL)) {
     Y = cons(HD(X), Y);
     X = TL(X);
@@ -654,7 +725,7 @@ LIST SHUNT(LIST X, LIST Y) {
 }
 
 // destructively removes a from x (if present)
-LIST SUB1(LIST X, ATOM A) {
+LIST sub1(LIST X, ATOM A) {
   if (X == NIL) {
     return NIL;
   }
@@ -677,7 +748,8 @@ LIST SUB1(LIST X, ATOM A) {
   }
 }
 
-word EQUAL(LIST X, LIST Y) {
+// determines if list objects X and Y are isomorphic
+word equal(LIST X, LIST Y) {
 
   do {
     if (X == Y) {
@@ -688,7 +760,7 @@ word EQUAL(LIST X, LIST Y) {
       return getnum(X) == getnum(Y);
     }
 
-    if (!(iscons(X) && iscons(Y) && EQUAL(HD(X), HD(Y)))) {
+    if (!(iscons(X) && iscons(Y) && equal(HD(X), HD(Y)))) {
       return false;
     }
 
@@ -696,38 +768,53 @@ word EQUAL(LIST X, LIST Y) {
   } while (1);
 }
 
-LIST ELEM(LIST X, word N) {
+// returns the n'th element of list X
+LIST elem(LIST X, word N) {
   while (!(N == 1)) {
     X = TL(X), N = N - 1;
   }
   return HD(X);
 }
 
-// or ATOM
-void PRINTOB(LIST X) {
+// prints an arbitrary list object X
+// renamed from printob
+void printobj(LIST X) {
+  // LIST X or ATOM
+
   if (X == NIL) {
+
     bcpl_WRITES("NIL");
+
   } else if (isatom(X)) {
+
     fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((ATOM)X));
+
   } else if (isnum(X)) {
+
     bcpl_WRITEN(getnum(X));
+
   } else if (iscons(X)) {
+
     (*_WRCH)('(');
     while (iscons(X)) {
-      PRINTOB(HD(X));
+      printobj(HD(X));
       (*_WRCH)('.');
       X = TL(X);
     }
-    PRINTOB(X);
+    printobj(X);
     (*_WRCH)(')');
-  } else
+
+  } else {
+
     fprintf(bcpl_OUTPUT, "<%p>", X);
+  }
 }
 
 #ifdef INSTRUMENT_KRC_GC
 // debugging function: ensure that P is a valid pointer into cons space
 // and bomb if not.
-LIST ISOKCONS(LIST P) {
+// "is OK cons"
+LIST isokcons(LIST P) {
   LIST Q;
   if (COLLECTING)
     return P;
