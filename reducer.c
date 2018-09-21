@@ -138,6 +138,7 @@ void setup_primfns_etc(void) {
   R("read ", prim_read, 1);
   R("seq__", prim_seq, 2);
   R("write__", prim_writeap, 3);
+
   BADFILE = mkatom("<cannot open file:>");
   READFN = mkatom("read ");
   WRITEFN = mkatom("write");
