@@ -24,7 +24,7 @@
 ## modify files and run upload.sh
 ##
 
-MESSAGE="a minor commit on $(date '+%Y/%m/%d %H:%M')."
+MESSAGE="a minor update on $(date '+%Y/%m/%d %H:%M')."
 
 if [ $# -eq 1 ]; then MESSAGE=$1; fi
 
