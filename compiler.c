@@ -119,10 +119,10 @@ static OPERATOR mkinfix(TOKEN T) {
 void printexp(LIST E, word N) {
   if (E == NIL) {
     bcpl_WRITES("[]");
-  } else if (ISATOM(E)) {
+  } else if (isatom(E)) {
     bcpl_WRITES(PRINTNAME((ATOM)E));
-  } else if (ISNUM(E)) {
-    word X = GETNUM(E);
+  } else if (isnum(E)) {
+    word X = getnum(E);
     if (X < 0 && N > 5) {
       (*_WRCH)('(');
       bcpl_WRITEN(X);
@@ -131,7 +131,7 @@ void printexp(LIST E, word N) {
       bcpl_WRITEN(X);
     }
   } else {
-    if (!(ISCONS(E))) {
+    if (!(iscons(E))) {
       if (E == (LIST)NOT_OP) {
         bcpl_WRITES("'\\'");
       } else if (E == (LIST)LENGTH_OP) {
@@ -238,7 +238,7 @@ static void printzf_exp(LIST X) {
   printexp(HD(Y), 0);
 
   // print "such that" as bar if a generator directly follows
-  if (ISCONS(HD(X)) && HD(HD(X)) == (LIST)GENERATOR) {
+  if (iscons(HD(X)) && HD(HD(X)) == (LIST)GENERATOR) {
     (*_WRCH)('|');
   } else {
     (*_WRCH)(';');
@@ -246,13 +246,13 @@ static void printzf_exp(LIST X) {
   while (!(TL(X) == NIL)) {
     LIST qualifier = HD(X);
 
-    if (ISCONS(qualifier) && HD(qualifier) == (LIST)GENERATOR) {
+    if (iscons(qualifier) && HD(qualifier) == (LIST)GENERATOR) {
       printexp(HD(TL(qualifier)), 0);
 
       // deals with repeated generators
-      while (ISCONS(TL(X)) &&
+      while (iscons(TL(X)) &&
 #ifdef INSTRUMENT_KRC_GC
-             ISCONS(HD(TL(X))) &&
+             iscons(HD(TL(X))) &&
 #endif
              HD(HD(TL(X))) == (LIST)GENERATOR &&
              EQUAL(TL(TL(HD(TL(X)))), TL(TL(qualifier)))) {
@@ -274,10 +274,10 @@ static void printzf_exp(LIST X) {
 }
 
 static bool islistexp(LIST E) {
-  while (ISCONS(E) && HD(E) == (LIST)COLON_OP) {
+  while (iscons(E) && HD(E) == (LIST)COLON_OP) {
     LIST E1 = TL(TL(E));
 
-    while (ISCONS(E1) && HD(E1) == (LIST)INDIR) {
+    while (iscons(E1) && HD(E1) == (LIST)INDIR) {
       E1 = TL(E1);
     }
 
@@ -287,11 +287,11 @@ static bool islistexp(LIST E) {
   return E == NIL;
 }
 
-static bool isrelation(LIST X) { return ISCONS(X) && isrelop(HD(X)); }
+static bool isrelation(LIST X) { return iscons(X) && isrelop(HD(X)); }
 
 static bool isrelation_beginning(LIST A, LIST X) {
   return (isrelation(X) && EQUAL(HD(TL(X)), A)) ||
-         (ISCONS(X) && HD(X) == (LIST)AND_OP &&
+         (iscons(X) && HD(X) == (LIST)AND_OP &&
           isrelation_beginning(A, HD(TL(X))));
 }
 
@@ -317,7 +317,7 @@ static word rightprec(OPERATOR OP) {
 // puts nested and's into rightist form to ensure
 // detection of continued relations
 static bool rotate(LIST E) {
-  while (ISCONS(HD(TL(E))) && HD(HD(TL(E))) == (LIST)AND_OP) {
+  while (iscons(HD(TL(E))) && HD(HD(TL(E))) == (LIST)AND_OP) {
     LIST X = TL(HD(TL(E))), C = TL(TL(E));
     LIST A = HD(X), B = TL(X);
     HD(TL(E)) = A, TL(TL(E)) = cons((LIST)AND_OP, cons(B, C));
@@ -594,7 +594,7 @@ LIST equation() {
     }
   } else if (HD(TOKENS) == (LIST)'=' && LASTLHS != NIL) {
     SUBJECT = LASTLHS, LHS = LASTLHS;
-    while (ISCONS(SUBJECT))
+    while (iscons(SUBJECT))
       SUBJECT = HD(SUBJECT), NARGS = NARGS + 1;
   } else {
     syntax(), bcpl_WRITES("missing LHS\n");
@@ -704,12 +704,12 @@ static void combn() {
 }
 
 static bool startformal(TOKEN T) {
-  return ISCONS(T) ? (HD(T) == IDENT || HD(T) == (LIST)CONST)
+  return iscons(T) ? (HD(T) == IDENT || HD(T) == (LIST)CONST)
                    : T == (TOKEN)'(' || T == (TOKEN)'[' || T == (TOKEN)'-';
 }
 
 static bool startsimple(TOKEN T) {
-  return ISCONS(T) ? (HD(T) == IDENT || HD(T) == (LIST)CONST)
+  return iscons(T) ? (HD(T) == IDENT || HD(T) == (LIST)CONST)
                    : T == (TOKEN)'(' || T == (TOKEN)'[' || T == (TOKEN)'{' ||
                          T == (TOKEN)'\'';
 }
@@ -858,10 +858,10 @@ static void perform_alpha_conversions() {
   }
 }
 
-bool isid(LIST X) { return ISCONS(X) && HD(X) == IDENT; }
+bool isid(LIST X) { return iscons(X) && HD(X) == IDENT; }
 
 static bool isgenerator(LIST T) {
-  return !ISCONS(T) ? false
+  return !iscons(T) ? false
                     : HD(T) == BACKARROW_SY ||
                           (HD(T) == (TOKEN)',' && isid(HD(TL(T))) &&
                            isgenerator(TL(TL(T))));
@@ -955,7 +955,7 @@ static LIST formal() {
     return P;
   } else if (have((TOKEN)'-') && havenum()) {
     THE_NUM = -THE_NUM;
-    return STONUM(THE_NUM);
+    return stonum(THE_NUM);
   } else {
     syntax(); // MISSING identifier|constant|(|[
     return NIL;
@@ -966,7 +966,7 @@ static LIST internalise(LIST VAL) {
   return VAL == TL(TRUTH)
              ? TRUTH
              : VAL == TL(FALSITY) ? FALSITY
-                                  : ISATOM(VAL) ? cons((LIST)QUOTE, VAL) : VAL;
+                                  : isatom(VAL) ? cons((LIST)QUOTE, VAL) : VAL;
 }
 
 static LIST pattern() {
@@ -994,7 +994,7 @@ static void compilelhs(LIST LHS, word NARGS) {
 static void compileformal(LIST X, word I) {
 
   // identifier
-  if (ISATOM(X)) {
+  if (isatom(X)) {
     word J = 0;
 
     while (!(J >= I || ENV[J] == X)) {
@@ -1009,9 +1009,9 @@ static void compileformal(LIST X, word I) {
       plant2(MATCHARG_C, (LIST)I, (LIST)J);
     }
 
-  } else if (ISNUM(X) || X == NIL || (ISCONS(X) && HD(X) == (LIST)QUOTE)) {
+  } else if (isnum(X) || X == NIL || (iscons(X) && HD(X) == (LIST)QUOTE)) {
     plant2(MATCH_C, (LIST)I, X);
-  } else if (ISCONS(X) && HD(X) == (TOKEN)COLON_OP && ISCONS(TL(X))) {
+  } else if (iscons(X) && HD(X) == (TOKEN)COLON_OP && iscons(TL(X))) {
     // OK
     plant1(MATCHPAIR_C, (LIST)I);
     ENVP = ENVP + 2;

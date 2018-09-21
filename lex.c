@@ -65,7 +65,7 @@ void readline() {
         !(T == (TOKEN)EOL || T == (TOKEN)ENDSTREAMCH || T == (TOKEN)BADTOKEN));
 
     // ignore first line of Unix script file
-    if (HD(TOKENS) == (LIST)'#' && ISCONS(TL(TOKENS)) &&
+    if (HD(TOKENS) == (LIST)'#' && iscons(TL(TOKENS)) &&
         HD(TL(TOKENS)) == (LIST)'!') {
       continue;
     }
@@ -140,7 +140,7 @@ static TOKEN readtoken(void) {
       (*_UNRDCH)(CH);
     }
 
-    return cons((TOKEN)CONST, STONUM(THE_NUM));
+    return cons((TOKEN)CONST, stonum(THE_NUM));
   }
 
   if (CH == '"') {
@@ -204,7 +204,7 @@ static TOKEN readtoken(void) {
   }
   {
     word CH2 = (*_RDCH)();
-    if (CH == ':' && CH2 == '-' && TOKENS != NIL && ISCONS(HD(TOKENS)) &&
+    if (CH == ':' && CH2 == '-' && TOKENS != NIL && iscons(HD(TOKENS)) &&
         HD(HD(TOKENS)) == IDENT && TL(TOKENS) == NIL) {
       LIST C = NIL;
       LIST SUBJECT = TL(HD(TOKENS));
@@ -354,13 +354,13 @@ void writetoken(TOKEN T) {
       bcpl_WRITES("..");
       break;
     default:
-      if (!(ISCONS(T) && (HD(T) == IDENT || HD(T) == CONST)))
+      if (!(iscons(T) && (HD(T) == IDENT || HD(T) == CONST)))
         fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", T);
       else if (HD(T) == IDENT)
         bcpl_WRITES(PRINTNAME((ATOM)(
-            ISCONS(TL(T)) && HD(TL(T)) == (LIST)ALPHA ? TL(TL(T)) : TL(T))));
-      else if (ISNUM(TL(T)))
-        bcpl_WRITEN(GETNUM(TL(T)));
+            iscons(TL(T)) && HD(TL(T)) == (LIST)ALPHA ? TL(TL(T)) : TL(T))));
+      else if (isnum(TL(T)))
+        bcpl_WRITEN(getnum(TL(T)));
       else
         fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((ATOM)TL(T)));
     }
@@ -391,7 +391,7 @@ void check(TOKEN T) {
 void syntax() { ERRORFLAG = true; }
 
 word haveid() {
-  while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
+  while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
     return false;
   }
 
@@ -402,7 +402,7 @@ word haveid() {
 }
 
 word haveconst() {
-  while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
+  while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
     return false;
   }
 
@@ -413,12 +413,12 @@ word haveconst() {
 }
 
 word havenum() {
-  while (!(ISCONS(HD(TOKENS)) && HD(HD(TOKENS)) == CONST &&
-           ISNUM(TL(HD(TOKENS))))) {
+  while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST &&
+           isnum(TL(HD(TOKENS))))) {
     return false;
   }
 
-  THE_NUM = GETNUM(TL(HD(TOKENS)));
+  THE_NUM = getnum(TL(HD(TOKENS)));
   TOKENS = TL(TOKENS);
 
   return true;
@@ -427,7 +427,7 @@ word havenum() {
 // syntax error diagnosis(needs refining)
 void syntax_error(char *message) {
   // unclosed string quotes
-  if (ISCONS(TOKENS) && HD(TOKENS) != BADTOKEN) {
+  if (iscons(TOKENS) && HD(TOKENS) != BADTOKEN) {
     bcpl_WRITES("**unexpected `"), writetoken(HD(TOKENS)), (*_WRCH)('\'');
     if (MISSING && MISSING != EOL && MISSING != (TOKEN)';' &&
         MISSING != (TOKEN)'\'') {

@@ -90,10 +90,10 @@ extern void SPACE_ERROR(char *MESSAGE);
 // and "HD!Z", "TL!Z" give access to the fields
 LIST cons(LIST X, LIST Y);
 
-// "STONUM(N)" stores away the number N as a list object and "GETNUM(X)"
+// "stonum(N)" stores away the number N as a list object and "getnum(X)"
 // gets it out again.  see NOTE 2 below.
-LIST STONUM(word N);
-word GETNUM(LIST X);
+LIST stonum(word N);
+word getnum(LIST X);
 
 // "MKATOM(S)" creates an atom from BCPL string S  - atoms are stored
 // uniquely, MKATOM uses a hashing algorithm to accomplish this
@@ -109,7 +109,7 @@ ATOM MKATOMN(char *s, int len);
 void BUFCH(word CH);
 ATOM PACKBUFFER(void);
 
-// the functions "ISCONS(X)", "ISATOM(X)", "ISNUM(X)" distinguish
+// the functions "iscons(X)", "isatom(X)", "isnum(X)" distinguish
 // the three different kinds of constructed list object.
 // note that the special object "NIL" is neither an atom nor a list.
 // (so remember that "NIL" has no printname and no "VAL" field.)
@@ -117,9 +117,9 @@ ATOM PACKBUFFER(void);
 // namely a small integer (where "small" is an implementation dependent
 // adjective meaning small enough not to be confused with one of the
 // three above mentioned types of list object - see NOTE 3, below).
-word ISCONS(LIST X);
-word ISATOM(LIST X);
-word ISNUM(LIST X);
+word iscons(LIST X);
+word isatom(LIST X);
+word isnum(LIST X);
 
 // "ALFA.LS(A,B)" tests atoms for alphabetical order
 // "LENGTH(X)" gives the length of list X

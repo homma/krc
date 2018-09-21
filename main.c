@@ -905,7 +905,7 @@ static void FILENAME() {
   } else if (haveid() && have(EOL)) {
     LASTFILE = THE_ID;
   } else {
-    if (haveconst() && have(EOL) && !ISNUM(THE_CONST)) {
+    if (haveconst() && have(EOL) && !isnum(THE_CONST)) {
       bcpl_WRITES("(Warning - quotation marks no longer expected around "
                   "filenames in file commands - DT, Nov 81)\n");
     }
@@ -1063,10 +1063,10 @@ static void FIND_UNDEFS() {
     LIST EQNS = TL(VAL((ATOM)HD(S)));
     while (!(EQNS == NIL)) {
       LIST CODE = TL(HD(EQNS));
-      while (ISCONS(CODE)) {
+      while (iscons(CODE)) {
         LIST A = HD(CODE);
 
-        if (ISATOM(A) && !ISDEFINED((ATOM)A) && !MEMBER(UNDEFS, A)) {
+        if (isatom(A) && !ISDEFINED((ATOM)A) && !MEMBER(UNDEFS, A)) {
           UNDEFS = cons(A, UNDEFS);
         }
 
@@ -1260,7 +1260,7 @@ static void RENAMECOM() {
             HD(LHS) = SUBST(Z, HD(LHS));
           }
 
-          while (ISCONS(CODE)) {
+          while (iscons(CODE)) {
             HD(CODE) = SUBST(Z, HD(CODE)), CODE = TL(CODE);
           }
 
@@ -1780,7 +1780,7 @@ static void DELETECOM() {
     }
     while (!(DLIST == NIL)) {
       //"NAME..NAME"
-      if (ISATOM(TL(HD(DLIST))) || TL(HD(DLIST)) == EOL) {
+      if (isatom(TL(HD(DLIST))) || TL(HD(DLIST)) == EOL) {
         LIST X = EXTRACT((ATOM)HD(HD(DLIST)), (ATOM)TL(HD(DLIST)));
         DLIST = TL(DLIST);
         while (!(X == NIL))

@@ -40,7 +40,7 @@ static int ATOMSPACE;
 
 // non-pointer value for the HD of an entry in cons space,
 // indicating that it is an integer, stored in the TL field.
-#define FULLword (NIL - 1)
+#define FULLWORD (NIL - 1)
 
 // impossible value of pointer or integer used as flag during GC.
 // just top bit set
@@ -74,8 +74,8 @@ char **ARGV;
 // forward declarations
 static word HASH(char *S, int LEN);
 static void GC(void);
-static void COPY(LIST *P);
-static void COPYHEADS(void);
+static void copy(LIST *P);
+static void copyheads(void);
 
 void main2();
 
@@ -225,7 +225,6 @@ void main2() {
 
   // "GO" is the user's start routine
   GO();
-
 }
 
 /*** unused
@@ -278,6 +277,7 @@ void GC2(jmp_buf *envp) {
 // garbage collector - does a graph copy into the other semi-space
 // not static to avoid inlining
 void GC3(jmp_buf *envp, LIST *STACKEND) {
+
   // examine every pointer on the stack
   // P is a pointer to pointer, so incrementing it
   // moved it up by the size of one pointer.
@@ -294,7 +294,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   do {                                                                         \
     fprintf(bcpl_OUTPUT, name ":%d", (int)(CONSP - OTHERBASE) - LASTUSED);     \
     LASTUSED = CONSP - OTHERBASE;                                              \
-    COPYHEADS();                                                               \
+    copyheads();                                                               \
     fprintf(bcpl_OUTPUT, "+%d ", (int)(CONSP - OTHERBASE) - LASTUSED);         \
     LASTUSED = CONSP - OTHERBASE;                                              \
   } while (0)
@@ -314,7 +314,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   }
   CONSP = OTHERBASE;
   // user's static variables etc.
-  BASES(COPY);
+  BASES(copy);
   SHOW("bases");
   {
     word I;
@@ -322,7 +322,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
       // val fields of atoms
       ATOM A = HASHV[I];
       while (!(A == 0)) {
-        COPY((LIST *)&(VAL(A)));
+        copy((LIST *)&(VAL(A)));
         A = LINK(A);
       }
     }
@@ -336,14 +336,14 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
       if (CONSBASE <= (LIST)*P && (LIST)*P < CONSLIMIT) {
         // an aligned address in listspace
         if (((char *)*P - (char *)CONSBASE) % sizeof(struct LIST) == 0) {
-          COPY(P);
+          copy(P);
         }
 
         if (((char *)*P - (char *)CONSBASE) % sizeof(struct LIST) ==
             sizeof(struct LIST *)) {
           // Pointer to a tail cell, which also needs updating
           *P = (LIST)((LIST *)*P - 1);
-          COPY(P);
+          copy(P);
           *P = (LIST)((LIST *)*P + 1);
         }
       }
@@ -354,13 +354,13 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
       if (CONSBASE <= (LIST)*P && (LIST)*P < CONSLIMIT) {
         if (((char *)*P - (char *)CONSBASE) % sizeof(struct LIST) == 0) {
           // an aligned address in listspace
-          COPY(P);
+          copy(P);
         }
         if (((char *)*P - (char *)CONSBASE) % sizeof(struct LIST) ==
             sizeof(struct LIST *)) {
           // Pointer to a tail cells, which also needs updating
           *P = (LIST)((LIST *)*P - 1);
-          COPY(P);
+          copy(P);
           *P = (LIST)((LIST *)*P + 1);
         }
       }
@@ -388,7 +388,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   fprintf(bcpl_OUTPUT, ">\n");
 #endif
 
-  COPYHEADS();
+  copyheads();
   // now swap semi-spaces
   {
     LIST HOLD = CONSBASE;
@@ -422,8 +422,8 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 }
 
 // p is the address of a list field
-static void COPY(LIST *P) {
-  //   do $( bcpl_WRITES("COPYING ")
+static void copy(LIST *P) {
+  //   do $( bcpl_WRITES("copying ")
   //         PRINTOB(*P)
   //         (*_WRCH)('\n')  $) <>
   while (CONSBASE <= *P && *P < CONSLIMIT) {
@@ -439,64 +439,65 @@ static void COPY(LIST *P) {
     *P = Z;
     HD(Z) = X, TL(Z) = Y;
     CONSP = CONSP + 1;
-    if (X == FULLword) {
+    if (X == FULLWORD) {
       return;
     }
     P = &(TL(Z));
   }
 }
 
-static void COPYHEADS() {
+static void copyheads() {
+
   LIST Z = OTHERBASE;
   while (!(Z == CONSP)) {
-    COPY(&(HD(Z)));
+    copy(&(HD(Z)));
     Z = Z + 1;
   }
 }
 
-word ISCONS(LIST X)
+word iscons(LIST X)
 #ifdef INSTRUMENT_KRC_GC
 {
   if (CONSBASE <= X && X < CONSLIMIT) {
     if (((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0) {
-      fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in ISCONS\n", X);
+      fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in iscons\n", X);
       return false;
     }
-    return HD(X) != FULLword;
+    return HD(X) != FULLWORD;
   }
   return false;
 }
 #else
 {
-  return CONSBASE <= X && X < CONSLIMIT ? HD(X) != FULLword : false;
+  return CONSBASE <= X && X < CONSLIMIT ? HD(X) != FULLWORD : false;
 }
 #endif
 
-word ISATOM(LIST X) { return ATOMBASE <= (ATOM)X && (ATOM)X < ATOMP; }
+word isatom(LIST X) { return ATOMBASE <= (ATOM)X && (ATOM)X < ATOMP; }
 
-word ISNUM(LIST X)
+word isnum(LIST X)
 #ifdef INSTRUMENT_KRC_GC
 {
   if (CONSBASE <= X && X < CONSLIMIT) {
     if (((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0) {
-      fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in ISNUM\n", X);
+      fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in isnum\n", X);
       return false;
     }
-    return HD(X) == FULLword;
+    return HD(X) == FULLWORD;
   }
   return false;
 }
 #else
 {
-  return CONSBASE <= X && X < CONSLIMIT ? HD(X) == FULLword : false;
+  return CONSBASE <= X && X < CONSLIMIT ? HD(X) == FULLWORD : false;
 }
 #endif
 
 // GCC warning expected
-LIST STONUM(word N) { return cons(FULLword, (LIST)N); }
+LIST stonum(word N) { return cons(FULLWORD, (LIST)N); }
 
 // GCC warning expected
-word GETNUM(LIST X) { return (word)(TL(X)); }
+word getnum(LIST X) { return (word)(TL(X)); }
 
 // make an ATOM from a C string
 ATOM MKATOM(char *S) { return MKATOMN(S, strlen(S)); }
@@ -677,16 +678,17 @@ LIST SUB1(LIST X, ATOM A) {
 }
 
 word EQUAL(LIST X, LIST Y) {
+
   do {
     if (X == Y) {
       return true;
     }
 
-    if (ISNUM(X) && ISNUM(Y)) {
-      return GETNUM(X) == GETNUM(Y);
+    if (isnum(X) && isnum(Y)) {
+      return getnum(X) == getnum(Y);
     }
 
-    if (!(ISCONS(X) && ISCONS(Y) && EQUAL(HD(X), HD(Y)))) {
+    if (!(iscons(X) && iscons(Y) && EQUAL(HD(X), HD(Y)))) {
       return false;
     }
 
@@ -705,13 +707,13 @@ LIST ELEM(LIST X, word N) {
 void PRINTOB(LIST X) {
   if (X == NIL) {
     bcpl_WRITES("NIL");
-  } else if (ISATOM(X)) {
+  } else if (isatom(X)) {
     fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((ATOM)X));
-  } else if (ISNUM(X)) {
-    bcpl_WRITEN(GETNUM(X));
-  } else if (ISCONS(X)) {
+  } else if (isnum(X)) {
+    bcpl_WRITEN(getnum(X));
+  } else if (iscons(X)) {
     (*_WRCH)('(');
-    while (ISCONS(X)) {
+    while (iscons(X)) {
       PRINTOB(HD(X));
       (*_WRCH)('.');
       X = TL(X);
