@@ -61,7 +61,7 @@ typedef struct atom {
 #define LENA(p) ((p)->len)
 #define LEN(p) ((p)->len & 0xff)
 
-// offset of "name" field in pointer words
+// offset of "len" field in pointer words
 #define OFFSET 2
 
 // unit of allocation for ATOMSPACE
