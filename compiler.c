@@ -1056,7 +1056,7 @@ static list collectcode() {
 }
 
 // mark elements in CODEV and ENV for preservation by the GC.
-// this routine should be called by your BASES() function.
+// this routine should be called by your bases() function.
 void compiler_bases(void (*F)(list *)) {
   word I;
 

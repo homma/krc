@@ -475,7 +475,7 @@ static void enterargv(int USERARGC, list USERARGV) {
   enterscript(A);
 }
 
-void SPACE_ERROR(char *MESSAGE) {
+void space_error(char *MESSAGE) {
 
   _WRCH = TRUEWRCH;
   closechannels();
@@ -497,7 +497,7 @@ void SPACE_ERROR(char *MESSAGE) {
   }
 }
 
-void BASES(void (*F)(list *)) {
+void bases(void (*F)(list *)) {
 
   // in reducer.c
   extern list S;

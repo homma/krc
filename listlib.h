@@ -23,7 +23,9 @@ typedef struct list {
 // - the memory address of a cell in the atom space
 // - improbable pointer values of HD() for special values:
 //   FULLWORD (see above) or GONETO (see listlib.c)
-//#define NIL ((list)0) //causes problems
+
+// this causes problems
+// #define NIL ((list)0)
 
 // from oldbcpl/listhdr, may need changing
 #define NIL ((list)0x40000000)
@@ -37,7 +39,7 @@ extern list isokcons(list);
 #define TL(p) ((p)->tl)
 #endif
 
-/* An element in atom space */
+/* an element in atom space */
 typedef struct atom {
   struct atom *link;
   struct list *val;
@@ -79,26 +81,24 @@ extern bool ATGC;
 
 // package specifications:
 
-// "GO", "BASES", "SPACE.ERROR" must be defined by the user
+// "GO", "bases", "SPACE.ERROR" must be defined by the user
 // all the other functions etc are defined by the package
 
 // "GO()" is the main routine of the users program (necessary because
 // the package has its own "START" routine)
 
-// "BASES" is used to inform the package which of the users off-stack
+// "bases" is used to inform the package which of the users off-stack
 // variables are bases for garbage collection - it should be defined
-// thus - "let BASES(F) be $( F(@A); F(@B); ... $)" where A, B etc.
+// thus - "let bases(F) be $( F(@A); F(@B); ... $)" where A, B etc.
 // are the relevant variables. see NOTE 1 below.
 
-// "SPACE_ERROR()" defines the action the user wishes to take when list
+// "space_error()" defines the action the user wishes to take when list
 // space is exhausted (e.g. print a message and call finish)
 
 extern void GO(void);
-extern void BASES(void (*f)(list *));
-extern void SPACE_ERROR(char *MESSAGE);
+extern void bases(void (*f)(list *));
+extern void space_error(char *MESSAGE);
 
-// "cons(X,Y)" creates a list cell, Z say, with X and Y for its fields
-// and "HD!Z", "TL!Z" give access to the fields
 list cons(list X, list Y);
 
 list stonum(word N);
@@ -118,7 +118,10 @@ atom packbuffer(void);
 // namely a small integer (where "small" is an implementation dependent
 // adjective meaning small enough not to be confused with one of the
 // three above mentioned types of list object).
-// "small" here means less than 8 meg
+//
+// NOTES for 2960/EMAS implementation at UKC:
+// "small" here means less than 8 meg -- 2^23?
+
 word iscons(list X);
 word isatom(list X);
 word isnum(list X);

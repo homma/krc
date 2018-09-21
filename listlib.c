@@ -198,16 +198,16 @@ int main(int argc, char **argv) {
   ATOMSPACE = DICMAX / atomsize;
   CONSBASE = (list)malloc(SPACE * sizeof(*CONSBASE));
   if (CONSBASE == (void *)-1) {
-    SPACE_ERROR("Not enough memory");
+    space_error("Not enough memory");
   }
   CONSP = CONSBASE, CONSLIMIT = CONSBASE + SPACE;
   OTHERBASE = (list)malloc(SPACE * sizeof(*CONSBASE));
   if (OTHERBASE == (void *)-1) {
-    SPACE_ERROR("Not enough memory");
+    space_error("Not enough memory");
   }
   ATOMBASE = (atom)malloc(ATOMSPACE * sizeof(*ATOMBASE));
   if (ATOMBASE == (void *)-1) {
-    SPACE_ERROR("Not enough memory");
+    space_error("Not enough memory");
   }
   ATOMP = ATOMBASE;
   ATOMLIMIT = ATOMBASE + ATOMSPACE;
@@ -316,7 +316,7 @@ void GC3(jmp_buf *envp, list *STACKEND) {
   }
   CONSP = OTHERBASE;
   // user's static variables etc.
-  BASES(copy);
+  bases(copy);
   SHOW("bases");
   {
     word I;
@@ -416,7 +416,7 @@ void GC3(jmp_buf *envp, list *STACKEND) {
 
   // abandon job if space utilisation exceeds 90%
   if (CONSP - CONSBASE > (9 * SPACE) / 10) {
-    SPACE_ERROR("Space exhausted");
+    space_error("Space exhausted");
   }
 
 #ifdef INSTRUMENT_KRC_GC
@@ -588,7 +588,7 @@ static word hash(char *S, int LEN) {
 // puts the character ch into a buffer,
 void bufch(word ch) {
   if (BUFP >= ATOMSIZE) {
-    SPACE_ERROR("Atom too big");
+    space_error("Atom too big");
   }
   BUFFER[BUFP++] = ch;
 }

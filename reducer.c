@@ -47,7 +47,7 @@ void init_argspace(void) {
     ARGSPACE = (list *)malloc(NARGS * sizeof(*ARGSPACE));
 
     if (ARGSPACE == (void *)-1) {
-      SPACE_ERROR("Cannot allocate argument stack");
+      space_error("Cannot allocate argument stack");
     }
 
     ARGMAX = ARGSPACE + NARGS - 1;
@@ -459,7 +459,7 @@ static void obey(list EQNS, list E) {
       case FORMLIST_C:
         ARGP = ARGP + 1;
         if (ARGP > ARGMAX) {
-          SPACE_ERROR("Arg stack overflow");
+          space_error("Arg stack overflow");
         }
       }
 
@@ -472,7 +472,7 @@ static void obey(list EQNS, list E) {
       case LOADARG_C:
         // ARGP=ARGP+1;
         if (ARGP > ARGMAX) {
-          SPACE_ERROR("Arg stack overflow");
+          space_error("Arg stack overflow");
         }
         *ARGP = ARG[(word)(HD(CODE))];
         CODE = TL(CODE);
@@ -822,8 +822,8 @@ static list reduce(list E) {
   word NARGS = 0;
   list *HOLDARG = ARG;
 
-  // if ( &E>STACKLIMIT ) SPACE_ERROR("Arg stack overflow");
-  // if ( ARGP>ARGMAX ) SPACE_ERROR("Arg stack overflow");
+  // if ( &E>STACKLIMIT ) space_error("Arg stack overflow");
+  // if ( ARGP>ARGMAX ) space_error("Arg stack overflow");
 
   S = (list)ENDOFSTACK;
   ARG = ARGP + 1;
@@ -892,7 +892,7 @@ static list reduce(list E) {
               ARGP = ARGP + 1;
 
               if (ARGP > ARGMAX) {
-                SPACE_ERROR("Arg stack overflow");
+                space_error("Arg stack overflow");
               }
 
               *ARGP = TL(S);
@@ -1362,7 +1362,7 @@ static bool binds(list FORMAL, list X) {
 }
 
 // mark elements in the argument stack for preservation by the GC.
-// this routine should be called by your BASES() function.
+// this routine should be called by your bases() function.
 void reducer_bases(void (*F)(list *)) {
   list *AP;
 
