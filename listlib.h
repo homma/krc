@@ -22,7 +22,7 @@ typedef struct LIST {
 // - the memory address of another cell in the CONS space
 // - the memory address of a cell in the ATOM space
 // - improbable pointer values of HD() for special values:
-//   FULLword (see above) or GONETO (see listlib.c)
+//   FULLWORD (see above) or GONETO (see listlib.c)
 //#define NIL ((LIST)0) //causes problems
 
 // from oldbcpl/listhdr, may need changing
