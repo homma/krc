@@ -4,6 +4,10 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 
 ## ChangeLog
 
+### 2018.09.22
+- changed BCPL string to C string
+- downcased `LIST`, `ATOM` and `TOKEN`
+
 ### 2018.09.21
 - replaced `WORD` with `word`
   - I did not choose to use `word_t` or `sword_t`
@@ -51,6 +55,7 @@ make it looks like a plain C software.
 - implement test cases
 - remove `(!(`
 - replace linenoise with its unicode supported version
+- reduce macros in order to apply source code formatter properly
 
 ### Long Term
 add features and extend.
