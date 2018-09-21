@@ -99,7 +99,7 @@ static void R(char *S, void (*F)(LIST), word N) {
   ATOM A = MKATOM(S);
   LIST EQN = CONS((LIST)A, CONS((LIST)CALL_C, (LIST)F));
 
-  if (!(F == read)) {
+  if (!(F == prim_read)) {
     ENTERSCRIPT(A);
   }
 
@@ -605,7 +605,7 @@ static void prim_listp(LIST E) {
               : FALSITY;
 }
 
-static void stringp(LIST E) {
+static void prim_stringp(LIST E) {
   *ARG = reduce(*ARG);
   HD(E) = (LIST)INDIR,
   TL(E) = ISCONS(*ARG) && HD(*ARG) == (LIST)QUOTE ? TRUTH : FALSITY;
@@ -616,7 +616,7 @@ static void prim_numberp(LIST E) {
   HD(E) = (LIST)INDIR, TL(E) = ISNUM(*ARG) ? TRUTH : FALSITY;
 }
 
-static bool prim_isfun(LIST X) {
+static bool isfun(LIST X) {
   return ISATOM(X) || (ISCONS(X) && QUOTE != HD(X) && HD(X) != (LIST)COLON_OP);
 }
 
