@@ -598,10 +598,8 @@ atom packbuffer() {
   return RESULT;
 }
 
-// does string A sort before string B?
-
 // tests atoms for alphabetical order
-// A, B are atoms
+// does string A sort before string B?
 bool alfa_ls(atom A, atom B) { return strcmp(NAME(A), NAME(B)) < 0; }
 
 static void gcstats() {
@@ -723,6 +721,7 @@ list shunt(list X, list Y) {
 
 // destructively removes a from x (if present)
 list sub1(list X, atom A) {
+
   if (X == NIL) {
     return NIL;
   }
@@ -767,6 +766,7 @@ word equal(list X, list Y) {
 
 // returns the n'th element of list X
 list elem(list X, word N) {
+
   while (!(N == 1)) {
     X = TL(X), N = N - 1;
   }
@@ -812,6 +812,7 @@ void printobj(list X) {
 // and bomb if not.
 // "is OK cons"
 list isokcons(list P) {
+
   list Q;
   if (COLLECTING)
     return P;
@@ -826,6 +827,7 @@ list isokcons(list P) {
   } else {
     fprintf(bcpl_OUTPUT, "\nHD() or TL() called on %p not in CONS space\n", P);
   }
+
   // cause segfault in caller
   return (list)0;
 }
