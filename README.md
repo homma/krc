@@ -72,4 +72,5 @@ add features and extend.
 - add FFI
 - add n+k pattern
 - add type system
+- add strict (eager) evaluation
 
