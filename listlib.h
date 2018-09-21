@@ -50,8 +50,8 @@ typedef struct atom {
 // VAL  points to the item's value in the CONS space.
 //      NOTE: VAL is used on items in both atom and CONS spaces.
 // NAME is a C string, i.e. followed by a nul character.
-// LENA is the address of len
-// LEN  returns length of name
+// LENA is the address of len.
+// LEN  returns length of name.
 
 #define LINK(p) ((p)->link)
 #define VAL(p) ((p)->val)
