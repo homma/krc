@@ -115,7 +115,6 @@ void setup_primfns_etc(void) {
 
   // miscellaneous initialisations
   ETC = mkatom("... ");
-
   SILLYNESS = mkatom("<unfounded recursion>");
   GUARD = mkatom("<non truth-value used as guard:>");
   TRUTH = cons((list)QUOTE, (list)mkatom("TRUE"));
