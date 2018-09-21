@@ -629,6 +629,7 @@ void reportdic() {
   fprintf(bcpl_OUTPUT, ", used %ld\n", (long)((ATOMP - ATOMBASE) * atomsize));
 }
 
+// list post mortem
 void listpm() {
 
   word EMPTY = 0;
