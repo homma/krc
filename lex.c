@@ -13,6 +13,8 @@
 // terms in the file "COPYING", which is included in the distribution.
 // ----------------------------------------------------------------------
 
+extern void ESCAPETONEXTCOMMAND();
+
 // global variables owned by lex.c
 word ERRORFLAG, EQNFLAG, EXPFLAG, COMMENTFLAG;
 bool SKIPCOMMENTS;

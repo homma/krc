@@ -285,7 +285,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   // moved it up by the size of one pointer.
   LIST *P;
 
-  // In MAIN.c
+  // In main.c
   extern void HOLD_INTERRUPTS(), RELEASE_INTERRUPTS();
 
 #ifdef DEBUG_GC
