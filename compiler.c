@@ -379,7 +379,7 @@ void display(ATOM ID, bool WITHNOS, bool DOUBLESPACING) {
   }
 }
 
-static void SHCH(word CH) { TRUEWRCH(' '); }
+static void shch(word CH) { TRUEWRCH(' '); }
 
 // equation decoder
 void displayeqn(ATOM ID, word NARGS, LIST EQN) {
@@ -391,7 +391,7 @@ void displayeqn(ATOM ID, word NARGS, LIST EQN) {
   } else {
 
     if (equal(LHS, LASTLHS)) {
-      _WRCH = SHCH;
+      _WRCH = shch;
     } else {
       LASTLHS = LHS;
     }
