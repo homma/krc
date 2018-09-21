@@ -803,7 +803,8 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen,
       return (int)l.len;
     case CTRL_C: /* ctrl-c */
       disableRawMode(STDIN_FILENO);
-      kill(getpid(), SIGINT); // signal will be caught by CATCHINTERRUPT()
+      // signal will be caught by catchinterrupt()
+      kill(getpid(), SIGINT);
       //          errno = EAGAIN; //causes KRC
       //          return -1;      //session to quit
     case BACKSPACE: /* backspace */

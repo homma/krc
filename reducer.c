@@ -100,7 +100,7 @@ static void R(char *S, void (*F)(LIST), word N) {
   LIST EQN = cons((LIST)A, cons((LIST)CALL_C, (LIST)F));
 
   if (!(F == prim_read)) {
-    ENTERSCRIPT(A);
+    enterscript(A);
   }
 
   VAL(A) = cons(cons((LIST)N, NIL), cons(EQN, NIL));
@@ -252,7 +252,7 @@ void printval(LIST E, bool FORMAT) {
 
       {
         char *F = PRINTNAME((ATOM)TL(TL(H)));
-        FILE *OUT = FINDCHANNEL(F);
+        FILE *OUT = findchannel(F);
         FILE *HOLD = bcpl_OUTPUT;
 
         if (!(OUT != NULL)) {
@@ -398,7 +398,7 @@ static bool equalval(LIST A, LIST B) {
 static void badexp(LIST E) {
 
   _WRCH = TRUEWRCH;
-  CLOSECHANNELS();
+  closechannels();
   bcpl_WRITES("\n**undefined expression**\n  ");
   printexp(E, 0);
 
@@ -409,18 +409,18 @@ static void badexp(LIST E) {
   }
 
   bcpl_WRITES("\n**evaluation abandoned**\n");
-  ESCAPETONEXTCOMMAND();
+  escapetonextcommand();
 }
 
 // integer overflow handler
 static void overflow(LIST E) {
 
   _WRCH = TRUEWRCH;
-  CLOSECHANNELS();
+  closechannels();
   bcpl_WRITES("\n**integer overflow**\n  ");
   printexp(E, 0);
   bcpl_WRITES("\n**evaluation abandoned**\n");
-  ESCAPETONEXTCOMMAND();
+  escapetonextcommand();
 }
 
 // a kludge
@@ -788,7 +788,7 @@ static void prim_read(LIST E) {
 
     if (ferror(IN)) {
       fprintf(bcpl_OUTPUT, "\n**File read error**\n");
-      ESCAPETONEXTCOMMAND();
+      escapetonextcommand();
     }
 
     if (C == EOF) {

@@ -4,16 +4,16 @@ void setup_primfns_etc(void);
 void printval(LIST E, bool FORMAT);
 LIST buildexp(LIST CODE);
 void init_argspace(void);
-void ESCAPETONEXTCOMMAND();
+void escapetonextcommand();
 void initstats();
 void outstats();
 void fixup_s(void);
 char *scaseconv(char *S);
 
 // global functions in main
-void CLOSECHANNELS();
-FILE *FINDCHANNEL(char *F);
-void ENTERSCRIPT(ATOM A);
+void closechannels();
+FILE *findchannel(char *F);
+void enterscript(ATOM A);
 
 // global variables in reducer
 extern LIST MEMORIES;

@@ -20,38 +20,38 @@
 #include <signal.h>
 
 // local function declarations
-static void DIRCOM(), DISPLAYCOM(), QUITCOM(), OBJECTCOM();
-static void RESETCOM(), GCCOM(), COUNTCOM(), SAVECOM(), FILECOM(), GETCOM();
-static void LISTCOM(), NAMESCOM(), LIBCOM(), CLEARCOM(), OPENLIBCOM();
-static void HELPCOM(), RENAMECOM(), ABORDERCOM(), REORDERCOM(), DELETECOM();
-static bool STARTDISPLAYCOM();
+static void dircom(), displaycom(), quitcom(), objectcom();
+static void resetcom(), gccom(), countcom(), savecom(), filecom(), getcom();
+static void listcom(), namescom(), libcom(), clearcom(), openlibcom();
+static void helpcom(), renamecom(), abordercom(), reordercom(), deletecom();
+static bool startdisplaycom();
 
-static void PARSELINE(char *line);
-static void INITIALISE();
-static void ENTERARGV(int USERARGC, LIST USERARGV);
-static void SETUP_COMMANDS();
-static void COMMAND();
-static void DISPLAYALL(bool DOUBLESPACING);
-static bool MAKESURE();
-static void FILENAME();
-static bool OKFILE(FILE *STR, char *FILENAME);
-static void CHECK_HITS();
-static bool GETFILE(char *FILENAME);
-static void FIND_UNDEFS();
-static bool ISDEFINED(ATOM X);
-static void SCRIPTLIST(LIST S);
-static LIST SUBST(LIST Z, LIST A);
-static void NEWEQUATION();
-static void CLEARMEMORY();
-static void COMMENT();
-static void EVALUATION();
-static LIST SORT(LIST X);
-static void SCRIPTREORDER();
-static word NO_OF_EQNS(ATOM A);
-static bool PROTECTED(ATOM A);
-static bool PRIMITIVE(ATOM A);
-static void REMOVE(ATOM A);
-static LIST EXTRACT(ATOM A, ATOM B);
+static void parseline(char *line);
+static void initialise();
+static void enterargv(int USERARGC, LIST USERARGV);
+static void setup_commands();
+static void command();
+static void displayall(bool DOUBLESPACING);
+static bool makesure();
+static void filename();
+static bool okfile(FILE *STR, char *FILENAME);
+static void check_hits();
+static bool getfile(char *FILENAME);
+static void find_undefs();
+static bool isdefined(ATOM X);
+static void scriptlist(LIST S);
+static LIST subst(LIST Z, LIST A);
+static void newequation();
+static void clearmemory();
+static void comment();
+static void evaluation();
+static LIST sort(LIST X);
+static void scriptreorder();
+static word no_of_eqns(ATOM A);
+static bool protected(ATOM A);
+static bool primitive(ATOM A);
+static void remove_atom(ATOM A);
+static LIST extract(ATOM A, ATOM B);
 
 // bases
 static LIST COMMANDS = NIL, SCRIPT = NIL, OUTFILES = NIL;
@@ -92,7 +92,7 @@ static char *EVALUATE = NULL;
 
 // initialisation and steering
 
-void ESCAPETONEXTCOMMAND();
+void escapetonextcommand();
 
 // are we ignoring interrupts?
 static bool INTERRUPTS_ARE_HELD = false;
@@ -100,7 +100,7 @@ static bool INTERRUPTS_ARE_HELD = false;
 // was an interrupt delivered while we were ignoring them?
 static bool INTERRUPT_OCCURRED = false;
 
-static void CATCHINTERRUPT(int signum) {
+static void catchinterrupt(int signum) {
   if (INTERRUPTS_ARE_HELD) {
 
     // can't be 0
@@ -112,7 +112,7 @@ static void CATCHINTERRUPT(int signum) {
   fixup_s();
 
   _WRCH = TRUEWRCH;
-  CLOSECHANNELS();
+  closechannels();
 
   // die quietly if running as script or ABORT() called
   // bcpl_WRITES("\n**break in - return to KRC command level**\n");
@@ -121,17 +121,18 @@ static void CATCHINTERRUPT(int signum) {
   }
 
   ABORTED = false;
-  ESCAPETONEXTCOMMAND();
+  escapetonextcommand();
 }
 
-void HOLD_INTERRUPTS() { INTERRUPTS_ARE_HELD = true; }
+void hold_interrupts() { INTERRUPTS_ARE_HELD = true; }
 
-void RELEASE_INTERRUPTS() {
+void release_interrupts() {
+
   INTERRUPTS_ARE_HELD = false;
 
   if (INTERRUPT_OCCURRED) {
     INTERRUPT_OCCURRED = false;
-    CATCHINTERRUPT(INTERRUPT_OCCURRED);
+    catchinterrupt(INTERRUPT_OCCURRED);
   }
 }
 
@@ -141,7 +142,7 @@ void RELEASE_INTERRUPTS() {
 // where to jump back to on runtime errors or keyboard interrupts
 static jmp_buf nextcommand;
 
-void ESCAPETONEXTCOMMAND() {
+void escapetonextcommand() {
   _WRCH = TRUEWRCH;
 
   if (bcpl_INPUT != stdin) {
@@ -151,7 +152,7 @@ void ESCAPETONEXTCOMMAND() {
     bcpl_INPUT_fp = (stdin);
   }
 
-  CLOSECHANNELS();
+  closechannels();
 
   if (EVALUATING) {
     if (ATCOUNT) {
@@ -159,15 +160,17 @@ void ESCAPETONEXTCOMMAND() {
     }
 
     // in case some pointers have been left reversed
-    CLEARMEMORY();
+    clearmemory();
 
     EVALUATING = false;
   }
 
   if (HOLDSCRIPT != NIL) {
+
     SCRIPT = HOLDSCRIPT, HOLDSCRIPT = NIL;
-    CHECK_HITS();
+    check_hits();
   }
+
   init_codev();
   init_argspace();
   longjmp(nextcommand, 1);
@@ -186,11 +189,14 @@ void GO() {
 
     init_codev();
     init_argspace();
-    INITIALISE();
+    initialise();
 
     // set up the interrupt handler
-    act.sa_handler = CATCHINTERRUPT;
-    act.sa_flags = SA_NODEFER; // Bcos the interrupt handler never returns
+    act.sa_handler = catchinterrupt;
+
+    // because the interrupt handler never returns
+    act.sa_flags = SA_NODEFER;
+
     sigaction(SIGINT, &act, NULL);
 
   } else {
@@ -203,6 +209,7 @@ void GO() {
     // or an out-of-space condition, when the stack is shallow and
     // the registers are less likely to contain values pointing
     // inside the CONS space.
+
     bool HOLDATGC = ATGC;
     ATGC = false;
     force_gc();
@@ -215,9 +222,9 @@ void GO() {
     // quit on errors or interrupts
     SIGNOFF = true;
 
-    PARSELINE(EVALUATE);
+    parseline(EVALUATE);
     if (EXPFLAG) {
-      EVALUATION();
+      evaluation();
     } else {
       bcpl_WRITES("-e takes an expression followed by ? or !\n");
     }
@@ -228,21 +235,22 @@ void GO() {
   }
 
   while (!(SIGNOFF)) {
-    COMMAND();
+    command();
   }
 
-  QUITCOM();
+  quitcom();
 
   // exit(0);
-  // moved inside QUITCOM()
+  // moved inside quitcom()
 }
 
-// PARSELINE: A version of readline that gets its input from a string
+// ----- parseline:
+// a version of readline that gets its input from a string
 
 static char *input_line;
 
 // alternative version of RDCH that gets its chars from a string
-static int str_RDCH(void) {
+static int str_rdch(void) {
 
   if (input_line == NULL) {
     return EOF;
@@ -255,7 +263,7 @@ static int str_RDCH(void) {
   return *input_line++;
 }
 
-static int str_UNRDCH(int c) {
+static int str_unrdch(int c) {
 
   if (input_line == NULL && c == '\n') {
     input_line = "\n";
@@ -267,14 +275,18 @@ static int str_UNRDCH(int c) {
 }
 
 // same as readline, but gets its input from a C string
-static void PARSELINE(char *line) {
+static void parseline(char *line) {
+
   input_line = line;
-  _RDCH = str_RDCH, _UNRDCH = str_UNRDCH;
+
+  _RDCH = str_rdch, _UNRDCH = str_unrdch;
+
   readline();
+
   _RDCH = bcpl_RDCH, _UNRDCH = bcpl_UNRDCH;
 }
 
-// ----- end of PARSELINE
+// ----- end of parseline
 
 static char TITLE[] = "Kent Recursive Calculator 1.0";
 
@@ -284,7 +296,7 @@ static char TITLE[] = "Kent Recursive Calculator 1.0";
 #endif
 // but use krclib in current directory if present, see below
 
-static void INITIALISE() {
+static void initialise() {
 
   // do we need to read the prelude?
   bool LOADPRELUDE = true;
@@ -375,9 +387,10 @@ static void INITIALISE() {
       USERARGV = cons((LIST)mkatom(ARGV[I]), USERARGV), USERARGC++;
     }
   }
+
   if (EVALUATE) {
 
-    ENTERARGV(USERARGC, USERARGV);
+    enterargv(USERARGC, USERARGV);
 
   } else if (USERARGC > 1) {
 
@@ -387,17 +400,26 @@ static void INITIALISE() {
 
   if (LOADPRELUDE) {
     if (USERLIB) {
+
       // -l option was used
-      GETFILE(USERLIB);
+      getfile(USERLIB);
+
     } else {
+
       struct stat buf;
+
       if (stat("krclib", &buf) == 0) {
-        GETFILE(OLDLIB ? "krclib/lib1981" : "krclib/prelude");
+
+        getfile(OLDLIB ? "krclib/lib1981" : "krclib/prelude");
+
       } else {
-        GETFILE(OLDLIB ? LIBDIR "/lib1981" : LIBDIR "/prelude");
+
+        getfile(OLDLIB ? LIBDIR "/lib1981" : LIBDIR "/prelude");
       }
     }
+
   } else {
+
     // if ( USERLIB || OLDLIB )
     // { bcpl_WRITES("krc: invalid combination -n and -l or -L\n"); exit(0); }
     // else
@@ -407,20 +429,20 @@ static void INITIALISE() {
   // effective only for prelude
   SKIPCOMMENTS = false;
 
-  LIBSCRIPT = SORT(SCRIPT), SCRIPT = NIL;
+  LIBSCRIPT = sort(SCRIPT), SCRIPT = NIL;
 
   if (USERSCRIPT) {
 
     // if ( LISTSCRIPT ) _RDCH=echo_RDCH;
-    GETFILE(USERSCRIPT);
+    getfile(USERSCRIPT);
     SAVED = true;
 
     // if ( LISTSCRIPT ) _RDCH=bcpl_RDCH;
     LASTFILE = mkatom(USERSCRIPT);
   }
 
-  SETUP_COMMANDS();
-  RELEASE_INTERRUPTS();
+  setup_commands();
+  release_interrupts();
 
   if (!QUIET) {
     fprintf(bcpl_OUTPUT, "%s\nrevised %s\n%s\n", TITLE, revision,
@@ -439,7 +461,8 @@ static void INITIALISE() {
 //     LOAD.(QUOTE."one").LOAD.(QUOTE."two").LOAD.(QUOTE."three").
 //     FORMLIST.0x03.STOP.NIL ).
 //   NIL )
-static void ENTERARGV(int USERARGC, LIST USERARGV) {
+static void enterargv(int USERARGC, LIST USERARGV) {
+
   ATOM A = mkatom("argv");
   LIST CODE =
       cons((LIST)FORMLIST_C, cons((LIST)USERARGC, cons((LIST)STOP_C, NIL)));
@@ -449,17 +472,18 @@ static void ENTERARGV(int USERARGC, LIST USERARGV) {
   }
 
   VAL(A) = cons(cons((LIST)0, NIL), cons(cons((LIST)0, CODE), NIL));
-  ENTERSCRIPT(A);
+  enterscript(A);
 }
 
 void SPACE_ERROR(char *MESSAGE) {
+
   _WRCH = TRUEWRCH;
-  CLOSECHANNELS();
+  closechannels();
 
   if (EVALUATING) {
 
     fprintf(bcpl_OUTPUT, "\n**%s**\n**evaluation abandoned**\n", MESSAGE);
-    ESCAPETONEXTCOMMAND();
+    escapetonextcommand();
 
   } else if (MEMORIES == NIL) {
 
@@ -469,13 +493,13 @@ void SPACE_ERROR(char *MESSAGE) {
   } else {
 
     // let go of memos and try to carry on
-    CLEARMEMORY();
+    clearmemory();
   }
 }
 
 void BASES(void (*F)(LIST *)) {
 
-  // In reducer.c
+  // in reducer.c
   extern LIST S;
 
   F(&COMMANDS);
@@ -499,7 +523,8 @@ void BASES(void (*F)(LIST *)) {
   reducer_bases(F);
 }
 
-static void SETUP_COMMANDS() {
+static void setup_commands() {
+
 #define F(S, R)                                                                \
   { COMMANDS = cons(cons((LIST)mkatom(S), (LIST)R), COMMANDS); }
 #define FF(S, R)                                                               \
@@ -508,36 +533,37 @@ static void SETUP_COMMANDS() {
     F(S, R);                                                                   \
   }
 
-  F("delete", DELETECOM);
-  F("d", DELETECOM); // synonym
-  F("reorder", REORDERCOM);
-  FF("save", SAVECOM);
-  FF("get", GETCOM);
-  FF("list", LISTCOM);
-  FF("file", FILECOM);
-  FF("f", FILECOM);
-  F("dir", DIRCOM);
-  F("quit", QUITCOM);
-  F("q", QUITCOM); // synonym
-  F("names", NAMESCOM);
-  F("lib", LIBCOM);
-  F("aborder", ABORDERCOM);
-  F("rename", RENAMECOM);
-  F("openlib", OPENLIBCOM);
-  F("clear", CLEARCOM);
-  F("help", HELPCOM);
-  F("h", HELPCOM);        // synonym
-  F("object", OBJECTCOM); // these last commands are for use in
-  F("reset", RESETCOM);   // debugging the system
-  F("gc", GCCOM);
+  F("delete", deletecom);
+  F("d", deletecom); // synonym
+  F("reorder", reordercom);
+  FF("save", savecom);
+  FF("get", getcom);
+  FF("list", listcom);
+  FF("file", filecom);
+  FF("f", filecom);
+  F("dir", dircom);
+  F("quit", quitcom);
+  F("q", quitcom); // synonym
+  F("names", namescom);
+  F("lib", libcom);
+  F("aborder", abordercom);
+  F("rename", renamecom);
+  F("openlib", openlibcom);
+  F("clear", clearcom);
+  F("help", helpcom);
+  F("h", helpcom);        // synonym
+  F("object", objectcom); // these last commands are for use in
+  F("reset", resetcom);   // debugging the system
+  F("gc", gccom);
   F("dic", reportdic);
-  F("count", COUNTCOM);
+  F("count", countcom);
   F("lpm", listpm);
 #undef FF
 #undef F
 }
 
-static void DIRCOM() {
+static void dircom() {
+
   int status;
   switch (fork()) {
   case 0:
@@ -550,26 +576,32 @@ static void DIRCOM() {
   }
 }
 
-void CLOSECHANNELS() {
+void closechannels() {
+
   if (!EVALUATING && bcpl_OUTPUT != stdout) {
     if (bcpl_OUTPUT != stdout) {
       fclose(bcpl_INPUT_fp);
     }
   }
+
   while (!(OUTFILES == NIL)) {
     bcpl_OUTPUT_fp = ((FILE *)TL(HD(OUTFILES)));
+
     if (FORMATTING) {
       (*_WRCH)('\n');
     }
+
     if (bcpl_OUTPUT != stdout) {
       fclose(bcpl_INPUT_fp);
     }
+
     OUTFILES = TL(OUTFILES);
   }
+
   bcpl_OUTPUT_fp = (stdout);
 }
 
-FILE *FINDCHANNEL(char *F) {
+FILE *findchannel(char *F) {
   LIST P = OUTFILES;
 
   while (!(P == NIL || strcmp((char *)HD(HD(P)), F) == 0)) {
@@ -589,7 +621,7 @@ FILE *FINDCHANNEL(char *F) {
   }
 }
 
-// COMMAND INTERPRETER
+// command interpreter
 // each command is terminated by a newline
 // <COMMAND>::= /<EMPTY> |    (displays whole script)
 //              /DELETE <THINGY>* |
@@ -620,10 +652,12 @@ FILE *FINDCHANNEL(char *F) {
 #define HELP KRCPAGER LIBDIR "/help/"
 #define BUFLEN 80
 
-static void HELPCOM() {
+static void helpcom() {
+
   struct stat buf;
   char strbuf[BUFLEN + 1], *topic;
   int local = stat("krclib", &buf) == 0, r;
+
   if (have(EOL)) {
 
     if (local) {
@@ -634,17 +668,22 @@ static void HELPCOM() {
 
     return;
   }
+
   topic = haveid() ? PRINTNAME(THE_ID) : NULL;
+
   if (!(topic && have(EOL))) {
     bcpl_WRITES("/h What? `/h' for options\n");
     return;
   }
+
   strncpy(strbuf, local ? HELPLOCAL : HELP, BUFLEN);
   strncat(strbuf, topic, BUFLEN - strlen(strbuf));
+
   r = system(strbuf);
 }
 
-static void COMMAND() {
+static void command() {
+
   static char prompt[] = "krc> ";
 
   char *line = linenoise(QUIET ? "" : prompt);
@@ -655,7 +694,7 @@ static void COMMAND() {
   }
 
   // handles NULL->EOF OK
-  PARSELINE(line);
+  parseline(line);
 
   // ignore blank lines
   if (have(EOL)) {
@@ -676,7 +715,7 @@ static void COMMAND() {
 
     if (have(EOL)) {
 
-      DISPLAYALL(false);
+      displayall(false);
       // if ( have((TOKEN)'@') && have(EOL) ) listpm(); else
       // for debugging the system
 
@@ -701,26 +740,26 @@ static void COMMAND() {
 
       } else {
 
-        // see "SETUP_COMMANDS()"
+        // see "setup_commands()"
         ((void (*)())TL(HD(P)))();
       }
     }
 
-  } else if (STARTDISPLAYCOM()) {
+  } else if (startdisplaycom()) {
 
-    DISPLAYCOM();
+    displaycom();
 
   } else if (COMMENTFLAG > 0) {
 
-    COMMENT();
+    comment();
 
   } else if (EQNFLAG) {
 
-    NEWEQUATION();
+    newequation();
 
   } else {
 
-    EVALUATION();
+    evaluation();
   }
 
   if (ERRORFLAG) {
@@ -728,14 +767,16 @@ static void COMMAND() {
   }
 }
 
-static bool STARTDISPLAYCOM() {
+static bool startdisplaycom() {
+
   LIST HOLD = TOKENS;
   word R = haveid() && (have(EOL) || have((TOKEN)DOTDOT_SY));
   TOKENS = HOLD;
   return R;
 }
 
-static void DISPLAYCOM() {
+static void displaycom() {
+
   if (haveid()) {
 
     if (have(EOL)) {
@@ -752,7 +793,7 @@ static void DISPLAYCOM() {
       if (B == 0) {
         syntax();
       } else {
-        X = EXTRACT(A, B);
+        X = extract(A, B);
       }
 
       while (!(X == NIL)) {
@@ -771,15 +812,17 @@ static void DISPLAYCOM() {
 }
 
 // "SCRIPT" is a list of all user defined names in alphabetical order
-static void DISPLAYALL(bool DOUBLESPACING) {
+static void displayall(bool DOUBLESPACING) {
+
   LIST P = SCRIPT;
   if (P == NIL) {
     bcpl_WRITES("Script=empty\n");
   }
 
   while (!(P == NIL)) {
+
     // don't display builtin fns (relevant only in /openlib)
-    if (!(PRIMITIVE((ATOM)HD(P)))) {
+    if (!(primitive((ATOM)HD(P)))) {
       display((ATOM)HD(P), false, false);
     }
 
@@ -792,15 +835,18 @@ static void DISPLAYALL(bool DOUBLESPACING) {
   }
 }
 
-static bool PRIMITIVE(ATOM A) {
+static bool primitive(ATOM A) {
+
   if (TL(VAL(A)) == NIL) {
     // A has comment but no eqns
     return false;
   }
+
   return HD(TL(HD(TL(VAL(A))))) == (LIST)CALL_C;
 }
 
-static void QUITCOM() {
+static void quitcom() {
+
   if (TOKENS != NIL) {
     check(EOL);
   }
@@ -809,13 +855,14 @@ static void QUITCOM() {
     return;
   }
 
-  if (MAKESURE()) {
+  if (makesure()) {
     bcpl_WRITES("krc logout\n");
     exit(0);
   }
 }
 
-static bool MAKESURE() {
+static bool makesure() {
+
   if (SAVED || SCRIPT == NIL) {
     return true;
   }
@@ -839,19 +886,21 @@ static bool MAKESURE() {
   }
 }
 
-static void OBJECTCOM() { ATOBJECT = true; }
+static void objectcom() { ATOBJECT = true; }
 
-static void RESETCOM() { ATOBJECT = false, ATCOUNT = false, ATGC = false; }
+static void resetcom() { ATOBJECT = false, ATCOUNT = false, ATGC = false; }
 
-static void GCCOM() {
+static void gccom() {
+
   ATGC = true;
   force_gc();
 }
 
-static void COUNTCOM() { ATCOUNT = true; }
+static void countcom() { ATCOUNT = true; }
 
-static void SAVECOM() {
-  FILENAME();
+static void savecom() {
+
+  filename();
   if (ERRORFLAG) {
     return;
   }
@@ -864,10 +913,12 @@ static void SAVECOM() {
   {
     FILE *OUT = bcpl_FINDOUTPUT("T#SCRIPT");
     bcpl_OUTPUT_fp = (OUT);
-    DISPLAYALL(true);
+    displayall(true);
+
     if (bcpl_OUTPUT != stdout) {
       fclose(bcpl_INPUT_fp);
     }
+
     bcpl_OUTPUT_fp = (stdout);
 
     // copy T#SCRIPT back to the save file.
@@ -894,7 +945,8 @@ static void SAVECOM() {
   }
 }
 
-static void FILENAME() {
+static void filename() {
+
   if (have(EOL)) {
     if (LASTFILE == 0) {
       bcpl_WRITES("(No file set)\n");
@@ -913,7 +965,8 @@ static void FILENAME() {
   }
 }
 
-static void FILECOM() {
+static void filecom() {
+
   if (have(EOL)) {
     if (LASTFILE == 0) {
       bcpl_WRITES("No files used\n");
@@ -921,11 +974,12 @@ static void FILECOM() {
       fprintf(bcpl_OUTPUT, "File = %s\n", PRINTNAME(LASTFILE));
     }
   } else {
-    FILENAME();
+    filename();
   }
 }
 
-static bool OKFILE(FILE *STR, char *FILENAME) {
+static bool okfile(FILE *STR, char *FILENAME) {
+
   if (STR != NULL) {
     return true;
   }
@@ -934,31 +988,35 @@ static bool OKFILE(FILE *STR, char *FILENAME) {
   return false;
 }
 
-static void GETCOM() {
+static void getcom() {
+
   bool CLEAN = SCRIPT == NIL;
 
-  FILENAME();
+  filename();
   if (ERRORFLAG) {
     return;
   }
 
   HOLDSCRIPT = SCRIPT, SCRIPT = NIL, GET_HITS = NIL;
-  GETFILE(PRINTNAME(THE_ID));
-  CHECK_HITS();
+  getfile(PRINTNAME(THE_ID));
+  check_hits();
+
   SCRIPT = append(HOLDSCRIPT, SCRIPT), SAVED = CLEAN, HOLDSCRIPT = NIL;
 }
 
-static void CHECK_HITS() {
+static void check_hits() {
+
   if (!(GET_HITS == NIL)) {
     bcpl_WRITES("Warning - /get has overwritten or modified:\n");
-    SCRIPTLIST(reverse(GET_HITS));
+    scriptlist(reverse(GET_HITS));
     GET_HITS = NIL;
   }
 }
 
-static bool GETFILE(char *FILENAME) {
+static bool getfile(char *FILENAME) {
+
   FILE *IN = bcpl_FINDINPUT(FILENAME);
-  if (!(OKFILE(IN, FILENAME))) {
+  if (!(okfile(IN, FILENAME))) {
     return false;
   }
 
@@ -987,9 +1045,9 @@ static bool GETFILE(char *FILENAME) {
 
       if (COMMENTFLAG) {
         line += (COMMENTFLAG - 1);
-        COMMENT();
+        comment();
       } else {
-        NEWEQUATION();
+        newequation();
       }
 
       if (ERRORFLAG) {
@@ -1008,8 +1066,9 @@ static bool GETFILE(char *FILENAME) {
   }
 }
 
-static void LISTCOM() {
-  FILENAME();
+static void listcom() {
+
+  filename();
 
   if (ERRORFLAG) {
     return;
@@ -1019,7 +1078,7 @@ static void LISTCOM() {
     char *FNAME = PRINTNAME(THE_ID);
     FILE *IN = bcpl_FINDINPUT(FNAME);
 
-    if (!(OKFILE(IN, FNAME))) {
+    if (!(okfile(IN, FNAME))) {
       return;
     }
 
@@ -1042,23 +1101,26 @@ static void LISTCOM() {
   }
 }
 
-static void NAMESCOM() {
+static void namescom() {
+
   check(EOL);
   if (ERRORFLAG) {
     return;
   }
 
   if (SCRIPT == NIL) {
-    DISPLAYALL(false);
+    displayall(false);
   } else {
-    SCRIPTLIST(SCRIPT);
-    FIND_UNDEFS();
+    scriptlist(SCRIPT);
+    find_undefs();
   }
 }
 
 // searches the script for names used but not defined
-static void FIND_UNDEFS() {
+static void find_undefs() {
+
   LIST S = SCRIPT, UNDEFS = NIL;
+
   while (!(S == NIL)) {
     LIST EQNS = TL(VAL((ATOM)HD(S)));
     while (!(EQNS == NIL)) {
@@ -1066,7 +1128,7 @@ static void FIND_UNDEFS() {
       while (iscons(CODE)) {
         LIST A = HD(CODE);
 
-        if (isatom(A) && !ISDEFINED((ATOM)A) && !member(UNDEFS, A)) {
+        if (isatom(A) && !isdefined((ATOM)A) && !member(UNDEFS, A)) {
           UNDEFS = cons(A, UNDEFS);
         }
 
@@ -1076,17 +1138,19 @@ static void FIND_UNDEFS() {
     }
     S = TL(S);
   }
+
   if (!(UNDEFS == NIL)) {
     bcpl_WRITES("\nNames used but not defined:\n");
-    SCRIPTLIST(reverse(UNDEFS));
+    scriptlist(reverse(UNDEFS));
   }
 }
 
-static bool ISDEFINED(ATOM X) {
+static bool isdefined(ATOM X) {
   return VAL(X) == NIL || TL(VAL(X)) == NIL ? false : true;
 }
 
-static void LIBCOM() {
+static void libcom() {
+
   check(EOL);
 
   if (ERRORFLAG) {
@@ -1096,21 +1160,23 @@ static void LIBCOM() {
   if (LIBSCRIPT == NIL) {
     bcpl_WRITES("library = empty\n");
   } else {
-    SCRIPTLIST(LIBSCRIPT);
+    scriptlist(LIBSCRIPT);
   }
 }
 
-static void CLEARCOM() {
+static void clearcom() {
+
   check(EOL);
 
   if (ERRORFLAG) {
     return;
   }
 
-  CLEARMEMORY();
+  clearmemory();
 }
 
-static void SCRIPTLIST(LIST S) {
+static void scriptlist(LIST S) {
+
   word COL = 0, I = 0;
 
 // the minimum of various devices
@@ -1119,7 +1185,7 @@ static void SCRIPTLIST(LIST S) {
   while (!(S == NIL)) {
     char *N = PRINTNAME((ATOM)HD(S));
 
-    if (PRIMITIVE((ATOM)HD(S))) {
+    if (primitive((ATOM)HD(S))) {
       S = TL(S);
       continue;
     }
@@ -1142,7 +1208,8 @@ static void SCRIPTLIST(LIST S) {
   fprintf(bcpl_OUTPUT, " (%" W ")\n", I);
 }
 
-static void OPENLIBCOM() {
+static void openlibcom() {
+
   check(EOL);
 
   if (ERRORFLAG) {
@@ -1154,7 +1221,8 @@ static void OPENLIBCOM() {
   LIBSCRIPT = NIL;
 }
 
-static void RENAMECOM() {
+static void renamecom() {
+
   LIST X = NIL, Y = NIL, Z = NIL;
 
   while (haveid()) {
@@ -1195,7 +1263,7 @@ static void RENAMECOM() {
         POSTDEFS = cons(TL(HD(Z1)), POSTDEFS);
       }
 
-      if (ISDEFINED((ATOM)TL(HD(Z1))) &&
+      if (isdefined((ATOM)TL(HD(Z1))) &&
           (!member(X, TL(HD(Z1))) || !member(SCRIPT, TL(HD(Z1))))) {
         POSTDEFS = cons(TL(HD(Z1)), POSTDEFS);
       }
@@ -1226,8 +1294,8 @@ static void RENAMECOM() {
     }
   }
 
-  HOLD_INTERRUPTS();
-  CLEARMEMORY();
+  hold_interrupts();
+  clearmemory();
 
   // prepare for assignment to val fields
   {
@@ -1257,11 +1325,11 @@ static void RENAMECOM() {
               LHS = HD(LHS);
             }
 
-            HD(LHS) = SUBST(Z, HD(LHS));
+            HD(LHS) = subst(Z, HD(LHS));
           }
 
           while (iscons(CODE)) {
-            HD(CODE) = SUBST(Z, HD(CODE)), CODE = TL(CODE);
+            HD(CODE) = subst(Z, HD(CODE)), CODE = TL(CODE);
           }
 
           EQNS = TL(EQNS);
@@ -1271,7 +1339,7 @@ static void RENAMECOM() {
           VAL((ATOM)HD(S)) = NIL;
         }
 
-        HD(S) = SUBST(Z, HD(S));
+        HD(S) = subst(Z, HD(S));
         S = TL(S);
       }
 
@@ -1281,12 +1349,13 @@ static void RENAMECOM() {
         TARGETS = TL(TARGETS), XVALS = TL(XVALS);
       }
 
-      RELEASE_INTERRUPTS();
+      release_interrupts();
     }
   }
 }
 
-static LIST SUBST(LIST Z, LIST A) {
+static LIST subst(LIST Z, LIST A) {
+
   while (!(Z == NIL)) {
     if (A == HD(HD(Z))) {
       SAVED = false;
@@ -1297,7 +1366,7 @@ static LIST SUBST(LIST Z, LIST A) {
   return A;
 }
 
-static void NEWEQUATION() {
+static void newequation() {
 
   word EQNO = -1;
 
@@ -1323,8 +1392,8 @@ static void NEWEQUATION() {
 
       if (VAL(SUBJECT) == NIL) {
         VAL(SUBJECT) = cons(cons((LIST)NARGS, NIL), cons(EQN, NIL));
-        ENTERSCRIPT(SUBJECT);
-      } else if (PROTECTED(SUBJECT)) {
+        enterscript(SUBJECT);
+      } else if (protected(SUBJECT)) {
         return;
       } else if (TL(VAL(SUBJECT)) == NIL) {
         // subject currently defined only by a comment
@@ -1336,7 +1405,7 @@ static void NEWEQUATION() {
         // removed DT 2015
         // if ( NARGS==0) {
         // VAL(SUBJECT)=cons(cons(0,TL(HD(VAL(SUBJECT)))),cons(EQN,NIL));
-        //            CLEARMEMORY(); } else
+        //            clearmemory(); } else
 
         fprintf(bcpl_OUTPUT, "Wrong no of args for \"%s\"\n",
                 PRINTNAME(SUBJECT));
@@ -1360,7 +1429,7 @@ static void NEWEQUATION() {
             } else {
               HD(EQNS) = EQN;
             }
-            CLEARMEMORY();
+            clearmemory();
             break;
           }
           if (TL(EQNS) == NIL) {
@@ -1387,7 +1456,7 @@ static void NEWEQUATION() {
                                                  : (N / 100 + 1) * 100;
           if (EQNO == N) {
             HD(EQNS) = EQN;
-            CLEARMEMORY();
+            clearmemory();
             break;
           }
 
@@ -1395,7 +1464,7 @@ static void NEWEQUATION() {
             LIST HOLD = HD(EQNS);
             HD(EQNS) = EQN;
             TL(EQNS) = cons(HOLD, TL(EQNS));
-            CLEARMEMORY();
+            clearmemory();
             break;
           }
 
@@ -1411,9 +1480,9 @@ static void NEWEQUATION() {
   }
 }
 
-// called whenever eqns are destroyed,reordered or
+// called whenever eqns are destroyed, reordered or
 // inserted (other than at the end of a definition)
-static void CLEARMEMORY() {
+static void clearmemory() {
 
   // memories holds a list of all vars whose memo
   while (!(MEMORIES == NIL)) {
@@ -1431,7 +1500,8 @@ static void CLEARMEMORY() {
 }
 
 // enters "A" in the script
-void ENTERSCRIPT(ATOM A) {
+void enterscript(ATOM A) {
+
   if (SCRIPT == NIL) {
     SCRIPT = cons((LIST)A, NIL);
   } else {
@@ -1445,33 +1515,35 @@ void ENTERSCRIPT(ATOM A) {
   }
 }
 
-static void COMMENT() {
+static void comment() {
+
   ATOM SUBJECT = (ATOM)TL(HD(TOKENS));
   LIST COMMENT = HD(TL(TOKENS));
 
   if (VAL(SUBJECT) == NIL) {
     VAL(SUBJECT) = cons(cons(0, NIL), NIL);
-    ENTERSCRIPT(SUBJECT);
+    enterscript(SUBJECT);
   }
 
-  if (PROTECTED(SUBJECT)) {
+  if (protected(SUBJECT)) {
     return;
   }
 
   TL(HD(VAL(SUBJECT))) = COMMENT;
 
   if (COMMENT == NIL && TL(VAL(SUBJECT)) == NIL) {
-    REMOVE(SUBJECT);
+    remove_atom(SUBJECT);
   }
 
   SAVED = false;
 }
 
-static void EVALUATION() {
+static void evaluation() {
+
   LIST CODE = expression();
   word CH = (word)HD(TOKENS);
 
-  // static SO INVISIBLE TO GARBAGE COLLECTOR
+  // static so invisible to garbage collector
   LIST E = 0;
 
   if (!(have((TOKEN)'!'))) {
@@ -1504,7 +1576,7 @@ static void EVALUATION() {
     (*_WRCH)('\n');
   }
 
-  CLOSECHANNELS();
+  closechannels();
   EVALUATING = false;
 
   if (ATCOUNT) {
@@ -1512,9 +1584,9 @@ static void EVALUATION() {
   }
 }
 
-static void ABORDERCOM() { SCRIPT = SORT(SCRIPT), SAVED = false; }
+static void abordercom() { SCRIPT = sort(SCRIPT), SAVED = false; }
 
-static LIST SORT(LIST X) {
+static LIST sort(LIST X) {
 
   if (X == NIL || TL(X) == NIL) {
     return X;
@@ -1528,7 +1600,7 @@ static LIST SORT(LIST X) {
       HOLD = A, A = cons(HD(X), B), B = HOLD, X = TL(X);
     }
 
-    A = SORT(A), B = SORT(B);
+    A = sort(A), B = sort(B);
 
     // now merge the two halves back together
     while (!(A == NIL || B == NIL)) {
@@ -1551,13 +1623,14 @@ static LIST SORT(LIST X) {
   }
 }
 
-static void REORDERCOM() {
+static void reordercom() {
+
   if (isid(HD(TOKENS)) &&
       (isid(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (LIST)DOTDOT_SY)) {
-    SCRIPTREORDER();
+    scriptreorder();
   } else if (haveid() && HD(TOKENS) != EOL) {
     LIST NOS = NIL;
-    word MAX = NO_OF_EQNS(THE_ID);
+    word MAX = no_of_eqns(THE_ID);
 
     while (havenum()) {
       word A = THE_NUM;
@@ -1582,7 +1655,7 @@ static void REORDERCOM() {
       return;
     }
 
-    if (PROTECTED(THE_ID)) {
+    if (protected(THE_ID)) {
       return;
     }
 
@@ -1611,13 +1684,15 @@ static void REORDERCOM() {
       TL(VAL(THE_ID)) = NEW;
       display(THE_ID, true, false);
       SAVED = false;
-      CLEARMEMORY();
+      clearmemory();
     }
-  } else
+  } else {
     syntax();
+  }
 }
 
-static void SCRIPTREORDER() {
+static void scriptreorder() {
+
   LIST R = NIL;
   while ((haveid())) {
 
@@ -1634,7 +1709,7 @@ static void SCRIPTREORDER() {
       if (B == 0) {
         syntax();
       } else {
-        X = EXTRACT(A, B);
+        X = extract(A, B);
       }
 
       if (X == NIL) {
@@ -1666,19 +1741,19 @@ static void SCRIPTREORDER() {
         SCRIPT = sub1(SCRIPT, (ATOM)HD(R)), R1 = cons(HD(R), R1);
       R = TL(R);
     }
-    SCRIPT = append(EXTRACT((ATOM)HD(SCRIPT), (ATOM)HD(R)),
-                    append(R1, TL(EXTRACT((ATOM)HD(R), (ATOM)EOL))));
+    SCRIPT = append(extract((ATOM)HD(SCRIPT), (ATOM)HD(R)),
+                    append(R1, TL(extract((ATOM)HD(R), (ATOM)EOL))));
     SAVED = false;
   }
 }
 
-static word NO_OF_EQNS(ATOM A) {
+static word no_of_eqns(ATOM A) {
 
   return VAL(A) == NIL ? 0 : length(TL(VAL(A)));
 }
 
 // library functions are recognisable by not being part of the script
-static bool PROTECTED(ATOM A) {
+static bool protected(ATOM A) {
 
   if (member(SCRIPT, (LIST)A)) {
     return false;
@@ -1696,13 +1771,16 @@ static bool PROTECTED(ATOM A) {
 }
 
 // removes "A" from the script
-static void REMOVE(ATOM A) {
+// renamed to avoid conflict with remove(3)
+static void remove_atom(ATOM A) {
+
   SCRIPT = sub1(SCRIPT, A);
   VAL(A) = NIL;
 }
 
 // returns a segment of the script
-static LIST EXTRACT(ATOM A, ATOM B) {
+static LIST extract(ATOM A, ATOM B) {
+
   LIST S = SCRIPT, X = NIL;
 
   while (!(S == NIL || HD(S) == (LIST)A)) {
@@ -1729,7 +1807,7 @@ static LIST EXTRACT(ATOM A, ATOM B) {
   return reverse(X);
 }
 
-static void DELETECOM() {
+static void deletecom() {
 
   LIST DLIST = NIL;
   while (haveid()) {
@@ -1743,7 +1821,7 @@ static void DELETECOM() {
       }
       DLIST = cons(cons((LIST)A, (LIST)B), DLIST);
     } else {
-      word MAX = NO_OF_EQNS(THE_ID);
+      word MAX = no_of_eqns(THE_ID);
       LIST NLIST = NIL;
 
       while (havenum()) {
@@ -1771,14 +1849,14 @@ static void DELETECOM() {
     // delete all
     if (DLIST == NIL) {
       if (SCRIPT == NIL) {
-        DISPLAYALL(false);
+        displayall(false);
       } else {
-        if (!(MAKESURE())) {
+        if (!(makesure())) {
           return;
         }
 
         while (!(SCRIPT == NIL)) {
-          DELS = DELS + NO_OF_EQNS((ATOM)HD(SCRIPT));
+          DELS = DELS + no_of_eqns((ATOM)HD(SCRIPT));
           VAL((ATOM)HD(SCRIPT)) = NIL;
           SCRIPT = TL(SCRIPT);
         }
@@ -1787,31 +1865,41 @@ static void DELETECOM() {
     while (!(DLIST == NIL)) {
       //"NAME..NAME"
       if (isatom(TL(HD(DLIST))) || TL(HD(DLIST)) == EOL) {
-        LIST X = EXTRACT((ATOM)HD(HD(DLIST)), (ATOM)TL(HD(DLIST)));
+
+        LIST X = extract((ATOM)HD(HD(DLIST)), (ATOM)TL(HD(DLIST)));
         DLIST = TL(DLIST);
-        while (!(X == NIL))
+
+        while (!(X == NIL)) {
           DLIST = cons(cons(HD(X), NIL), DLIST), X = TL(X);
+        }
+
       } else {
+
         ATOM NAME = (ATOM)HD(HD(DLIST));
         LIST NOS = TL(HD(DLIST));
         LIST NEW = NIL;
         DLIST = TL(DLIST);
+
         if (VAL(NAME) == NIL) {
           display(NAME, false, false);
           continue;
         }
 
-        if (PROTECTED(NAME)) {
+        if (protected(NAME)) {
           continue;
         }
 
         if (NOS == NIL) {
-          DELS = DELS + NO_OF_EQNS(NAME);
-          REMOVE(NAME);
+
+          DELS = DELS + no_of_eqns(NAME);
+          remove_atom(NAME);
           continue;
+
         } else {
+
           word I;
-          for (I = NO_OF_EQNS(NAME); I >= 1; I = I - 1)
+
+          for (I = no_of_eqns(NAME); I >= 1; I = I - 1) {
             if (member(NOS, (LIST)I)) {
               DELS = DELS + 1;
             } else {
@@ -1819,13 +1907,14 @@ static void DELETECOM() {
               removelineno(EQN);
               NEW = cons(EQN, NEW);
             }
+          }
         }
 
         TL(VAL(NAME)) = NEW;
 
         // comment field
         if (NEW == NIL && TL(HD(VAL(NAME))) == NIL) {
-          REMOVE(NAME);
+          remove_atom(NAME);
         }
       }
     }
@@ -1833,7 +1922,7 @@ static void DELETECOM() {
     fprintf(bcpl_OUTPUT, "%" W " equations deleted\n", DELS);
     if (DELS > 0) {
       SAVED = false;
-      CLEARMEMORY();
+      clearmemory();
     }
   }
 }

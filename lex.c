@@ -14,7 +14,7 @@
 // ----------------------------------------------------------------------
 
 // from main.c
-extern void ESCAPETONEXTCOMMAND();
+extern void escapetonextcommand();
 
 // global variables owned by lex.c
 word ERRORFLAG, EQNFLAG, EXPFLAG, COMMENTFLAG;
@@ -134,7 +134,7 @@ static TOKEN readtoken(void) {
       THE_NUM = THE_NUM * 10 + CH - '0';
       if (THE_NUM < 0) {
         bcpl_WRITES("\n**integer overflow**\n");
-        ESCAPETONEXTCOMMAND();
+        escapetonextcommand();
       }
       CH = (*_RDCH)();
     }

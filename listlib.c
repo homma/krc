@@ -286,7 +286,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   LIST *P;
 
   // In main.c
-  extern void HOLD_INTERRUPTS(), RELEASE_INTERRUPTS();
+  extern void hold_interrupts(), release_interrupts();
 
 #ifdef DEBUG_GC
   int LASTUSED = 0;
@@ -309,7 +309,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 #ifdef INSTRUMENT_KRC_GC
   COLLECTING = true;
 #endif
-  HOLD_INTERRUPTS();
+  hold_interrupts();
   NOGCS = NOGCS + 1;
   if (ATGC) {
     bcpl_WRITES("<gc called>\n");
@@ -412,7 +412,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
     bcpl_WRITES(" cells in use>\n");
   }
 #endif
-  RELEASE_INTERRUPTS();
+  release_interrupts();
 
   // abandon job if space utilisation exceeds 90%
   if (CONSP - CONSBASE > (9 * SPACE) / 10) {
