@@ -5,7 +5,7 @@
 
 #include <ctype.h>
 
-// KRC LEX ANALYSER
+// KRC lex analyser
 
 // ----------------------------------------------------------------------
 // The KRC system is Copyright(c) D.A.Turner 1981
@@ -13,6 +13,7 @@
 // terms in the file "COPYING", which is included in the distribution.
 // ----------------------------------------------------------------------
 
+// from main.c
 extern void ESCAPETONEXTCOMMAND();
 
 // global variables owned by lex.c
