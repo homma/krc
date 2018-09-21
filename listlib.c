@@ -395,7 +395,9 @@ void GC3(jmp_buf *envp, list *STACKEND) {
   // now swap semi-spaces
   {
     list HOLD = CONSBASE;
-    CONSBASE = OTHERBASE, CONSLIMIT = OTHERBASE + SPACE, OTHERBASE = HOLD;
+    CONSBASE = OTHERBASE;
+    CONSLIMIT = OTHERBASE + SPACE;
+    OTHERBASE = HOLD;
   }
 
   RECLAIMS = RECLAIMS + (CONSLIMIT - CONSP);
@@ -538,11 +540,6 @@ atom mkatomn(char *S, int LEN) {
     bcpl_writes("<string space exhausted>\n");
     exit(0);
   }
-
-  // *P = ATOMP, LINK(ATOMP) = 0, VAL(ATOMP) = NIL;
-  // (NAME(ATOMP))[0] = LEN,
-  // memcpy(NAME(ATOMP) + 1, S, (size_t)LEN),
-  // NAME(ATOMP)[LEN + 1] = '\0';
 
   *P = ATOMP;
   LINK(ATOMP) = 0;
