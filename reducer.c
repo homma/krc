@@ -94,6 +94,8 @@ static bool binds(LIST FORMAL, LIST X);
 static void showch(unsigned char c);
 
 static void R(char *S, void (*F)(LIST), word N) {
+
+  // ((atom sym) . (c_call . fun))
   ATOM A = MKATOM(S);
   LIST EQN = CONS((LIST)A, CONS((LIST)CALL_C, (LIST)F));
 
