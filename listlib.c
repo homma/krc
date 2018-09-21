@@ -343,7 +343,7 @@ void GC3(jmp_buf *envp, list *STACKEND) {
 
         if (((char *)*P - (char *)CONSBASE) % sizeof(struct list) ==
             sizeof(struct list *)) {
-          // Pointer to a tail cell, which also needs updating
+          // pointer to a tail cell, which also needs updating
           *P = (list)((list *)*P - 1);
           copy(P);
           *P = (list)((list *)*P + 1);
