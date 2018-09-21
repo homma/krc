@@ -48,7 +48,7 @@ typedef struct atom {
 } * atom;
 
 // LINK points to the next item in the linked list of values,
-//	or has value 0 if it is the end of this list.
+//      or has value 0 if it is the end of this list.
 // VAL  points to the item's value in the CONS space.
 //      NOTE: VAL is used on items in both atom and CONS spaces.
 // NAME is a C string, i.e. followed by a nul character.
