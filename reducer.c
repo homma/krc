@@ -64,33 +64,33 @@ list S;
 
 // primitive functions
 // renamed to distinguish primitive functions
-static void prim_functionp(list E);
-static void prim_listp(list E);
-static void prim_stringp(list E);
-static void prim_numberp(list E);
-static void prim_char(list E);
-static void prim_size(list E);
-static void prim_code(list E);
-static void prim_decode(list E);
-static void prim_concat(list E);
-static void prim_explode(list E);
-static void prim_abort(list E);
-static void prim_startread(list E);
-static void prim_read(list E);
-static void prim_writeap(list E);
-static void prim_seq(list E);
+static void prim_functionp(list e);
+static void prim_listp(list e);
+static void prim_stringp(list e);
+static void prim_numberp(list e);
+static void prim_char(list e);
+static void prim_size(list e);
+static void prim_code(list e);
+static void prim_decode(list e);
+static void prim_concat(list e);
+static void prim_explode(list e);
+static void prim_abort(list e);
+static void prim_startread(list e);
+static void prim_read(list e);
+static void prim_writeap(list e);
+static void prim_seq(list e);
 
 // local function delarations
-static void printfunction(list E);
-static bool equalval(list A, list B);
-static void badexp(list E);
-static void overflow(list E);
-static void obey(list EQNS, list E);
-static bool isfun(list X);
+static void printfunction(list e);
+static bool equalval(list a, list b);
+static void badexp(list e);
+static void overflow(list e);
+static void obey(list eqns, list e);
+static bool isfun(list x);
 
-static list reduce(list E);
-static list substitute(list ACTUAL, list FORMAL, list EXP);
-static bool binds(list FORMAL, list X);
+static list reduce(list e);
+static list substitute(list actual, list formal, list exp);
+static bool binds(list formal, list x);
 
 // DT 2015
 static void showch(unsigned char c);
@@ -161,17 +161,17 @@ void fixup_s(void) {
 // copy to static area of 80 chars, the same as BCPL
 // also to avoid calling strdup which calls malloc() and
 // contaminates the garbage collection done with Boehm GC.
-char *scaseconv(char *S) {
+char *scaseconv(char *s) {
 
-  static char T[80 + 1];
-  char *p = S, *q = T;
+  static char t[80 + 1];
+  char *p = s, *q = t;
 
   while (*p) {
     *q++ = caseconv(*p++);
   }
 
   *q = '\0';
-  return T;
+  return t;
 }
 
 void initstats() { REDS = 0; }
@@ -257,16 +257,16 @@ void printval(list e, bool format) {
 
       {
         char *f = NAME((atom)TL(TL(h)));
-        FILE *OUT = findchannel(f);
-        FILE *HOLD = bcpl_OUTPUT;
+        FILE *out = findchannel(f);
+        FILE *hold = bcpl_OUTPUT;
 
-        if (!(OUT != NULL)) {
+        if (!(out != NULL)) {
           badexp(cons((list)BADFILE, TL(h)));
         }
 
-        bcpl_OUTPUT_fp = (OUT);
+        bcpl_OUTPUT_fp = (out);
         printval(TL(e), format);
-        bcpl_OUTPUT_fp = (HOLD);
+        bcpl_OUTPUT_fp = (hold);
       }
 
     } else {
@@ -287,10 +287,9 @@ void printatom(atom a, bool format) {
   if (format) {
 
     // DT 2015
-    int i;
     wrch('"');
 
-    for (i = 0; i < LEN(a); i++) {
+    for (int i = 0; i < LEN(a); i++) {
       showch(NAME(a)[i]);
     }
 
@@ -298,14 +297,14 @@ void printatom(atom a, bool format) {
 
   } else {
 
-    int i;
-    for (i = 0; i < LEN(a); i++) {
+    for (int i = 0; i < LEN(a); i++) {
       wrch(NAME(a)[i]);
     }
   }
 }
 
 static void showch(unsigned char c) {
+
   switch (c) {
   case '\a':
     wrch('\\');
@@ -356,60 +355,61 @@ static void showch(unsigned char c) {
   }
 }
 
-static void printfunction(list E) {
+static void printfunction(list e) {
 
   wrch('<');
-  printexp(E, 0);
+  printexp(e, 0);
   wrch('>');
 }
 
-// unpredictable results if A,B both functions
-static bool equalval(list A, list B) {
-  do {
-    A = reduce(A);
-    B = reduce(B);
+// unpredictable results if a, b both functions
+static bool equalval(list a, list b) {
 
-    if (A == B) {
+  do {
+    a = reduce(a);
+    b = reduce(b);
+
+    if (a == b) {
       return true;
     }
 
-    if (isnum(A) && isnum(B)) {
-      return getnum(A) == getnum(B);
+    if (isnum(a) && isnum(b)) {
+      return getnum(a) == getnum(b);
     }
 
-    if (!(iscons(A) && iscons(B) && (HD(A) == HD(B)))) {
+    if (!(iscons(a) && iscons(b) && (HD(a) == HD(b)))) {
       return false;
     }
 
-    if (HD(A) == (list)QUOTE || HD(A) == (list)QUOTE_OP) {
-      return TL(A) == TL(B);
+    if (HD(a) == (list)QUOTE || HD(a) == (list)QUOTE_OP) {
+      return TL(a) == TL(b);
     }
 
-    if (!(HD(A) == (list)COLON_OP)) {
+    if (!(HD(a) == (list)COLON_OP)) {
       // UH ?
       return false;
     }
 
-    A = TL(A), B = TL(B);
-    if (!(equalval(HD(A), HD(B)))) {
+    a = TL(a), b = TL(b);
+    if (!(equalval(HD(a), HD(b)))) {
       return false;
     }
 
-    A = TL(A), B = TL(B);
+    a = TL(a), b = TL(b);
   } while (1);
 }
 
 // called for all evaluation errors
-static void badexp(list E) {
+static void badexp(list e) {
 
   wrch = TRUEWRCH;
   closechannels();
   bcpl_writes("\n**undefined expression**\n  ");
-  printexp(E, 0);
+  printexp(e, 0);
 
   // could insert more detailed diagnostics here,
-  // depending on nature of HD!E, for example:
-  if (iscons(E) && (HD(E) == (list)COLON_OP || HD(E) == (list)APPEND_OP)) {
+  // depending on nature of HD(e), for example:
+  if (iscons(e) && (HD(e) == (list)COLON_OP || HD(e) == (list)APPEND_OP)) {
     bcpl_writes("\n  (non-list encountered where list expected)");
   }
 
@@ -418,47 +418,46 @@ static void badexp(list E) {
 }
 
 // integer overflow handler
-static void overflow(list E) {
+static void overflow(list e) {
 
   wrch = TRUEWRCH;
   closechannels();
   bcpl_writes("\n**integer overflow**\n  ");
-  printexp(E, 0);
+  printexp(e, 0);
   bcpl_writes("\n**evaluation abandoned**\n");
   escapetonextcommand();
 }
 
 // a kludge
-list buildexp(list CODE) {
+list buildexp(list code) {
 
   // a bogus piece of graph
-  list E = cons(NIL, NIL);
-  obey(cons(cons(NIL, CODE), NIL), E);
+  list e = cons(NIL, NIL);
+  obey(cons(cons(NIL, code), NIL), e);
 
   // reset ARG stack
   ARGP = ARG - 1;
-  return E;
+  return e;
 }
 
-// transform a piece of graph, E, in accordance with EQNS
+// transform a piece of graph, e, in accordance with eqns
 // - actual params are found in *ARG ... *ARGP
 // (warning - has side effect of raising ARGP)
-static void obey(list EQNS, list E) {
+static void obey(list eqns, list e) {
 
-  // EQNS loop
-  while (!(EQNS == NIL)) {
+  // eqns loop
+  while (!(eqns == NIL)) {
 
-    list CODE = TL(HD(EQNS));
-    list *HOLDARG = ARGP;
-    word I;
+    list code = TL(HD(eqns));
+    list *holdarg = ARGP;
 
     // decode loop
     do {
-      list H = HD(CODE);
-      CODE = TL(CODE);
+      list h = HD(code);
+      code = TL(code);
 
       // first, check the only cases that increment ARGP
-      switch ((word)H) {
+      switch ((word)h) {
       case LOAD_C:
       case LOADARG_C:
       case FORMLIST_C:
@@ -468,35 +467,35 @@ static void obey(list EQNS, list E) {
         }
       }
 
-      switch ((word)H) {
+      switch ((word)h) {
       case LOAD_C:
         // ARGP=ARGP+1;
-        *ARGP = HD(CODE);
-        CODE = TL(CODE);
+        *ARGP = HD(code);
+        code = TL(code);
         break;
       case LOADARG_C:
         // ARGP=ARGP+1;
         if (ARGP > ARGMAX) {
           space_error("Arg stack overflow");
         }
-        *ARGP = ARG[(word)(HD(CODE))];
-        CODE = TL(CODE);
+        *ARGP = ARG[(word)(HD(code))];
+        code = TL(code);
         break;
       case APPLYINFIX_C:
         *ARGP = cons(*(ARGP - 1), *ARGP);
-        *(ARGP - 1) = HD(CODE);
-        CODE = TL(CODE);
+        *(ARGP - 1) = HD(code);
+        code = TL(code);
       case APPLY_C:
         ARGP = ARGP - 1;
-        if (HD(CODE) == (list)STOP_C) {
-          HD(E) = *ARGP, TL(E) = *(ARGP + 1);
+        if (HD(code) == (list)STOP_C) {
+          HD(e) = *ARGP, TL(e) = *(ARGP + 1);
           return;
         }
         *ARGP = cons(*ARGP, *(ARGP + 1));
         break;
       case CONTINUE_INFIX_C:
-        *(ARGP - 1) = cons(HD(CODE), cons(*(ARGP - 1), *ARGP));
-        CODE = TL(CODE);
+        *(ARGP - 1) = cons(HD(code), cons(*(ARGP - 1), *ARGP));
+        code = TL(code);
         break;
       case IF_C:
         *ARGP = reduce(*ARGP);
@@ -510,324 +509,323 @@ static void obey(list EQNS, list E) {
       case FORMLIST_C:
         // ARGP=ARGP+1;
         *ARGP = NIL;
-        for (I = 1; I <= (word)HD(CODE); I++) {
+        for (word i = 1; i <= (word)HD(code); i++) {
           ARGP = ARGP - 1;
           *ARGP = cons((list)COLON_OP, cons(*ARGP, *(ARGP + 1)));
         }
-        CODE = TL(CODE);
+        code = TL(code);
         break;
       case FORMZF_C: {
-        list X = cons(*(ARGP - (word)HD(CODE)), NIL);
-        list *P;
-        for (P = ARGP; P >= ARGP - (word)HD(CODE) + 1; P = P - 1) {
-          X = cons(*P, X);
+        list x = cons(*(ARGP - (word)HD(code)), NIL);
+        list *p;
+        for (p = ARGP; p >= ARGP - (word)HD(code) + 1; p = p - 1) {
+          x = cons(*p, x);
         }
 
-        ARGP = ARGP - (word)HD(CODE);
-        *ARGP = cons((list)ZF_OP, X);
-        CODE = TL(CODE);
+        ARGP = ARGP - (word)HD(code);
+        *ARGP = cons((list)ZF_OP, x);
+        code = TL(code);
         break;
       }
       case CONT_GENERATOR_C:
-        for (I = 1; I <= (word)HD(CODE); I++) {
-          *(ARGP - I) = cons((list)GENERATOR, cons(*(ARGP - I), TL(TL(*ARGP))));
+        for (word i = 1; i <= (word)HD(code); i++) {
+          *(ARGP - i) = cons((list)GENERATOR, cons(*(ARGP - i), TL(TL(*ARGP))));
         }
 
-        CODE = TL(CODE);
+        code = TL(code);
         break;
       case MATCH_C: {
-        word I = (word)HD(CODE);
-        CODE = TL(CODE);
+        word i = (word)HD(code);
+        code = TL(code);
 
-        if (!(equalval(ARG[I], HD(CODE)))) {
+        if (!(equalval(ARG[i], HD(code)))) {
           goto BREAK_DECODE_LOOP;
         }
 
-        CODE = TL(CODE);
+        code = TL(code);
         break;
       }
       case MATCHARG_C: {
-        word I = (word)HD(CODE);
-        CODE = TL(CODE);
+        word i = (word)HD(code);
+        code = TL(code);
 
-        if (!(equalval(ARG[I], ARG[(word)(HD(CODE))]))) {
+        if (!(equalval(ARG[i], ARG[(word)(HD(code))]))) {
           goto BREAK_DECODE_LOOP;
         }
 
-        CODE = TL(CODE);
+        code = TL(code);
         break;
       }
       case MATCHPAIR_C: {
-        list *P = ARG + (word)(HD(CODE));
-        *P = reduce(*P);
+        list *p = ARG + (word)(HD(code));
+        *p = reduce(*p);
 
-        if (!(iscons(*P) && HD(*P) == (list)COLON_OP)) {
+        if (!(iscons(*p) && HD(*p) == (list)COLON_OP)) {
           goto BREAK_DECODE_LOOP;
         }
 
         ARGP = ARGP + 2;
-        *(ARGP - 1) = HD(TL(*P)), *ARGP = TL(TL(*P));
-        CODE = TL(CODE);
+        *(ARGP - 1) = HD(TL(*p)), *ARGP = TL(TL(*p));
+        code = TL(code);
         break;
       }
       case LINENO_C:
         // no action
-        CODE = TL(CODE);
+        code = TL(code);
         break;
       case STOP_C:
-        HD(E) = (list)INDIR, TL(E) = *ARGP;
+        HD(e) = (list)INDIR, TL(e) = *ARGP;
         return;
       case CALL_C:
-        (*(void (*)())CODE)(E);
+        (*(void (*)())code)(e);
         return;
       default:
-        fprintf(bcpl_OUTPUT, "IMPOSSIBLE INSTRUCTION <%p> IN \"obey\"\n", H);
+        fprintf(bcpl_OUTPUT, "IMPOSSIBLE INSTRUCTION <%p> IN \"obey\"\n", h);
       }
     } while (1);
     // end of decode loop
 
   BREAK_DECODE_LOOP:
-    EQNS = TL(EQNS);
-    ARGP = HOLDARG;
+    eqns = TL(eqns);
+    ARGP = holdarg;
   }
 
-  // end of EQNS loop
-  badexp(E);
+  // end of eqns loop
+  badexp(e);
 }
 
-static void prim_functionp(list E) {
+static void prim_functionp(list e) {
   *ARG = reduce(*ARG);
-  HD(E) = (list)INDIR;
-  TL(E) = isfun(*ARG) ? TRUTH : FALSITY;
+  HD(e) = (list)INDIR;
+  TL(e) = isfun(*ARG) ? TRUTH : FALSITY;
 }
 
-static void prim_listp(list E) {
+static void prim_listp(list e) {
   *ARG = reduce(*ARG);
-  HD(E) = (list)INDIR;
-  TL(E) = (*ARG == NIL || (iscons(*ARG) && HD(*ARG) == (list)COLON_OP))
+  HD(e) = (list)INDIR;
+  TL(e) = (*ARG == NIL || (iscons(*ARG) && HD(*ARG) == (list)COLON_OP))
               ? TRUTH
               : FALSITY;
 }
 
-static void prim_stringp(list E) {
+static void prim_stringp(list e) {
   *ARG = reduce(*ARG);
-  HD(E) = (list)INDIR,
-  TL(E) = iscons(*ARG) && HD(*ARG) == (list)QUOTE ? TRUTH : FALSITY;
+  HD(e) = (list)INDIR,
+  TL(e) = iscons(*ARG) && HD(*ARG) == (list)QUOTE ? TRUTH : FALSITY;
 }
 
-static void prim_numberp(list E) {
+static void prim_numberp(list e) {
   *ARG = reduce(*ARG);
-  HD(E) = (list)INDIR, TL(E) = isnum(*ARG) ? TRUTH : FALSITY;
+  HD(e) = (list)INDIR, TL(e) = isnum(*ARG) ? TRUTH : FALSITY;
 }
 
-static bool isfun(list X) {
-  return isatom(X) || (iscons(X) && QUOTE != HD(X) && HD(X) != (list)COLON_OP);
+static bool isfun(list x) {
+  return isatom(x) || (iscons(x) && QUOTE != HD(x) && HD(x) != (list)COLON_OP);
 }
 
-static void prim_char(list E) {
+static void prim_char(list e) {
   *ARG = reduce(*ARG);
-  HD(E) = (list)INDIR;
-  TL(E) = iscons(*ARG) && HD(*ARG) == (list)QUOTE && LEN((atom)TL(*ARG)) == 1
+  HD(e) = (list)INDIR;
+  TL(e) = iscons(*ARG) && HD(*ARG) == (list)QUOTE && LEN((atom)TL(*ARG)) == 1
               ? TRUTH
               : FALSITY;
 }
 
 static word count;
-static void countch(word CH) { count = count + 1; }
+static void countch(word ch) { count = count + 1; }
 
-static void prim_size(list E) {
+static void prim_size(list e) {
 
   count = 0;
   wrch = countch;
   printval(*ARG, false);
   wrch = TRUEWRCH;
-  HD(E) = (list)INDIR, TL(E) = stonum(count);
+  HD(e) = (list)INDIR, TL(e) = stonum(count);
 }
 
 // converts a character to its ascii number
-static void prim_code(list E) {
+static void prim_code(list e) {
 
   *ARG = reduce(*ARG);
 
   if (!(iscons(*ARG) && HD(*ARG) == QUOTE)) {
-    badexp(E);
+    badexp(e);
   }
 
   {
-    atom A = (atom)TL(*ARG);
+    atom a = (atom)TL(*ARG);
 
-    if (!(LEN(A) == 1)) {
-      badexp(E);
+    if (!(LEN(a) == 1)) {
+      badexp(e);
     }
 
-    HD(E) = (list)INDIR;
-    TL(E) = stonum((word)NAME(A)[0] & 0xff);
+    HD(e) = (list)INDIR;
+    TL(e) = stonum((word)NAME(a)[0] & 0xff);
   }
 }
 
-static void prim_decode(list E) {
+static void prim_decode(list e) {
   *ARG = reduce(*ARG);
 
   if (!(isnum(*ARG) && 0 <= (word)TL(*ARG) && (word)TL(*ARG) <= 255)) {
-    badexp(E);
+    badexp(e);
   }
 
   bufch((word)TL(*ARG));
-  HD(E) = (list)INDIR, TL(E) = cons((list)QUOTE, (list)packbuffer());
+  HD(e) = (list)INDIR, TL(e) = cons((list)QUOTE, (list)packbuffer());
 }
 
-static void prim_concat(list E) {
+static void prim_concat(list e) {
 
   *ARG = reduce(*ARG);
 
   {
-    list A = *ARG;
+    list a = *ARG;
 
-    while (iscons(A) && HD(A) == (list)COLON_OP) {
-      list C = reduce(HD(TL(A)));
+    while (iscons(a) && HD(a) == (list)COLON_OP) {
+      list c = reduce(HD(TL(a)));
 
-      if (!(iscons(C) && HD(C) == (list)QUOTE)) {
-        badexp(E);
+      if (!(iscons(c) && HD(c) == (list)QUOTE)) {
+        badexp(e);
       }
 
-      HD(TL(A)) = C;
-      TL(TL(A)) = reduce(TL(TL(A)));
-      A = TL(TL(A));
+      HD(TL(a)) = c;
+      TL(TL(a)) = reduce(TL(TL(a)));
+      a = TL(TL(a));
     }
 
-    if (!(A == NIL)) {
-      badexp(E);
+    if (!(a == NIL)) {
+      badexp(e);
     }
 
-    A = *ARG;
-    while (!(A == NIL)) {
-      atom N = (atom)TL(HD(TL(A)));
-      int I;
+    a = *ARG;
+    while (!(a == NIL)) {
+      atom n = (atom)TL(HD(TL(a)));
 
-      for (I = 0; I < LEN(N); I++) {
-        bufch(NAME(N)[I]);
+      for (int i = 0; i < LEN(n); i++) {
+        bufch(NAME(n)[i]);
       }
 
-      A = TL(TL(A));
+      a = TL(TL(a));
     }
-    A = (list)packbuffer();
-    HD(E) = (list)INDIR,
-    TL(E) = A == TL(TRUTH) ? TRUTH
-                           : A == TL(FALSITY) ? FALSITY : cons((list)QUOTE, A);
+    a = (list)packbuffer();
+    HD(e) = (list)INDIR,
+    TL(e) = a == TL(TRUTH) ? TRUTH
+                           : a == TL(FALSITY) ? FALSITY : cons((list)QUOTE, a);
   }
 }
 
-static void prim_explode(list E) {
+static void prim_explode(list e) {
 
   *ARG = reduce(*ARG);
 
   if (!(iscons(*ARG) && HD(*ARG) == (list)QUOTE)) {
-    badexp(E);
+    badexp(e);
   }
 
   {
-    atom A = (atom)TL(*ARG);
-    list X = NIL;
+    atom a = (atom)TL(*ARG);
+    list x = NIL;
 
-    int I;
-    for (I = LEN(A); I > 0; I--) {
-      bufch(NAME(A)[I - 1]);
-      X = cons((list)COLON_OP, cons(cons((list)QUOTE, (list)packbuffer()), X));
+    for (int i = LEN(a); i > 0; i--) {
+      bufch(NAME(a)[i - 1]);
+      x = cons((list)COLON_OP, cons(cons((list)QUOTE, (list)packbuffer()), x));
     }
 
-    HD(E) = (list)INDIR, TL(E) = X;
+    HD(e) = (list)INDIR, TL(e) = x;
   }
 }
 
-static void prim_abort(list E) {
+static void prim_abort(list e) {
 
-  FILE *HOLD = bcpl_OUTPUT;
+  FILE *hold = bcpl_OUTPUT;
   bcpl_OUTPUT_fp = (stderr);
 
   bcpl_writes("\nprogram error: ");
 
-  printval(TL(E), false);
+  printval(TL(e), false);
 
   wrch('\n');
 
-  bcpl_OUTPUT_fp = (HOLD);
+  bcpl_OUTPUT_fp = (hold);
   ABORTED = true;
   raise(SIGINT);
 }
 
-static void prim_startread(list E) {
+static void prim_startread(list e) {
 
   *ARG = reduce(*ARG);
 
   if (!(iscons(*ARG) && HD(*ARG) == (list)QUOTE)) {
-    badexp(E);
+    badexp(e);
   }
 
   {
-    FILE *IN = bcpl_findinput(NAME((atom)TL(*ARG)));
+    FILE *in = bcpl_findinput(NAME((atom)TL(*ARG)));
 
-    if (!(IN != NULL)) {
+    if (!(in != NULL)) {
       badexp(cons((list)BADFILE, *ARG));
     }
 
-    HD(E) = (list)READFN, TL(E) = (list)IN;
+    HD(e) = (list)READFN, TL(e) = (list)in;
   }
 }
 
-static void prim_read(list E) {
+static void prim_read(list e) {
 
-  FILE *IN = (FILE *)TL(E);
-  bcpl_INPUT_fp = (IN);
-  HD(E) = (list)INDIR, TL(E) = cons((list)READFN, TL(E));
+  FILE *in = (FILE *)TL(e);
+  bcpl_INPUT_fp = (in);
+  HD(e) = (list)INDIR, TL(e) = cons((list)READFN, TL(e));
 
   {
-    list *X = &(TL(E));
-    word C = rdch();
+    list *x = &(TL(e));
+    word ch = rdch();
 
     // read one character
-    if (C != EOF) {
-      char c = C;
-      *X = cons((list)COLON_OP,
-                cons(cons((list)QUOTE, (list)mkatomn(&c, 1)), *X));
-      X = &(TL(TL(*X)));
+    if (ch != EOF) {
+      char c = ch;
+      *x = cons((list)COLON_OP,
+                cons(cons((list)QUOTE, (list)mkatomn(&c, 1)), *x));
+      x = &(TL(TL(*x)));
     }
 
-    if (ferror(IN)) {
+    if (ferror(in)) {
       fprintf(bcpl_OUTPUT, "\n**File read error**\n");
       escapetonextcommand();
     }
 
-    if (C == EOF) {
+    if (ch == EOF) {
       if (bcpl_INPUT_fp != stdin) {
         fclose(bcpl_INPUT_fp);
       };
-      *X = NIL;
+      *x = NIL;
     }
     bcpl_INPUT_fp = (stdin);
   }
 }
 
 // called if write is applied to >2 ARGS
-static void prim_writeap(list E) { badexp(E); }
+static void prim_writeap(list e) { badexp(e); }
 
 // seq a b evaluates a then returns b, added DT 2015
-static void prim_seq(list E) {
+static void prim_seq(list e) {
 
-  reduce(TL(HD(E)));
-  HD(E) = (list)INDIR;
+  reduce(TL(HD(e)));
+  HD(e) = (list)INDIR;
 }
 
 // possibilities for leftmost field of a graph are:
 // HEAD:= NAME | NUM | NIL | OPERATOR
 
-static list reduce(list E) {
-  static word M = 0;
-  static word N = 0;
-  list HOLD_S = S;
-  word NARGS = 0;
-  list *HOLDARG = ARG;
+static list reduce(list e) {
 
-  // if ( &E>STACKLIMIT ) space_error("Arg stack overflow");
+  static word m = 0;
+  static word n = 0;
+  list hold_s = S;
+  word nargs = 0;
+  list *holdarg = ARG;
+
+  // if ( &e>STACKLIMIT ) space_error("Arg stack overflow");
   // if ( ARGP>ARGMAX ) space_error("Arg stack overflow");
 
   S = (list)ENDOFSTACK;
@@ -837,61 +835,60 @@ static list reduce(list E) {
   do {
 
     // find head, reversing pointers en route
-    while (iscons(E)) {
-      list HOLD = HD(E);
-      NARGS = NARGS + 1;
-      HD(E) = S, S = E, E = HOLD;
+    while (iscons(e)) {
+      list hold = HD(e);
+      nargs = nargs + 1;
+      HD(e) = S, S = e, e = hold;
     }
 
-    if (isnum(E) || E == NIL) {
-      // unless NARGS==0 do HOLDARG=(list *)-1;  //flags an error
+    if (isnum(e) || e == NIL) {
+      // unless nargs == 0 do holdarg=(list *)-1;  // flags an error
       goto BREAK_MAIN_LOOP;
     }
 
     // user defined name
-    if (isatom(E)) {
+    if (isatom(e)) {
 
-      if (VAL((atom)E) == NIL || TL(VAL((atom)E)) == NIL) {
+      if (VAL((atom)e) == NIL || TL(VAL((atom)e)) == NIL) {
 
-        badexp(E);
+        badexp(e);
 
       } else {
         // undefined name
 
         // variable
 
-        if (HD(HD(VAL((atom)E))) == 0) {
-          list EQN = HD(TL(VAL((atom)E)));
+        if (HD(HD(VAL((atom)e))) == 0) {
+          list eqn = HD(TL(VAL((atom)e)));
 
           // memo not set
-          if (HD(EQN) == 0) {
-            HD(EQN) = buildexp(TL(EQN));
-            MEMORIES = cons(E, MEMORIES);
+          if (HD(eqn) == 0) {
+            HD(eqn) = buildexp(TL(eqn));
+            MEMORIES = cons(e, MEMORIES);
           }
 
-          E = HD(EQN);
+          e = HD(eqn);
         } else {
 
           // can we get cyclic expressions?
 
           // function
 
-          // hides the static N
-          word N = (word)HD(HD(VAL((atom)E)));
+          // hides the static n
+          word n = (word)HD(HD(VAL((atom)e)));
 
-          if (N > NARGS) {
+          if (n > nargs) {
             // not enough ARGS
             goto BREAK_MAIN_LOOP;
           }
 
           {
-            list EQNS = TL(VAL((atom)E));
+            list eqns = TL(VAL((atom)e));
 
-            word I;
-            for (I = 0; I <= N - 1; I++) {
+            for (int i = 0; i <= n - 1; i++) {
 
-              // move back up GRAPH,
-              list HOLD = HD(S);
+              // move back up graph,
+              list hold = HD(S);
 
               // stacking ARGS en route
               ARGP = ARGP + 1;
@@ -901,14 +898,14 @@ static list reduce(list E) {
               }
 
               *ARGP = TL(S);
-              HD(S) = E, E = S, S = HOLD;
+              HD(S) = e, e = S, S = hold;
             }
 
-            NARGS = NARGS - N;
+            nargs = nargs - n;
 
-            // E now holds a piece of graph to be transformed
+            // e now holds a piece of graph to be transformed
             // !ARG ... !ARGP  hold the parameters
-            obey(EQNS, E);
+            obey(eqns, e);
 
             // reset ARG stack
             ARGP = ARG - 1;
@@ -918,126 +915,127 @@ static list reduce(list E) {
 
     } else {
       // operators
-      switch ((word)E) {
+      switch ((word)e) {
       case QUOTE:
-        if (!(NARGS == 1)) {
-          HOLDARG = (list *)-1;
+        if (!(nargs == 1)) {
+          holdarg = (list *)-1;
         }
         goto BREAK_MAIN_LOOP;
       case INDIR: {
-        list HOLD = HD(S);
-        NARGS = NARGS - 1;
-        E = TL(S), HD(S) = (list)INDIR, S = HOLD;
+        list hold = HD(S);
+        nargs = nargs - 1;
+        e = TL(S), HD(S) = (list)INDIR, S = hold;
         continue;
       }
       case QUOTE_OP:
-        if (!(NARGS >= 3)) {
+        if (!(nargs >= 3)) {
           goto BREAK_MAIN_LOOP;
         }
 
         {
-          list OP = TL(S);
-          list HOLD = HD(S);
-          NARGS = NARGS - 2;
-          HD(S) = E, E = S, S = HOLD;
-          HOLD = HD(S);
-          HD(S) = E, E = S, S = HOLD;
-          TL(S) = cons(TL(E), TL(S)), E = OP;
+          list op = TL(S);
+          list hold = HD(S);
+          nargs = nargs - 2;
+          HD(S) = e, e = S, S = hold;
+          hold = HD(S);
+          HD(S) = e, e = S, S = hold;
+          TL(S) = cons(TL(e), TL(S)), e = op;
           continue;
         }
       case LISTDIFF_OP:
-        E = cons((list)LISTDIFF, HD(TL(S)));
+        e = cons((list)LISTDIFF, HD(TL(S)));
         TL(S) = TL(TL(S));
         continue;
       case COLON_OP:
-        if (!(NARGS >= 2)) {
+        if (!(nargs >= 2)) {
           goto BREAK_MAIN_LOOP;
         }
 
         // list indexing
-        NARGS = NARGS - 2;
+        nargs = nargs - 2;
         {
-          list HOLD = HD(S);
+          list hold = HD(S);
 
-          // hides static M
-          word M;
+          // hides static m
+          word m;
 
-          HD(S) = (list)COLON_OP, E = S, S = HOLD;
+          HD(S) = (list)COLON_OP, e = S, S = hold;
           TL(S) = reduce(TL(S));
 
-          if (!(isnum(TL(S)) && (M = getnum(TL(S))) >= LISTBASE)) {
-            HOLDARG = (list *)-1;
+          if (!(isnum(TL(S)) && (m = getnum(TL(S))) >= LISTBASE)) {
+            holdarg = (list *)-1;
             goto BREAK_MAIN_LOOP;
           }
 
-          while (M-- > LISTBASE) {
-            // clobbers static M
-            E = reduce(TL(TL(E)));
+          while (m-- > LISTBASE) {
+            // clobbers static m
+            e = reduce(TL(TL(e)));
 
-            if (!(iscons(E) && HD(E) == (list)COLON_OP)) {
-              badexp(cons(E, stonum(M + 1)));
+            if (!(iscons(e) && HD(e) == (list)COLON_OP)) {
+              badexp(cons(e, stonum(m + 1)));
             }
           }
 
-          E = HD(TL(E));
-          HOLD = HD(S);
-          HD(S) = (list)INDIR, TL(S) = E, S = HOLD;
+          e = HD(TL(e));
+          hold = HD(S);
+          HD(S) = (list)INDIR, TL(S) = e, S = hold;
           REDS = REDS + 1;
           continue;
         }
       case ZF_OP: {
-        list HOLD = HD(S);
-        NARGS = NARGS - 1;
-        HD(S) = E, E = S, S = HOLD;
+        list hold = HD(S);
+        nargs = nargs - 1;
+        HD(S) = e, e = S, S = hold;
 
-        if (TL(TL(E)) == NIL) {
-          HD(E) = (list)COLON_OP, TL(E) = cons(HD(TL(E)), NIL);
+        if (TL(TL(e)) == NIL) {
+          HD(e) = (list)COLON_OP;
+          TL(e) = cons(HD(TL(e)), NIL);
           continue;
         }
 
         {
-          list QUALIFIER = HD(TL(E));
-          list REST = TL(TL(E));
+          list qualifier = HD(TL(e));
+          list rest = TL(TL(e));
 
-          if (iscons(QUALIFIER) && HD(QUALIFIER) == (list)GENERATOR) {
-            list SOURCE = reduce(TL(TL(QUALIFIER)));
-            list FORMAL = HD(TL(QUALIFIER));
-            TL(TL(QUALIFIER)) = SOURCE;
+          if (iscons(qualifier) && HD(qualifier) == (list)GENERATOR) {
+            list source = reduce(TL(TL(qualifier)));
+            list formal = HD(TL(qualifier));
+            TL(TL(qualifier)) = source;
 
-            if (SOURCE == NIL) {
-              HD(E) = (list)INDIR, TL(E) = NIL, E = NIL;
-            } else if (iscons(SOURCE) && HD(SOURCE) == (list)COLON_OP) {
+            if (source == NIL) {
+              HD(e) = (list)INDIR, TL(e) = NIL, e = NIL;
+            } else if (iscons(source) && HD(source) == (list)COLON_OP) {
 
-              HD(E) = cons(
+              HD(e) = cons(
                   (list)INTERLEAVEFN,
-                  cons((list)ZF_OP, substitute(HD(TL(SOURCE)), FORMAL, REST)));
+                  cons((list)ZF_OP, substitute(HD(TL(source)), formal, rest)));
 
-              TL(E) =
+              TL(e) =
                   cons((list)ZF_OP,
-                       cons(cons((list)GENERATOR, cons(FORMAL, TL(TL(SOURCE)))),
-                            REST));
+                       cons(cons((list)GENERATOR, cons(formal, TL(TL(source)))),
+                            rest));
 
-              //                            ) HD!E,TL!E:=APPEND.OP,
+              //                            ) HD!e,TL!e:=APPEND.OP,
               //                                            cons(
-              //            cons(ZF.OP,substitute(HD!(TL!SOURCE),FORMAL,REST)),
-              //    cons(ZF.OP,cons(cons(GENERATOR,cons(FORMAL,TL!(TL!SOURCE))),REST))
+              //            cons(ZF.OP,substitute(HD!(TL!source),formal,rest)),
+              //    cons(ZF.OP,cons(cons(GENERATOR,cons(formal,TL!(TL!source))),rest))
               //                                                )
             } else {
-              badexp(E);
+              badexp(e);
             }
 
           } else {
 
             // qualifier is guard
-            QUALIFIER = reduce(QUALIFIER);
-            HD(TL(E)) = QUALIFIER;
+            qualifier = reduce(qualifier);
+            HD(TL(e)) = qualifier;
 
-            if (QUALIFIER == TRUTH) {
-              TL(E) = REST;
-            } else if (QUALIFIER == FALSITY) {
-              HD(E) = (list)INDIR, TL(E) = NIL, E = NIL;
+            if (qualifier == TRUTH) {
+              TL(e) = rest;
+            } else if (qualifier == FALSITY) {
+              HD(e) = (list)INDIR, TL(e) = NIL, e = NIL;
             } else {
-              badexp(cons((list)GUARD, QUALIFIER));
+              badexp(cons((list)GUARD, qualifier));
             }
           }
 
@@ -1046,34 +1044,34 @@ static list reduce(list E) {
         }
       }
       case DOT_OP:
-        if (!(NARGS >= 2)) {
-          list A = reduce(HD(TL(S))), B = reduce(TL(TL(S)));
+        if (!(nargs >= 2)) {
+          list a = reduce(HD(TL(S))), b = reduce(TL(TL(S)));
 
-          if (!(isfun(A) && isfun(B))) {
-            badexp(cons(E, cons(A, B)));
+          if (!(isfun(a) && isfun(b))) {
+            badexp(cons(e, cons(a, b)));
           }
 
           goto BREAK_MAIN_LOOP;
         }
 
         {
-          list HOLD = HD(S);
-          NARGS = NARGS - 1;
-          E = HD(TL(S)), TL(HOLD) = cons(TL(TL(S)), TL(HOLD));
-          HD(S) = (list)DOT_OP, S = HOLD;
+          list hold = HD(S);
+          nargs = nargs - 1;
+          e = HD(TL(S)), TL(hold) = cons(TL(TL(S)), TL(hold));
+          HD(S) = (list)DOT_OP, S = hold;
           REDS = REDS + 1;
           continue;
         }
       case EQ_OP:
       case NE_OP:
-        E = equalval(HD(TL(S)), TL(TL(S))) == (E == (list)EQ_OP) ? TRUTH
+        e = equalval(HD(TL(S)), TL(TL(S))) == (e == (list)EQ_OP) ? TRUTH
                                                                  : FALSITY;
         // note - could rewrite for fast exit, here and in
         // other cases where result of reduction is atomic
         {
-          list HOLD = HD(S);
-          NARGS = NARGS - 1;
-          HD(S) = (list)INDIR, TL(S) = E, S = HOLD;
+          list hold = HD(S);
+          nargs = nargs - 1;
+          HD(S) = (list)INDIR, TL(S) = e, S = hold;
           REDS = REDS + 1;
           continue;
         }
@@ -1087,229 +1085,229 @@ static list reduce(list E) {
 
       {
         // strict operators
-        list A = NIL, B = NIL;
-        bool STRINGS = false;
+        list a = NIL, b = NIL;
+        bool strings = false;
 
-        // The values of M and N when STRINGS == true
-        atom SM, SN;
+        // The values of m and n when strings == true
+        atom sm, sn;
 
-        if ((word)E >= LENGTH_OP) {
+        if ((word)e >= LENGTH_OP) {
           // monadic
-          A = reduce(TL(S));
+          a = reduce(TL(S));
         } else {
-          // DIADIC
-          A = reduce(HD(TL(S)));
+          // diadic
+          a = reduce(HD(TL(S)));
 
           // strict in 2nd arg ?
           // yes
-          if (E >= (list)GR_OP) {
+          if (e >= (list)GR_OP) {
 
-            B = reduce(E == (list)COMMADOTDOT_OP ? HD(TL(TL(S))) : TL(TL(S)));
+            b = reduce(e == (list)COMMADOTDOT_OP ? HD(TL(TL(S))) : TL(TL(S)));
 
-            if (isnum(A) && isnum(B)) {
+            if (isnum(a) && isnum(b)) {
 
-              M = getnum(A), N = getnum(B);
+              m = getnum(a), n = getnum(b);
 
-            } else if (E <= (list)LS_OP && iscons(A) && iscons(B) &&
-                       HD(A) == (list)QUOTE && (list)QUOTE == HD(B)) {
+            } else if (e <= (list)LS_OP && iscons(a) && iscons(b) &&
+                       HD(a) == (list)QUOTE && (list)QUOTE == HD(b)) {
               // relops
 
-              STRINGS = true, SM = (atom)TL(A), SN = (atom)TL(B);
+              strings = true, sm = (atom)TL(a), sn = (atom)TL(b);
 
-            } else if (E == (list)DOTDOT_OP && isnum(A) && B == INFINITY) {
+            } else if (e == (list)DOTDOT_OP && isnum(a) && b == INFINITY) {
 
-              M = getnum(A), N = M;
+              m = getnum(a), n = m;
 
             } else {
 
-              badexp(cons(E, cons(A, E == (list)COMMADOTDOT_OP
-                                         ? cons(B, TL(TL(TL(S))))
-                                         : B)));
+              badexp(cons(e, cons(a, e == (list)COMMADOTDOT_OP
+                                         ? cons(b, TL(TL(TL(S))))
+                                         : b)));
             }
           }
           // no
           else {
-            B = TL(TL(S));
+            b = TL(TL(S));
           }
         }
-        switch ((word)E) {
+        switch ((word)e) {
         case AND_OP:
-          if (A == FALSITY) {
-            E = A;
-          } else if (A == TRUTH) {
-            E = B;
+          if (a == FALSITY) {
+            e = a;
+          } else if (a == TRUTH) {
+            e = b;
           } else {
-            badexp(cons(E, cons(A, B)));
+            badexp(cons(e, cons(a, b)));
           }
           break;
         case OR_OP:
-          if (A == TRUTH) {
-            E = A;
-          } else if (A == FALSITY) {
-            E = B;
+          if (a == TRUTH) {
+            e = a;
+          } else if (a == FALSITY) {
+            e = b;
           } else {
-            badexp(cons(E, cons(A, B)));
+            badexp(cons(e, cons(a, b)));
           }
           break;
         case APPEND_OP:
-          if (A == NIL) {
-            E = B;
+          if (a == NIL) {
+            e = b;
             break;
           }
 
-          if (!(iscons(A) && HD(A) == (list)COLON_OP)) {
-            badexp(cons(E, cons(A, B)));
+          if (!(iscons(a) && HD(a) == (list)COLON_OP)) {
+            badexp(cons(e, cons(a, b)));
           }
 
-          E = (list)COLON_OP;
-          TL(TL(S)) = cons((list)APPEND_OP, cons(TL(TL(A)), B));
-          HD(TL(S)) = HD(TL(A));
+          e = (list)COLON_OP;
+          TL(TL(S)) = cons((list)APPEND_OP, cons(TL(TL(a)), b));
+          HD(TL(S)) = HD(TL(a));
           REDS = REDS + 1;
           continue;
         case DOTDOT_OP:
-          if (M > N) {
-            E = NIL;
+          if (m > n) {
+            e = NIL;
             break;
           }
-          E = (list)COLON_OP;
-          TL(TL(S)) = cons((list)DOTDOT_OP, cons(stonum(M + 1), B));
+          e = (list)COLON_OP;
+          TL(TL(S)) = cons((list)DOTDOT_OP, cons(stonum(m + 1), b));
           REDS = REDS + 1;
           continue;
         case COMMADOTDOT_OP: {
-          // reduce clobbers M,N
-          word M1 = M, N1 = N;
-          list C = reduce(TL(TL(TL(S))));
-          static word P = 0;
+          // reduce clobbers m,n
+          word m1 = m, n1 = n;
+          list c = reduce(TL(TL(TL(S))));
+          static word p = 0;
 
-          if (isnum(C)) {
-            P = getnum(C);
-          } else if (C == INFINITY) {
-            P = N1;
+          if (isnum(c)) {
+            p = getnum(c);
+          } else if (c == INFINITY) {
+            p = n1;
           } else {
-            badexp(cons(E, cons(A, cons(B, C))));
+            badexp(cons(e, cons(a, cons(b, c))));
           }
 
-          if ((N1 - M1) * (P - M1) < 0) {
-            E = NIL;
+          if ((n1 - m1) * (p - m1) < 0) {
+            e = NIL;
             break;
           }
-          E = (list)COLON_OP;
-          HD(TL(TL(S))) = stonum(N1 + N1 - M1);
-          TL(TL(S)) = cons((list)COMMADOTDOT_OP, cons(B, TL(TL(S))));
+          e = (list)COLON_OP;
+          HD(TL(TL(S))) = stonum(n1 + n1 - m1);
+          TL(TL(S)) = cons((list)COMMADOTDOT_OP, cons(b, TL(TL(S))));
           REDS = REDS + 1;
           continue;
         }
         case NOT_OP:
-          if (A == TRUTH) {
-            E = FALSITY;
-          } else if (A == FALSITY) {
-            E = TRUTH;
+          if (a == TRUTH) {
+            e = FALSITY;
+          } else if (a == FALSITY) {
+            e = TRUTH;
           } else {
-            badexp(cons(E, A));
+            badexp(cons(e, a));
           }
           break;
         case NEG_OP:
-          if (!(isnum(A))) {
-            badexp(cons(E, A));
+          if (!(isnum(a))) {
+            badexp(cons(e, a));
           }
-          E = stonum(-getnum(A));
+          e = stonum(-getnum(a));
           break;
         case LENGTH_OP: {
-          word L = 0;
+          word l = 0;
 
-          while (iscons(A) && HD(A) == (list)COLON_OP) {
-            A = reduce(TL(TL(A))), L = L + 1;
+          while (iscons(a) && HD(a) == (list)COLON_OP) {
+            a = reduce(TL(TL(a))), l = l + 1;
           }
 
-          if (A == NIL) {
-            E = stonum(L);
+          if (a == NIL) {
+            e = stonum(l);
             break;
           }
-          badexp(cons((list)COLON_OP, cons((list)ETC, A)));
+          badexp(cons((list)COLON_OP, cons((list)ETC, a)));
         }
         case PLUS_OP: {
-          word X = M + N;
-          if ((M > 0 && N > 0 && X <= 0) || (M < 0 && N < 0 && X >= 0) ||
-              (X == -X && X != 0)) {
-            // This checks for -(2**31)
-            overflow(cons((list)PLUS_OP, cons(A, B)));
+          word x = m + n;
+          if ((m > 0 && n > 0 && x <= 0) || (m < 0 && n < 0 && x >= 0) ||
+              (x == -x && x != 0)) {
+            // this checks for -(2**31)
+            overflow(cons((list)PLUS_OP, cons(a, b)));
           }
-          E = stonum(X);
+          e = stonum(x);
           break;
         }
         case MINUS_OP: {
-          word X = M - N;
+          word x = m - n;
 
-          if ((M < 0 && N > 0 && X > 0) || (M > 0 && N < 0 && X < 0) ||
-              (X == -X && X != 0)) {
-            overflow(cons((list)MINUS_OP, cons(A, B)));
+          if ((m < 0 && n > 0 && x > 0) || (m > 0 && n < 0 && x < 0) ||
+              (x == -x && x != 0)) {
+            overflow(cons((list)MINUS_OP, cons(a, b)));
           }
 
-          E = stonum(X);
+          e = stonum(x);
           break;
         }
         case TIMES_OP: {
-          word X = M * N;
+          word x = m * n;
 
           // may not catch all cases
-          if ((M > 0 && N > 0 && X <= 0) || (M < 0 && N < 0 && X <= 0) ||
-              (M < 0 && N > 0 && X >= 0) || (M > 0 && N < 0 && X >= 0) ||
-              (X == -X && X != 0)) {
-            overflow(cons((list)TIMES_OP, cons(A, B)));
+          if ((m > 0 && n > 0 && x <= 0) || (m < 0 && n < 0 && x <= 0) ||
+              (m < 0 && n > 0 && x >= 0) || (m > 0 && n < 0 && x >= 0) ||
+              (x == -x && x != 0)) {
+            overflow(cons((list)TIMES_OP, cons(a, b)));
           }
 
-          E = stonum(X);
+          e = stonum(x);
           break;
         }
         case DIV_OP:
-          if (N == 0) {
-            badexp(cons((list)DIV_OP, cons(A, B)));
+          if (n == 0) {
+            badexp(cons((list)DIV_OP, cons(a, b)));
           }
 
-          E = stonum(M / N);
+          e = stonum(m / n);
           break;
         case REM_OP:
-          if (N == 0) {
-            badexp(cons((list)REM_OP, cons(A, B)));
+          if (n == 0) {
+            badexp(cons((list)REM_OP, cons(a, b)));
           }
 
-          E = stonum(M % N);
+          e = stonum(m % n);
           break;
         case EXP_OP:
-          if (N < 0) {
-            badexp(cons((list)EXP_OP, cons(A, B)));
+          if (n < 0) {
+            badexp(cons((list)EXP_OP, cons(a, b)));
           }
 
           {
-            word P = 1;
-            while (!(N == 0)) {
-              word X = P * M;
+            word p = 1;
+            while (!(n == 0)) {
+              word x = p * m;
 
               // may not catch all cases
-              if ((M > 0 && P > 0 && X <= 0) || (M < 0 && P < 0 && X <= 0) ||
-                  (M < 0 && P > 0 && X >= 0) || (M > 0 && P < 0 && X >= 0) ||
-                  (X == -X && X != 0)) {
-                overflow(cons((list)EXP_OP, cons(A, B)));
+              if ((m > 0 && p > 0 && x <= 0) || (m < 0 && p < 0 && x <= 0) ||
+                  (m < 0 && p > 0 && x >= 0) || (m > 0 && p < 0 && x >= 0) ||
+                  (x == -x && x != 0)) {
+                overflow(cons((list)EXP_OP, cons(a, b)));
               }
 
-              P = X, N = N - 1;
+              p = x, n = n - 1;
             }
-            E = stonum(P);
+            e = stonum(p);
             break;
           }
         case GR_OP:
-          E = (STRINGS ? alfa_ls(SN, SM) : M > N) ? TRUTH : FALSITY;
+          e = (strings ? alfa_ls(sn, sm) : m > n) ? TRUTH : FALSITY;
           break;
         case GE_OP:
-          E = (STRINGS ? alfa_ls(SN, SM) || SN == SM : M >= N) ? TRUTH
+          e = (strings ? alfa_ls(sn, sm) || sn == sm : m >= n) ? TRUTH
                                                                : FALSITY;
           break;
         case LE_OP:
-          E = (STRINGS ? alfa_ls(SM, SN) || SM == SN : M <= N) ? TRUTH
+          e = (strings ? alfa_ls(sm, sn) || sm == sn : m <= n) ? TRUTH
                                                                : FALSITY;
           break;
         case LS_OP:
-          E = (STRINGS ? alfa_ls(SM, SN) : M < N) ? TRUTH : FALSITY;
+          e = (strings ? alfa_ls(sm, sn) : m < n) ? TRUTH : FALSITY;
           break;
         default:
           bcpl_writes("IMPOSSIBLE OPERATOR IN \"reduce\"\n");
@@ -1317,9 +1315,9 @@ static list reduce(list E) {
         // end of switch
 
         {
-          list HOLD = HD(S);
-          NARGS = NARGS - 1;
-          HD(S) = (list)INDIR, TL(S) = E, S = HOLD;
+          list hold = HD(S);
+          nargs = nargs - 1;
+          HD(S) = (list)INDIR, TL(S) = e, S = hold;
         }
       }
     }
@@ -1334,44 +1332,44 @@ BREAK_MAIN_LOOP:
   while (!(S == (list)ENDOFSTACK)) {
     // unreverse reversed pointers
 
-    list HOLD = HD(S);
-    HD(S) = E, E = S, S = HOLD;
+    list hold = HD(S);
+    HD(S) = e, e = S, S = hold;
   }
 
-  if (HOLDARG == (list *)-1) {
-    badexp(E);
+  if (holdarg == (list *)-1) {
+    badexp(e);
   }
 
   // reset ARG stackframe
-  ARG = HOLDARG;
+  ARG = holdarg;
 
-  S = HOLD_S;
-  return E;
+  S = hold_s;
+  return e;
 }
 
-static list substitute(list ACTUAL, list FORMAL, list EXP) {
+static list substitute(list actual, list formal, list exp) {
 
-  if (EXP == FORMAL) {
-    return ACTUAL;
-  } else if (!iscons(EXP) || HD(EXP) == (list)QUOTE || binds(FORMAL, HD(EXP))) {
-    return EXP;
+  if (exp == formal) {
+    return actual;
+  } else if (!iscons(exp) || HD(exp) == (list)QUOTE || binds(formal, HD(exp))) {
+    return exp;
   } else {
-    list H = substitute(ACTUAL, FORMAL, HD(EXP));
-    list T = substitute(ACTUAL, FORMAL, TL(EXP));
-    return H == HD(EXP) && T == TL(EXP) ? EXP : cons(H, T);
+    list h = substitute(actual, formal, HD(exp));
+    list t = substitute(actual, formal, TL(exp));
+    return h == HD(exp) && t == TL(exp) ? exp : cons(h, t);
   }
 }
 
-static bool binds(list FORMAL, list X) {
-  return iscons(X) && HD(X) == (list)GENERATOR && HD(TL(X)) == FORMAL;
+static bool binds(list formal, list x) {
+  return iscons(x) && HD(x) == (list)GENERATOR && HD(TL(x)) == formal;
 }
 
 // mark elements in the argument stack for preservation by the GC.
 // this routine should be called by your bases() function.
-void reducer_bases(void (*F)(list *)) {
-  list *AP;
+void reducer_bases(void (*f)(list *)) {
+  list *ap;
 
-  for (AP = ARGSPACE; AP <= ARGP; AP++) {
-    F(AP);
+  for (ap = ARGSPACE; ap <= ARGP; ap++) {
+    f(ap);
   }
 }
