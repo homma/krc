@@ -284,7 +284,7 @@ void printatom(atom A, bool FORMAT) {
     int I;
     (*_WRCH)('"');
 
-    for (I = 1; I <= LEN(A); I++) {
+    for (I = 0; I < LEN(A); I++) {
       showch(NAME(A)[I]);
     }
 
@@ -292,9 +292,8 @@ void printatom(atom A, bool FORMAT) {
 
   } else {
 
-    // output the BCPL string preserving nuls
     int I;
-    for (I = 1; I <= LEN(A); I++) {
+    for (I = 0; I < LEN(A); I++) {
       (*_WRCH)(NAME(A)[I]);
     }
   }
@@ -640,6 +639,7 @@ static void prim_size(list E) {
   HD(E) = (list)INDIR, TL(E) = stonum(count);
 }
 
+// converts a character to its ascii number
 static void prim_code(list E) {
 
   *ARG = reduce(*ARG);
@@ -655,7 +655,8 @@ static void prim_code(list E) {
       badexp(E);
     }
 
-    HD(E) = (list)INDIR, TL(E) = stonum((word)NAME(A)[1] & 0xff);
+    HD(E) = (list)INDIR;
+    TL(E) = stonum((word)NAME(A)[0] & 0xff);
   }
 }
 
@@ -698,7 +699,7 @@ static void prim_concat(list E) {
       atom N = (atom)TL(HD(TL(A)));
       int I;
 
-      for (I = 1; I <= LEN(N); I++) {
+      for (I = 0; I < LEN(N); I++) {
         bufch(NAME(N)[I]);
       }
 
@@ -724,8 +725,8 @@ static void prim_explode(list E) {
     list X = NIL;
 
     int I;
-    for (I = NAME(A)[0]; I > 0; I--) {
-      bufch(NAME(A)[I]);
+    for (I = LEN(A); I > 0; I--) {
+      bufch(NAME(A)[I - 1]);
       X = cons((list)COLON_OP, cons(cons((list)QUOTE, (list)packbuffer()), X));
     }
 

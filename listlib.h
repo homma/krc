@@ -41,6 +41,7 @@ extern list isokcons(list);
 typedef struct atom {
   struct atom *link;
   struct list *val;
+  char len;
   char name[];
 } * atom;
 
@@ -48,13 +49,15 @@ typedef struct atom {
 //	or has value 0 if it is the end of this list.
 // VAL  points to the item's value in the CONS space.
 //      NOTE: VAL is used on items in both atom and CONS spaces.
-// NAME is a combined BCPL- and C-like string, i.e. the length in the
-//	first byte, then the string itself followed by a nul character.
+// NAME is a C string, i.e. followed by a nul character.
+// LENA is the address of len
+// LEN  returns length of name
 
 #define LINK(p) ((p)->link)
 #define VAL(p) ((p)->val)
 #define NAME(p) ((p)->name)
-#define LEN(p) ((p)->name[0] & 0xff)
+#define LENA(p) ((p)->len)
+#define LEN(p) ((p)->len & 0xff)
 
 // offset of "name" field in pointer words
 #define OFFSET 2
@@ -63,7 +66,7 @@ typedef struct atom {
 #define atomsize (sizeof(struct atom))
 
 // The C string version of the name
-#define PRINTNAME(X) (NAME(X) + 1)
+#define PRINTNAME(X) NAME(X)
 
 // unused
 // word haveparam(word CH);

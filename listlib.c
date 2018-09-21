@@ -531,7 +531,7 @@ atom mkatomn(char *S, int LEN) {
   }
 
   // create new atom
-  // +1 for the BCPL size, +1 for the \0, then round up to element size
+  // +1 for len, +1 for the \0, then round up to element size
   N = (1 + LEN + 1 + (sizeof(word *)) - 1) / sizeof(word *);
 
   if ((word **)ATOMP + OFFSET + N > (word **)ATOMLIMIT) {
@@ -547,9 +547,9 @@ atom mkatomn(char *S, int LEN) {
   *P = ATOMP;
   LINK(ATOMP) = 0;
   VAL(ATOMP) = NIL;
-  (NAME(ATOMP))[0] = LEN;
-  memcpy(NAME(ATOMP) + 1, S, (size_t)LEN);
-  NAME(ATOMP)[LEN + 1] = '\0';
+  LENA(ATOMP) = LEN;
+  memcpy(NAME(ATOMP), S, (size_t)LEN);
+  NAME(ATOMP)[LEN] = '\0';
 
   ATOMP = (atom)((word **)ATOMP + OFFSET + N);
 
