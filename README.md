@@ -7,6 +7,7 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 ### 2018.09.22
 - changed BCPL string to C string
 - downcased `LIST`, `ATOM` and `TOKEN`
+  - did not choose to use `List`, `Atom` or `Token`
 
 ### 2018.09.21
 - replaced `WORD` with `word`
