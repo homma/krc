@@ -1,8 +1,8 @@
 
 // global functions in reducer
 void setup_primfns_etc(void);
-void printval(LIST E, bool FORMAT);
-LIST buildexp(LIST CODE);
+void printval(list E, bool FORMAT);
+list buildexp(list CODE);
 void init_argspace(void);
 void escapetonextcommand();
 void initstats();
@@ -13,10 +13,10 @@ char *scaseconv(char *S);
 // global functions in main
 void closechannels();
 FILE *findchannel(char *F);
-void enterscript(ATOM A);
+void enterscript(atom A);
 
 // global variables in reducer
-extern LIST MEMORIES;
+extern list MEMORIES;
 extern word LISTBASE;
 extern word ABORTED;
 

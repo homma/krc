@@ -19,13 +19,13 @@ extern void escapetonextcommand();
 // global variables owned by lex.c
 word ERRORFLAG, EQNFLAG, EXPFLAG, COMMENTFLAG;
 bool SKIPCOMMENTS;
-LIST TOKENS = 0;
-ATOM THE_ID = 0;
-LIST THE_CONST = 0;
+list TOKENS = 0;
+atom THE_ID = 0;
+list THE_CONST = 0;
 word THE_NUM, THE_DECIMALS;
 
 // local function declarations
-static TOKEN readtoken(void);
+static token readtoken(void);
 static word read_decimals(void);
 
 // returns value in hundredths
@@ -33,14 +33,14 @@ static word peekalpha(void);
 
 // local variables
 static bool EXPECTFILE = false;
-static TOKEN MISSING;
+static token MISSING;
 
 // reads the next line into "TOKENS"
 void readline() {
 
   do {
-    LIST *P = &TOKENS;
-    TOKEN T = 0;
+    list *P = &TOKENS;
+    token T = 0;
     MISSING = 0;
     TOKENS = NIL;
     THE_DECIMALS = 0;
@@ -61,19 +61,19 @@ void readline() {
       T = readtoken();
 
       // GCC
-      *P = cons((LIST)T, NIL);
+      *P = cons((list)T, NIL);
       P = &(TL(*P));
 
     } while (
-        !(T == (TOKEN)EOL || T == (TOKEN)ENDSTREAMCH || T == (TOKEN)BADTOKEN));
+        !(T == (token)EOL || T == (token)ENDSTREAMCH || T == (token)BADTOKEN));
 
     // ignore first line of Unix script file
-    if (HD(TOKENS) == (LIST)'#' && iscons(TL(TOKENS)) &&
-        HD(TL(TOKENS)) == (LIST)'!') {
+    if (HD(TOKENS) == (list)'#' && iscons(TL(TOKENS)) &&
+        HD(TL(TOKENS)) == (list)'!') {
       continue;
     }
 
-    if (T == (TOKEN)EOL || T == (TOKEN)ENDSTREAMCH) {
+    if (T == (token)EOL || T == (token)ENDSTREAMCH) {
       return;
     }
 
@@ -88,7 +88,7 @@ void readline() {
 
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
 //          | cons(IDENT, ATOM) | cons(CONST, <ATOM | NUM>)
-static TOKEN readtoken(void) {
+static token readtoken(void) {
   word CH = (*_RDCH)();
 
   while ((CH == ' ' || CH == '\t')) {
@@ -96,11 +96,11 @@ static TOKEN readtoken(void) {
   }
 
   if (CH == '\n') {
-    return (TOKEN)EOL;
+    return (token)EOL;
   }
 
   if (CH == EOF) {
-    return (TOKEN)ENDSTREAMCH;
+    return (token)ENDSTREAMCH;
   }
 
   if (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z') ||
@@ -118,12 +118,12 @@ static TOKEN readtoken(void) {
     (*_UNRDCH)(CH);
 
     {
-      LIST X = (LIST)packbuffer();
-      if (TOKENS != NIL && HD(TOKENS) == (TOKEN)'/' && TL(TOKENS) == NIL &&
+      list X = (list)packbuffer();
+      if (TOKENS != NIL && HD(TOKENS) == (token)'/' && TL(TOKENS) == NIL &&
           member(FILECOMMANDS, X)) {
         EXPECTFILE = true;
       }
-      return cons((LIST)IDENT, X);
+      return cons((list)IDENT, X);
     }
   }
 
@@ -143,11 +143,11 @@ static TOKEN readtoken(void) {
       (*_UNRDCH)(CH);
     }
 
-    return cons((TOKEN)CONST, stonum(THE_NUM));
+    return cons((token)CONST, stonum(THE_NUM));
   }
 
   if (CH == '"') {
-    ATOM A;
+    atom A;
     CH = (*_RDCH)();
 
     while (!(CH == '"' || CH == '\n' || CH == EOF)) {
@@ -186,7 +186,7 @@ static TOKEN readtoken(void) {
           bufch('\"');
           break;
         case '\n':
-          return (TOKEN)BADTOKEN;
+          return (token)BADTOKEN;
         default:
           if ('0' <= CH && CH <= '9') {
             int i = 3, n = CH - '0', n1;
@@ -203,14 +203,14 @@ static TOKEN readtoken(void) {
       CH = (*_RDCH)();
     }
     A = packbuffer();
-    return CH != '"' ? (TOKEN)BADTOKEN : cons(CONST, (LIST)A);
+    return CH != '"' ? (token)BADTOKEN : cons(CONST, (list)A);
   }
   {
     word CH2 = (*_RDCH)();
     if (CH == ':' && CH2 == '-' && TOKENS != NIL && iscons(HD(TOKENS)) &&
         HD(HD(TOKENS)) == IDENT && TL(TOKENS) == NIL) {
-      LIST C = NIL;
-      LIST SUBJECT = TL(HD(TOKENS));
+      list C = NIL;
+      list SUBJECT = TL(HD(TOKENS));
       COMMENTFLAG = 1;
 
       CH = (*_RDCH)();
@@ -237,7 +237,7 @@ static TOKEN readtoken(void) {
 
       while (!(CH == ';' || CH == EOF))
         if (CH == '\n') {
-          C = cons((LIST)packbuffer(), C);
+          C = cons((list)packbuffer(), C);
           do {
             COMMENTFLAG++;
             CH = (*_RDCH)();
@@ -249,12 +249,12 @@ static TOKEN readtoken(void) {
         }
 
       if (CH == EOF) {
-        fprintf(bcpl_OUTPUT, "%s :- ...", PRINTNAME((ATOM)SUBJECT)),
+        fprintf(bcpl_OUTPUT, "%s :- ...", PRINTNAME((atom)SUBJECT)),
             bcpl_writes(" missing \";\"\n");
         COMMENTFLAG--;
         syntax();
       } else {
-        C = cons((LIST)packbuffer(), C);
+        C = cons((list)packbuffer(), C);
       }
 
       return reverse(C);
@@ -309,7 +309,7 @@ static TOKEN readtoken(void) {
     }
 
     // GCC warning expected
-    return (TOKEN)(NOTCH(CH) ? '\\' : CH);
+    return (token)(NOTCH(CH) ? '\\' : CH);
   }
 }
 
@@ -321,8 +321,8 @@ static word peekalpha() {
   return (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z'));
 }
 
-void writetoken(TOKEN T) {
-  if (T < (TOKEN)256 && T > (TOKEN)32) {
+void writetoken(token T) {
+  if (T < (token)256 && T > (token)32) {
     (*_WRCH)((word)T);
   } else {
     switch ((word)T) {
@@ -360,17 +360,17 @@ void writetoken(TOKEN T) {
       if (!(iscons(T) && (HD(T) == IDENT || HD(T) == CONST)))
         fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", T);
       else if (HD(T) == IDENT)
-        bcpl_writes(PRINTNAME((ATOM)(
-            iscons(TL(T)) && HD(TL(T)) == (LIST)ALPHA ? TL(TL(T)) : TL(T))));
+        bcpl_writes(PRINTNAME((atom)(
+            iscons(TL(T)) && HD(TL(T)) == (list)ALPHA ? TL(TL(T)) : TL(T))));
       else if (isnum(TL(T)))
         bcpl_writen(getnum(TL(T)));
       else
-        fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((ATOM)TL(T)));
+        fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((atom)TL(T)));
     }
   }
 }
 
-bool have(TOKEN T) {
+bool have(token T) {
   if (TOKENS == NIL || HD(TOKENS) != T) {
     return false;
   }
@@ -379,7 +379,7 @@ bool have(TOKEN T) {
   return true;
 }
 
-void check(TOKEN T) {
+void check(token T) {
   if (have(T)) {
     return;
   }
@@ -398,7 +398,7 @@ word haveid() {
     return false;
   }
 
-  THE_ID = (ATOM)TL(HD(TOKENS));
+  THE_ID = (atom)TL(HD(TOKENS));
   TOKENS = TL(TOKENS);
 
   return true;
@@ -434,12 +434,12 @@ void syntax_error(char *message) {
   // unclosed string quotes
   if (iscons(TOKENS) && HD(TOKENS) != BADTOKEN) {
     bcpl_writes("**unexpected `"), writetoken(HD(TOKENS)), (*_WRCH)('\'');
-    if (MISSING && MISSING != EOL && MISSING != (TOKEN)';' &&
-        MISSING != (TOKEN)'\'') {
+    if (MISSING && MISSING != EOL && MISSING != (token)';' &&
+        MISSING != (token)'\'') {
 
       bcpl_writes(", missing `"), writetoken(MISSING), (*_WRCH)('\'');
 
-      if (MISSING == (TOKEN)'?') {
+      if (MISSING == (token)'?') {
         bcpl_writes(" or `!'");
       }
     }

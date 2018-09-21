@@ -12,24 +12,24 @@
 // include code to check validity of pointers handed to HD() and TL
 // #define INSTRUMENT_KRC_GC
 
-/* an element in LIST space */
-typedef struct LIST {
-  struct LIST *hd;
-  struct LIST *tl;
-} * LIST;
+/* an element in list space */
+typedef struct list {
+  struct list *hd;
+  struct list *tl;
+} * list;
 
 // HD can contain:
 // - the memory address of another cell in the CONS space
-// - the memory address of a cell in the ATOM space
+// - the memory address of a cell in the atom space
 // - improbable pointer values of HD() for special values:
 //   FULLWORD (see above) or GONETO (see listlib.c)
-//#define NIL ((LIST)0) //causes problems
+//#define NIL ((list)0) //causes problems
 
 // from oldbcpl/listhdr, may need changing
-#define NIL ((LIST)0x40000000)
+#define NIL ((list)0x40000000)
 
 #ifdef INSTRUMENT_KRC_GC
-extern LIST isokcons(LIST);
+extern list isokcons(list);
 #define HD(p) (isokcons(p)->hd)
 #define TL(p) (isokcons(p)->tl)
 #else
@@ -37,17 +37,17 @@ extern LIST isokcons(LIST);
 #define TL(p) ((p)->tl)
 #endif
 
-/* An element in ATOM space */
-typedef struct ATOM {
-  struct ATOM *link;
-  struct LIST *val;
+/* An element in atom space */
+typedef struct atom {
+  struct atom *link;
+  struct list *val;
   char name[];
-} * ATOM;
+} * atom;
 
 // LINK points to the next item in the linked list of values,
 //	or has value 0 if it is the end of this list.
 // VAL  points to the item's value in the CONS space.
-//      NOTE: VAL is used on items in both ATOM and CONS spaces.
+//      NOTE: VAL is used on items in both atom and CONS spaces.
 // NAME is a combined BCPL- and C-like string, i.e. the length in the
 //	first byte, then the string itself followed by a nul character.
 
@@ -60,7 +60,7 @@ typedef struct ATOM {
 #define OFFSET 2
 
 // unit of allocation for ATOMSPACE
-#define atomsize (sizeof(struct ATOM))
+#define atomsize (sizeof(struct atom))
 
 // The C string version of the name
 #define PRINTNAME(X) (NAME(X) + 1)
@@ -91,21 +91,21 @@ extern bool ATGC;
 // space is exhausted (e.g. print a message and call finish)
 
 extern void GO(void);
-extern void BASES(void (*f)(LIST *));
+extern void BASES(void (*f)(list *));
 extern void SPACE_ERROR(char *MESSAGE);
 
 // "cons(X,Y)" creates a list cell, Z say, with X and Y for its fields
 // and "HD!Z", "TL!Z" give access to the fields
-LIST cons(LIST X, LIST Y);
+list cons(list X, list Y);
 
-LIST stonum(word N);
-word getnum(LIST X);
+list stonum(word N);
+word getnum(list X);
 
-ATOM mkatom(char *s);
-ATOM mkatomn(char *s, int len);
+atom mkatom(char *s);
+atom mkatomn(char *s, int len);
 
 void bufch(word ch);
-ATOM packbuffer(void);
+atom packbuffer(void);
 
 // the functions "iscons(X)", "isatom(X)", "isnum(X)" distinguish
 // the three different kinds of constructed list object.
@@ -116,24 +116,24 @@ ATOM packbuffer(void);
 // adjective meaning small enough not to be confused with one of the
 // three above mentioned types of list object).
 // "small" here means less than 8 meg
-word iscons(LIST X);
-word isatom(LIST X);
-word isnum(LIST X);
+word iscons(list X);
+word isatom(list X);
+word isnum(list X);
 
-bool alfa_ls(ATOM A, ATOM B);
-word length(LIST X);
-word member(LIST X, LIST A);
-LIST append(LIST X, LIST Y);
-word equal(LIST X, LIST Y);
-LIST elem(LIST X, word N);
-void printobj(LIST X);
+bool alfa_ls(atom A, atom B);
+word length(list X);
+word member(list X, list A);
+list append(list X, list Y);
+word equal(list X, list Y);
+list elem(list X, word N);
+void printobj(list X);
 void resetgcstats(void);
 void force_gc(void);
 void reportdic(void);
 void listpm(void);
-LIST reverse(LIST X);
-LIST shunt(LIST X, LIST Y);
-LIST sub1(LIST X, ATOM A);
+list reverse(list X);
+list shunt(list X, list Y);
+list sub1(list X, atom A);
 
 // NOTES for 2960/EMAS implementation at UKC:
 

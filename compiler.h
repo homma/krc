@@ -9,43 +9,43 @@
 // lex analyser manifests
 
 // in-core tokens can be CONSes
-#define TOKEN LIST
+#define token list
 
-#define IDENT (TOKEN)0
-#define CONST (TOKEN)1
-#define EOL (TOKEN)'\n'
-#define BADTOKEN (TOKEN)256
-#define PLUSPLUS_SY (TOKEN)257
-#define GE_SY (TOKEN)258
-#define LE_SY (TOKEN)259
-#define NE_SY (TOKEN)260
-#define EQ_SY (TOKEN)261
-#define DOTDOT_SY (TOKEN)262
-#define BACKARROW_SY (TOKEN)263
-#define DASHDASH_SY (TOKEN)264
-#define STARSTAR_SY (TOKEN)265
+#define IDENT (token)0
+#define CONST (token)1
+#define EOL (token)'\n'
+#define BADTOKEN (token)256
+#define PLUSPLUS_SY (token)257
+#define GE_SY (token)258
+#define LE_SY (token)259
+#define NE_SY (token)260
+#define EQ_SY (token)261
+#define DOTDOT_SY (token)262
+#define BACKARROW_SY (token)263
+#define DASHDASH_SY (token)264
+#define STARSTAR_SY (token)265
 
 //-1
-#define ENDSTREAMCH (TOKEN) EOF
+#define ENDSTREAMCH (token) EOF
 
 // lex analyser globals
 
 // bases
-extern LIST TOKENS, THE_CONST;
+extern list TOKENS, THE_CONST;
 
 // bases
-extern ATOM THE_ID;
+extern atom THE_ID;
 
 // DECIMALS are never used
 extern word THE_NUM, THE_DECIMALS;
 
 extern word EXPFLAG, ERRORFLAG, EQNFLAG;
-extern TOKEN MISSEDTOK;
+extern token MISSEDTOK;
 extern word caseconv(word CH);
 extern word COMMENTFLAG;
-extern LIST FILECOMMANDS;
+extern list FILECOMMANDS;
 extern bool LEGACY;
-extern void writetoken(TOKEN T);
+extern void writetoken(token T);
 
 // KRC expression representations
 // the internal representations of expressions is as follows
@@ -175,38 +175,38 @@ typedef enum {
 
 // defined in lex.c
 extern void readline(void);
-extern bool have(TOKEN);
+extern bool have(token);
 extern word haveid(void);
 extern void syntax(void);
-extern void check(TOKEN);
+extern void check(token);
 extern word haveconst(void);
 extern word havenum(void);
 extern void syntax_error(char *);
 
 // defined in compiler.c
 extern void init_codev(void);
-extern LIST equation(void);
-extern LIST profile(LIST);
-extern void printexp(LIST, word);
-extern LIST expression(void);
-extern void removelineno(LIST);
-extern bool isid(LIST);
-extern void display(ATOM ID, bool WITHNOS, bool DOUBLESPACING);
-extern void displayeqn(ATOM ID, word NARGS, LIST EQN);
-extern void displayrhs(LIST LHS, word NARGS, LIST CODE);
+extern list equation(void);
+extern list profile(list);
+extern void printexp(list, word);
+extern list expression(void);
+extern void removelineno(list);
+extern bool isid(list);
+extern void display(atom ID, bool WITHNOS, bool DOUBLESPACING);
+extern void displayeqn(atom ID, word NARGS, list EQN);
+extern void displayrhs(list LHS, word NARGS, list CODE);
 
 // defined in reducer.c
-extern void printatom(ATOM A, bool FORMAT);
+extern void printatom(atom A, bool FORMAT);
 
 // others
 extern void (*TRUEWRCH)(word C);
 
 // bases
-extern LIST TRUTH, FALSITY, INFINITY, LASTLHS;
+extern list TRUTH, FALSITY, INFINITY, LASTLHS;
 
 //// GC helpers
 // defined in compiler.c
-extern void compiler_bases(void (*F)(LIST *));
+extern void compiler_bases(void (*F)(list *));
 
 // defined in reducer.c
-extern void reducer_bases(void (*F)(LIST *));
+extern void reducer_bases(void (*F)(list *));

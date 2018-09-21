@@ -28,7 +28,7 @@ static bool startdisplaycom();
 
 static void parseline(char *line);
 static void initialise();
-static void enterargv(int USERARGC, LIST USERARGV);
+static void enterargv(int USERARGC, list USERARGV);
 static void setup_commands();
 static void command();
 static void displayall(bool DOUBLESPACING);
@@ -38,25 +38,25 @@ static bool okfile(FILE *STR, char *FILENAME);
 static void check_hits();
 static bool getfile(char *FILENAME);
 static void find_undefs();
-static bool isdefined(ATOM X);
-static void scriptlist(LIST S);
-static LIST subst(LIST Z, LIST A);
+static bool isdefined(atom X);
+static void scriptlist(list S);
+static list subst(list Z, list A);
 static void newequation();
 static void clearmemory();
 static void comment();
 static void evaluation();
-static LIST sort(LIST X);
+static list sort(list X);
 static void scriptreorder();
-static word no_of_eqns(ATOM A);
-static bool protected(ATOM A);
-static bool primitive(ATOM A);
-static void remove_atom(ATOM A);
-static LIST extract(ATOM A, ATOM B);
+static word no_of_eqns(atom A);
+static bool protected(atom A);
+static bool primitive(atom A);
+static void remove_atom(atom A);
+static list extract(atom A, atom B);
 
 // bases
-static LIST COMMANDS = NIL, SCRIPT = NIL, OUTFILES = NIL;
-static ATOM LASTFILE = 0;
-static LIST LIBSCRIPT = NIL, HOLDSCRIPT = NIL, GET_HITS = NIL;
+static list COMMANDS = NIL, SCRIPT = NIL, OUTFILES = NIL;
+static atom LASTFILE = 0;
+static list LIBSCRIPT = NIL, HOLDSCRIPT = NIL, GET_HITS = NIL;
 
 static bool SIGNOFF = false, SAVED = true, EVALUATING = false;
 
@@ -71,7 +71,7 @@ static char PARAMV[256];
 // set by -z option
 bool LEGACY = false;
 
-LIST FILECOMMANDS = NIL;
+list FILECOMMANDS = NIL;
 
 // SET BY -s OPTION
 bool SKIPCOMMENTS;
@@ -308,7 +308,7 @@ static void initialise() {
   char *USERSCRIPT = NULL;
 
   // reversed list of args after script name
-  LIST USERARGV = NIL;
+  list USERARGV = NIL;
 
   // how many items in USERARGV?
   int USERARGC = 0;
@@ -384,7 +384,7 @@ static void initialise() {
         USERSCRIPT = ARGV[I];
       }
 
-      USERARGV = cons((LIST)mkatom(ARGV[I]), USERARGV), USERARGC++;
+      USERARGV = cons((list)mkatom(ARGV[I]), USERARGV), USERARGC++;
     }
   }
 
@@ -461,17 +461,17 @@ static void initialise() {
 //     LOAD.(QUOTE."one").LOAD.(QUOTE."two").LOAD.(QUOTE."three").
 //     FORMLIST.0x03.STOP.NIL ).
 //   NIL )
-static void enterargv(int USERARGC, LIST USERARGV) {
+static void enterargv(int USERARGC, list USERARGV) {
 
-  ATOM A = mkatom("argv");
-  LIST CODE =
-      cons((LIST)FORMLIST_C, cons((LIST)USERARGC, cons((LIST)STOP_C, NIL)));
+  atom A = mkatom("argv");
+  list CODE =
+      cons((list)FORMLIST_C, cons((list)USERARGC, cons((list)STOP_C, NIL)));
 
   for (; USERARGV != NIL; USERARGV = TL(USERARGV)) {
-    CODE = cons((LIST)LOAD_C, cons(cons((LIST)QUOTE, HD(USERARGV)), CODE));
+    CODE = cons((list)LOAD_C, cons(cons((list)QUOTE, HD(USERARGV)), CODE));
   }
 
-  VAL(A) = cons(cons((LIST)0, NIL), cons(cons((LIST)0, CODE), NIL));
+  VAL(A) = cons(cons((list)0, NIL), cons(cons((list)0, CODE), NIL));
   enterscript(A);
 }
 
@@ -497,10 +497,10 @@ void SPACE_ERROR(char *MESSAGE) {
   }
 }
 
-void BASES(void (*F)(LIST *)) {
+void BASES(void (*F)(list *)) {
 
   // in reducer.c
-  extern LIST S;
+  extern list S;
 
   F(&COMMANDS);
   F(&FILECOMMANDS);
@@ -508,12 +508,12 @@ void BASES(void (*F)(LIST *)) {
   F(&LIBSCRIPT);
   F(&HOLDSCRIPT);
   F(&GET_HITS);
-  F((LIST *)&LASTFILE);
+  F((list *)&LASTFILE);
   F(&OUTFILES);
   F(&MEMORIES);
   F(&S);
   F(&TOKENS);
-  F((LIST *)&THE_ID);
+  F((list *)&THE_ID);
   F(&THE_CONST);
   F(&LASTLHS);
   F(&TRUTH);
@@ -526,10 +526,10 @@ void BASES(void (*F)(LIST *)) {
 static void setup_commands() {
 
 #define F(S, R)                                                                \
-  { COMMANDS = cons(cons((LIST)mkatom(S), (LIST)R), COMMANDS); }
+  { COMMANDS = cons(cons((list)mkatom(S), (list)R), COMMANDS); }
 #define FF(S, R)                                                               \
   {                                                                            \
-    FILECOMMANDS = cons((LIST)mkatom(S), FILECOMMANDS);                        \
+    FILECOMMANDS = cons((list)mkatom(S), FILECOMMANDS);                        \
     F(S, R);                                                                   \
   }
 
@@ -602,7 +602,7 @@ void closechannels() {
 }
 
 FILE *findchannel(char *F) {
-  LIST P = OUTFILES;
+  list P = OUTFILES;
 
   while (!(P == NIL || strcmp((char *)HD(HD(P)), F) == 0)) {
     P = TL(P);
@@ -612,7 +612,7 @@ FILE *findchannel(char *F) {
     FILE *OUT = bcpl_findoutput(F);
 
     if (OUT != NULL) {
-      OUTFILES = cons(cons((LIST)F, (LIST)OUT), OUTFILES);
+      OUTFILES = cons(cons((list)F, (list)OUT), OUTFILES);
     }
 
     return OUT;
@@ -707,21 +707,21 @@ static void command() {
     free(line);
   }
 
-  if (have((TOKEN)EOF)) {
+  if (have((token)EOF)) {
 
     SIGNOFF = true;
 
-  } else if (have((TOKEN)'/')) {
+  } else if (have((token)'/')) {
 
     if (have(EOL)) {
 
       displayall(false);
-      // if ( have((TOKEN)'@') && have(EOL) ) listpm(); else
+      // if ( have((token)'@') && have(EOL) ) listpm(); else
       // for debugging the system
 
     } else {
 
-      LIST P = COMMANDS;
+      list P = COMMANDS;
 
       if (haveid()) {
         THE_ID = mkatom(scaseconv(PRINTNAME(THE_ID)));
@@ -730,7 +730,7 @@ static void command() {
         P = NIL;
       }
 
-      while (!(P == NIL || THE_ID == (ATOM)HD(HD(P)))) {
+      while (!(P == NIL || THE_ID == (atom)HD(HD(P)))) {
         P = TL(P);
       }
 
@@ -769,8 +769,8 @@ static void command() {
 
 static bool startdisplaycom() {
 
-  LIST HOLD = TOKENS;
-  word R = haveid() && (have(EOL) || have((TOKEN)DOTDOT_SY));
+  list HOLD = TOKENS;
+  word R = haveid() && (have(EOL) || have((token)DOTDOT_SY));
   TOKENS = HOLD;
   return R;
 }
@@ -783,13 +783,13 @@ static void displaycom() {
 
       display(THE_ID, true, false);
 
-    } else if (have((TOKEN)DOTDOT_SY)) {
+    } else if (have((token)DOTDOT_SY)) {
 
-      ATOM A = THE_ID;
-      LIST X = NIL;
+      atom A = THE_ID;
+      list X = NIL;
 
       // BUG?
-      ATOM B = have(EOL) ? (ATOM)EOL : haveid() && have(EOL) ? THE_ID : 0;
+      atom B = have(EOL) ? (atom)EOL : haveid() && have(EOL) ? THE_ID : 0;
       if (B == 0) {
         syntax();
       } else {
@@ -797,7 +797,7 @@ static void displaycom() {
       }
 
       while (!(X == NIL)) {
-        display((ATOM)HD(X), false, false);
+        display((atom)HD(X), false, false);
         X = TL(X);
       }
 
@@ -814,7 +814,7 @@ static void displaycom() {
 // "SCRIPT" is a list of all user defined names in alphabetical order
 static void displayall(bool DOUBLESPACING) {
 
-  LIST P = SCRIPT;
+  list P = SCRIPT;
   if (P == NIL) {
     bcpl_writes("Script=empty\n");
   }
@@ -822,8 +822,8 @@ static void displayall(bool DOUBLESPACING) {
   while (!(P == NIL)) {
 
     // don't display builtin fns (relevant only in /openlib)
-    if (!(primitive((ATOM)HD(P)))) {
-      display((ATOM)HD(P), false, false);
+    if (!(primitive((atom)HD(P)))) {
+      display((atom)HD(P), false, false);
     }
 
     P = TL(P);
@@ -835,14 +835,14 @@ static void displayall(bool DOUBLESPACING) {
   }
 }
 
-static bool primitive(ATOM A) {
+static bool primitive(atom A) {
 
   if (TL(VAL(A)) == NIL) {
     // A has comment but no eqns
     return false;
   }
 
-  return HD(TL(HD(TL(VAL(A))))) == (LIST)CALL_C;
+  return HD(TL(HD(TL(VAL(A))))) == (list)CALL_C;
 }
 
 static void quitcom() {
@@ -1119,16 +1119,16 @@ static void namescom() {
 // searches the script for names used but not defined
 static void find_undefs() {
 
-  LIST S = SCRIPT, UNDEFS = NIL;
+  list S = SCRIPT, UNDEFS = NIL;
 
   while (!(S == NIL)) {
-    LIST EQNS = TL(VAL((ATOM)HD(S)));
+    list EQNS = TL(VAL((atom)HD(S)));
     while (!(EQNS == NIL)) {
-      LIST CODE = TL(HD(EQNS));
+      list CODE = TL(HD(EQNS));
       while (iscons(CODE)) {
-        LIST A = HD(CODE);
+        list A = HD(CODE);
 
-        if (isatom(A) && !isdefined((ATOM)A) && !member(UNDEFS, A)) {
+        if (isatom(A) && !isdefined((atom)A) && !member(UNDEFS, A)) {
           UNDEFS = cons(A, UNDEFS);
         }
 
@@ -1145,7 +1145,7 @@ static void find_undefs() {
   }
 }
 
-static bool isdefined(ATOM X) {
+static bool isdefined(atom X) {
   return VAL(X) == NIL || TL(VAL(X)) == NIL ? false : true;
 }
 
@@ -1175,7 +1175,7 @@ static void clearcom() {
   clearmemory();
 }
 
-static void scriptlist(LIST S) {
+static void scriptlist(list S) {
 
   word COL = 0, I = 0;
 
@@ -1183,9 +1183,9 @@ static void scriptlist(LIST S) {
 #define LINEWIDTH 68
 
   while (!(S == NIL)) {
-    char *N = PRINTNAME((ATOM)HD(S));
+    char *N = PRINTNAME((atom)HD(S));
 
-    if (primitive((ATOM)HD(S))) {
+    if (primitive((atom)HD(S))) {
       S = TL(S);
       continue;
     }
@@ -1223,16 +1223,16 @@ static void openlibcom() {
 
 static void renamecom() {
 
-  LIST X = NIL, Y = NIL, Z = NIL;
+  list X = NIL, Y = NIL, Z = NIL;
 
   while (haveid()) {
-    X = cons((LIST)THE_ID, X);
+    X = cons((list)THE_ID, X);
   }
 
-  check((TOKEN)',');
+  check((token)',');
 
   while (haveid()) {
-    Y = cons((LIST)THE_ID, Y);
+    Y = cons((list)THE_ID, Y);
   }
 
   check(EOL);
@@ -1242,7 +1242,7 @@ static void renamecom() {
 
   // first check lists are of same length
   {
-    LIST X1 = X, Y1 = Y;
+    list X1 = X, Y1 = Y;
 
     while (!(X1 == NIL || Y1 == NIL)) {
       Z = cons(cons(HD(X1), HD(Y1)), Z), X1 = TL(X1), Y1 = TL(Y1);
@@ -1256,14 +1256,14 @@ static void renamecom() {
 
   // now check legality of rename
   {
-    LIST Z1 = Z, POSTDEFS = NIL, DUPS = NIL;
+    list Z1 = Z, POSTDEFS = NIL, DUPS = NIL;
 
     while (!(Z1 == NIL)) {
       if (member(SCRIPT, HD(HD(Z1)))) {
         POSTDEFS = cons(TL(HD(Z1)), POSTDEFS);
       }
 
-      if (isdefined((ATOM)TL(HD(Z1))) &&
+      if (isdefined((atom)TL(HD(Z1))) &&
           (!member(X, TL(HD(Z1))) || !member(SCRIPT, TL(HD(Z1))))) {
         POSTDEFS = cons(TL(HD(Z1)), POSTDEFS);
       }
@@ -1284,7 +1284,7 @@ static void renamecom() {
       bcpl_writes("/rename illegal because of conflicting uses of ");
 
       while (!(DUPS == NIL)) {
-        bcpl_writes(PRINTNAME((ATOM)HD(DUPS)));
+        bcpl_writes(PRINTNAME((atom)HD(DUPS)));
         (*_WRCH)(' ');
         DUPS = TL(DUPS);
       }
@@ -1299,11 +1299,11 @@ static void renamecom() {
 
   // prepare for assignment to val fields
   {
-    LIST X1 = X, XVALS = NIL, TARGETS = NIL;
+    list X1 = X, XVALS = NIL, TARGETS = NIL;
     while (!(X1 == NIL)) {
 
       if (member(SCRIPT, HD(X1))) {
-        XVALS = cons(VAL((ATOM)HD(X1)), XVALS), TARGETS = cons(HD(Y), TARGETS);
+        XVALS = cons(VAL((atom)HD(X1)), XVALS), TARGETS = cons(HD(Y), TARGETS);
       }
 
       X1 = TL(X1), Y = TL(Y);
@@ -1311,14 +1311,14 @@ static void renamecom() {
 
     // now convert all occurrences in the script
     {
-      LIST S = SCRIPT;
+      list S = SCRIPT;
       while (!(S == NIL)) {
-        LIST EQNS = TL(VAL((ATOM)HD(S)));
-        word NARGS = (word)HD(HD(VAL((ATOM)HD(S))));
+        list EQNS = TL(VAL((atom)HD(S)));
+        word NARGS = (word)HD(HD(VAL((atom)HD(S))));
         while (!(EQNS == NIL)) {
-          LIST CODE = TL(HD(EQNS));
+          list CODE = TL(HD(EQNS));
           if (NARGS > 0) {
-            LIST LHS = HD(HD(EQNS));
+            list LHS = HD(HD(EQNS));
             word I;
 
             for (I = 2; I <= NARGS; I++) {
@@ -1336,7 +1336,7 @@ static void renamecom() {
         }
 
         if (member(X, HD(S))) {
-          VAL((ATOM)HD(S)) = NIL;
+          VAL((atom)HD(S)) = NIL;
         }
 
         HD(S) = subst(Z, HD(S));
@@ -1345,7 +1345,7 @@ static void renamecom() {
 
       // now reassign val fields
       while (!(TARGETS == NIL)) {
-        VAL((ATOM)HD(TARGETS)) = HD(XVALS);
+        VAL((atom)HD(TARGETS)) = HD(XVALS);
         TARGETS = TL(TARGETS), XVALS = TL(XVALS);
       }
 
@@ -1354,7 +1354,7 @@ static void renamecom() {
   }
 }
 
-static LIST subst(LIST Z, LIST A) {
+static list subst(list Z, list A) {
 
   while (!(Z == NIL)) {
     if (A == HD(HD(Z))) {
@@ -1372,32 +1372,32 @@ static void newequation() {
 
   if (havenum()) {
     EQNO = 100 * THE_NUM + THE_DECIMALS;
-    check((TOKEN)')');
+    check((token)')');
   }
 
   {
-    LIST X = equation();
+    list X = equation();
     if (ERRORFLAG) {
       return;
     }
 
     {
-      ATOM SUBJECT = (ATOM)HD(X);
+      atom SUBJECT = (atom)HD(X);
       word NARGS = (word)HD(TL(X));
-      LIST EQN = TL(TL(X));
+      list EQN = TL(TL(X));
       if (ATOBJECT) {
         printobj(EQN);
         (*_WRCH)('\n');
       }
 
       if (VAL(SUBJECT) == NIL) {
-        VAL(SUBJECT) = cons(cons((LIST)NARGS, NIL), cons(EQN, NIL));
+        VAL(SUBJECT) = cons(cons((list)NARGS, NIL), cons(EQN, NIL));
         enterscript(SUBJECT);
       } else if (protected(SUBJECT)) {
         return;
       } else if (TL(VAL(SUBJECT)) == NIL) {
         // subject currently defined only by a comment
-        HD(HD(VAL(SUBJECT))) = (LIST)NARGS;
+        HD(HD(VAL(SUBJECT))) = (list)NARGS;
         TL(VAL(SUBJECT)) = cons(EQN, NIL);
       } else if (NARGS != (word)HD(HD(VAL(SUBJECT)))) {
 
@@ -1413,13 +1413,13 @@ static void newequation() {
         return;
       } else if (EQNO == -1) {
         // unnumbered EQN
-        LIST EQNS = TL(VAL(SUBJECT));
-        LIST P = profile(EQN);
+        list EQNS = TL(VAL(SUBJECT));
+        list P = profile(EQN);
 
         do {
           if (equal(P, profile(HD(EQNS)))) {
-            LIST CODE = TL(HD(EQNS));
-            if (HD(CODE) == (LIST)LINENO_C) {
+            list CODE = TL(HD(EQNS));
+            if (HD(CODE) == (list)LINENO_C) {
               // if old EQN has line no,
 
               // new EQN inherits
@@ -1442,17 +1442,17 @@ static void newequation() {
       } else {
         // numbered EQN
 
-        LIST EQNS = TL(VAL(SUBJECT));
+        list EQNS = TL(VAL(SUBJECT));
         word N = 0;
         if (EQNO % 100 != 0 || EQNO == 0) {
           // if EQN has non standard lineno
 
           // mark with no.
-          TL(EQN) = cons((LIST)LINENO_C, cons((LIST)EQNO, TL(EQN)));
+          TL(EQN) = cons((list)LINENO_C, cons((list)EQNO, TL(EQN)));
         }
 
         do {
-          N = HD(TL(HD(EQNS))) == (LIST)LINENO_C ? (word)HD(TL(TL(HD(EQNS))))
+          N = HD(TL(HD(EQNS))) == (list)LINENO_C ? (word)HD(TL(TL(HD(EQNS))))
                                                  : (N / 100 + 1) * 100;
           if (EQNO == N) {
             HD(EQNS) = EQN;
@@ -1461,7 +1461,7 @@ static void newequation() {
           }
 
           if (EQNO < N) {
-            LIST HOLD = HD(EQNS);
+            list HOLD = HD(EQNS);
             HD(EQNS) = EQN;
             TL(EQNS) = cons(HOLD, TL(EQNS));
             clearmemory();
@@ -1488,7 +1488,7 @@ static void clearmemory() {
   while (!(MEMORIES == NIL)) {
 
     // fields have been set
-    LIST X = VAL((ATOM)HD(MEMORIES));
+    list X = VAL((atom)HD(MEMORIES));
 
     if (!(X == NIL)) {
       // unset memo field
@@ -1500,25 +1500,25 @@ static void clearmemory() {
 }
 
 // enters "A" in the script
-void enterscript(ATOM A) {
+void enterscript(atom A) {
 
   if (SCRIPT == NIL) {
-    SCRIPT = cons((LIST)A, NIL);
+    SCRIPT = cons((list)A, NIL);
   } else {
-    LIST S = SCRIPT;
+    list S = SCRIPT;
 
     while (!(TL(S) == NIL)) {
       S = TL(S);
     }
 
-    TL(S) = cons((LIST)A, NIL);
+    TL(S) = cons((list)A, NIL);
   }
 }
 
 static void comment() {
 
-  ATOM SUBJECT = (ATOM)TL(HD(TOKENS));
-  LIST COMMENT = HD(TL(TOKENS));
+  atom SUBJECT = (atom)TL(HD(TOKENS));
+  list COMMENT = HD(TL(TOKENS));
 
   if (VAL(SUBJECT) == NIL) {
     VAL(SUBJECT) = cons(cons(0, NIL), NIL);
@@ -1540,14 +1540,14 @@ static void comment() {
 
 static void evaluation() {
 
-  LIST CODE = expression();
+  list CODE = expression();
   word CH = (word)HD(TOKENS);
 
   // static so invisible to garbage collector
-  LIST E = 0;
+  list E = 0;
 
-  if (!(have((TOKEN)'!'))) {
-    check((TOKEN)'?');
+  if (!(have((token)'!'))) {
+    check((token)'?');
   }
 
   if (ERRORFLAG) {
@@ -1586,7 +1586,7 @@ static void evaluation() {
 
 static void abordercom() { SCRIPT = sort(SCRIPT), SAVED = false; }
 
-static LIST sort(LIST X) {
+static list sort(list X) {
 
   if (X == NIL || TL(X) == NIL) {
     return X;
@@ -1594,7 +1594,7 @@ static LIST sort(LIST X) {
 
   {
     // first split x
-    LIST A = NIL, B = NIL, HOLD = NIL;
+    list A = NIL, B = NIL, HOLD = NIL;
 
     while (!(X == NIL)) {
       HOLD = A, A = cons(HD(X), B), B = HOLD, X = TL(X);
@@ -1604,7 +1604,7 @@ static LIST sort(LIST X) {
 
     // now merge the two halves back together
     while (!(A == NIL || B == NIL)) {
-      if (alfa_ls((ATOM)HD(A), (ATOM)HD(B))) {
+      if (alfa_ls((atom)HD(A), (atom)HD(B))) {
         X = cons(HD(A), X), A = TL(A);
       } else {
         X = cons(HD(B), X), B = TL(B);
@@ -1626,10 +1626,10 @@ static LIST sort(LIST X) {
 static void reordercom() {
 
   if (isid(HD(TOKENS)) &&
-      (isid(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (LIST)DOTDOT_SY)) {
+      (isid(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (list)DOTDOT_SY)) {
     scriptreorder();
   } else if (haveid() && HD(TOKENS) != EOL) {
-    LIST NOS = NIL;
+    list NOS = NIL;
     word MAX = no_of_eqns(THE_ID);
 
     while (havenum()) {
@@ -1638,8 +1638,8 @@ static void reordercom() {
       word I;
 
       for (I = A; I <= B; I++) {
-        if (!member(NOS, (LIST)I) && 1 <= I && I <= MAX) {
-          NOS = cons((LIST)I, NOS);
+        if (!member(NOS, (list)I) && 1 <= I && I <= MAX) {
+          NOS = cons((list)I, NOS);
         }
       }
       // nos out of range are silently ignored
@@ -1662,8 +1662,8 @@ static void reordercom() {
     {
       word I;
       for (I = 1; I <= MAX; I++) {
-        if (!(member(NOS, (LIST)I))) {
-          NOS = cons((LIST)I, NOS);
+        if (!(member(NOS, (list)I))) {
+          NOS = cons((list)I, NOS);
         }
       }
       // any eqns left out are tacked on at the end
@@ -1671,10 +1671,10 @@ static void reordercom() {
 
     // note that "NOS" are in reverse order
     {
-      LIST NEW = NIL;
-      LIST EQNS = TL(VAL(THE_ID));
+      list NEW = NIL;
+      list EQNS = TL(VAL(THE_ID));
       while (!(NOS == NIL)) {
-        LIST EQN = elem(EQNS, (word)HD(NOS));
+        list EQN = elem(EQNS, (word)HD(NOS));
         removelineno(EQN);
         NEW = cons(EQN, NEW);
         NOS = TL(NOS);
@@ -1693,17 +1693,17 @@ static void reordercom() {
 
 static void scriptreorder() {
 
-  LIST R = NIL;
+  list R = NIL;
   while ((haveid())) {
 
     if (have(DOTDOT_SY)) {
-      ATOM A = THE_ID, B = 0;
-      LIST X = NIL;
+      atom A = THE_ID, B = 0;
+      list X = NIL;
 
       if (haveid()) {
         B = THE_ID;
       } else if (HD(TOKENS) == EOL) {
-        B = (ATOM)EOL;
+        B = (atom)EOL;
       }
 
       if (B == 0) {
@@ -1718,9 +1718,9 @@ static void scriptreorder() {
 
       R = shunt(X, R);
 
-    } else if (member(SCRIPT, (LIST)THE_ID)) {
+    } else if (member(SCRIPT, (list)THE_ID)) {
 
-      R = cons((LIST)THE_ID, R);
+      R = cons((list)THE_ID, R);
 
     } else {
 
@@ -1735,33 +1735,33 @@ static void scriptreorder() {
   }
 
   {
-    LIST R1 = NIL;
+    list R1 = NIL;
     while (!(TL(R) == NIL)) {
       if (!(member(TL(R), HD(R))))
-        SCRIPT = sub1(SCRIPT, (ATOM)HD(R)), R1 = cons(HD(R), R1);
+        SCRIPT = sub1(SCRIPT, (atom)HD(R)), R1 = cons(HD(R), R1);
       R = TL(R);
     }
-    SCRIPT = append(extract((ATOM)HD(SCRIPT), (ATOM)HD(R)),
-                    append(R1, TL(extract((ATOM)HD(R), (ATOM)EOL))));
+    SCRIPT = append(extract((atom)HD(SCRIPT), (atom)HD(R)),
+                    append(R1, TL(extract((atom)HD(R), (atom)EOL))));
     SAVED = false;
   }
 }
 
-static word no_of_eqns(ATOM A) {
+static word no_of_eqns(atom A) {
 
   return VAL(A) == NIL ? 0 : length(TL(VAL(A)));
 }
 
 // library functions are recognisable by not being part of the script
-static bool protected(ATOM A) {
+static bool protected(atom A) {
 
-  if (member(SCRIPT, (LIST)A)) {
+  if (member(SCRIPT, (list)A)) {
     return false;
   }
 
-  if (member(HOLDSCRIPT, (LIST)A)) {
-    if (!(member(GET_HITS, (LIST)A))) {
-      GET_HITS = cons((LIST)A, GET_HITS);
+  if (member(HOLDSCRIPT, (list)A)) {
+    if (!(member(GET_HITS, (list)A))) {
+      GET_HITS = cons((list)A, GET_HITS);
     }
     return false;
   }
@@ -1772,22 +1772,22 @@ static bool protected(ATOM A) {
 
 // removes "A" from the script
 // renamed to avoid conflict with remove(3)
-static void remove_atom(ATOM A) {
+static void remove_atom(atom A) {
 
   SCRIPT = sub1(SCRIPT, A);
   VAL(A) = NIL;
 }
 
 // returns a segment of the script
-static LIST extract(ATOM A, ATOM B) {
+static list extract(atom A, atom B) {
 
-  LIST S = SCRIPT, X = NIL;
+  list S = SCRIPT, X = NIL;
 
-  while (!(S == NIL || HD(S) == (LIST)A)) {
+  while (!(S == NIL || HD(S) == (list)A)) {
     S = TL(S);
   }
 
-  while (!(S == NIL || HD(S) == (LIST)B)) {
+  while (!(S == NIL || HD(S) == (list)B)) {
     X = cons(HD(S), X), S = TL(S);
   }
 
@@ -1795,13 +1795,13 @@ static LIST extract(ATOM A, ATOM B) {
     X = cons(HD(S), X);
   }
 
-  if (S == NIL && B != (ATOM)EOL) {
+  if (S == NIL && B != (atom)EOL) {
     X = NIL;
   }
 
   if (X == NIL) {
     fprintf(bcpl_OUTPUT, "\"%s..%s\" not in script\n", PRINTNAME(A),
-            B == (ATOM)EOL ? "" : PRINTNAME(B));
+            B == (atom)EOL ? "" : PRINTNAME(B));
   }
 
   return reverse(X);
@@ -1809,20 +1809,20 @@ static LIST extract(ATOM A, ATOM B) {
 
 static void deletecom() {
 
-  LIST DLIST = NIL;
+  list DLIST = NIL;
   while (haveid()) {
 
     if (have(DOTDOT_SY)) {
-      ATOM A = THE_ID, B = (ATOM)EOL;
+      atom A = THE_ID, B = (atom)EOL;
       if (haveid()) {
         B = THE_ID;
       } else if (!(HD(TOKENS) == EOL)) {
         syntax();
       }
-      DLIST = cons(cons((LIST)A, (LIST)B), DLIST);
+      DLIST = cons(cons((list)A, (list)B), DLIST);
     } else {
       word MAX = no_of_eqns(THE_ID);
-      LIST NLIST = NIL;
+      list NLIST = NIL;
 
       while (havenum()) {
         word A = THE_NUM;
@@ -1830,11 +1830,11 @@ static void deletecom() {
         word I;
 
         for (I = A; I <= B; I++) {
-          NLIST = cons((LIST)I, NLIST);
+          NLIST = cons((list)I, NLIST);
         }
       }
 
-      DLIST = cons(cons((LIST)THE_ID, NLIST), DLIST);
+      DLIST = cons(cons((list)THE_ID, NLIST), DLIST);
     }
   }
 
@@ -1856,8 +1856,8 @@ static void deletecom() {
         }
 
         while (!(SCRIPT == NIL)) {
-          DELS = DELS + no_of_eqns((ATOM)HD(SCRIPT));
-          VAL((ATOM)HD(SCRIPT)) = NIL;
+          DELS = DELS + no_of_eqns((atom)HD(SCRIPT));
+          VAL((atom)HD(SCRIPT)) = NIL;
           SCRIPT = TL(SCRIPT);
         }
       }
@@ -1866,7 +1866,7 @@ static void deletecom() {
       //"NAME..NAME"
       if (isatom(TL(HD(DLIST))) || TL(HD(DLIST)) == EOL) {
 
-        LIST X = extract((ATOM)HD(HD(DLIST)), (ATOM)TL(HD(DLIST)));
+        list X = extract((atom)HD(HD(DLIST)), (atom)TL(HD(DLIST)));
         DLIST = TL(DLIST);
 
         while (!(X == NIL)) {
@@ -1875,9 +1875,9 @@ static void deletecom() {
 
       } else {
 
-        ATOM NAME = (ATOM)HD(HD(DLIST));
-        LIST NOS = TL(HD(DLIST));
-        LIST NEW = NIL;
+        atom NAME = (atom)HD(HD(DLIST));
+        list NOS = TL(HD(DLIST));
+        list NEW = NIL;
         DLIST = TL(DLIST);
 
         if (VAL(NAME) == NIL) {
@@ -1900,10 +1900,10 @@ static void deletecom() {
           word I;
 
           for (I = no_of_eqns(NAME); I >= 1; I = I - 1) {
-            if (member(NOS, (LIST)I)) {
+            if (member(NOS, (list)I)) {
               DELS = DELS + 1;
             } else {
-              LIST EQN = elem(TL(VAL(NAME)), I);
+              list EQN = elem(TL(VAL(NAME)), I);
               removelineno(EQN);
               NEW = cons(EQN, NEW);
             }

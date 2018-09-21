@@ -35,7 +35,7 @@ static int DICMAX = 64000;
 // because their names are also stored there
 static int ATOMSPACE;
 
-// max no of chars in an ATOM
+// max no of chars in an atom
 #define ATOMSIZE 255
 
 // non-pointer value for the HD of an entry in cons space,
@@ -44,14 +44,14 @@ static int ATOMSPACE;
 
 // impossible value of pointer or integer used as flag during GC.
 // just top bit set
-#define GONETO ((LIST)(1ULL << (sizeof(LIST) * 8 - 1)))
+#define GONETO ((list)(1ULL << (sizeof(list) * 8 - 1)))
 
-static LIST CONSBASE, CONSLIMIT, CONSP, OTHERBASE;
-static LIST *STACKBASE;
+static list CONSBASE, CONSLIMIT, CONSP, OTHERBASE;
+static list *STACKBASE;
 
-// static struct ATOM *ATOMBASE;
-static ATOM ATOMBASE;
-static ATOM ATOMP, ATOMLIMIT;
+// static struct atom *ATOMBASE;
+static atom ATOMBASE;
+static atom ATOMP, ATOMLIMIT;
 static word NOGCS = 0, RECLAIMS = 0;
 bool ATGC;
 char *USERLIB;
@@ -61,7 +61,7 @@ char *USERLIB;
 bool COLLECTING = false;
 #endif
 
-static ATOM HASHV[128];
+static atom HASHV[128];
 
 static char BUFFER[ATOMSIZE + 1];
 static word BUFP = 0;
@@ -74,7 +74,7 @@ char **ARGV;
 // forward declarations
 static word hash(char *S, int LEN);
 static void GC(void);
-static void copy(LIST *P);
+static void copy(list *P);
 static void copyheads(void);
 
 void main2();
@@ -196,16 +196,16 @@ int main(int argc, char **argv) {
   // two copies of list space in order to be able to do garbage collection
   // by doing a graph copy from one space to the other
   ATOMSPACE = DICMAX / atomsize;
-  CONSBASE = (LIST)malloc(SPACE * sizeof(*CONSBASE));
+  CONSBASE = (list)malloc(SPACE * sizeof(*CONSBASE));
   if (CONSBASE == (void *)-1) {
     SPACE_ERROR("Not enough memory");
   }
   CONSP = CONSBASE, CONSLIMIT = CONSBASE + SPACE;
-  OTHERBASE = (LIST)malloc(SPACE * sizeof(*CONSBASE));
+  OTHERBASE = (list)malloc(SPACE * sizeof(*CONSBASE));
   if (OTHERBASE == (void *)-1) {
     SPACE_ERROR("Not enough memory");
   }
-  ATOMBASE = (ATOM)malloc(ATOMSPACE * sizeof(*ATOMBASE));
+  ATOMBASE = (atom)malloc(ATOMSPACE * sizeof(*ATOMBASE));
   if (ATOMBASE == (void *)-1) {
     SPACE_ERROR("Not enough memory");
   }
@@ -220,7 +220,7 @@ int main(int argc, char **argv) {
 void main2() {
 
   // marker to find stack base
-  LIST N;
+  list N;
   STACKBASE = &N;
 
   // "GO" is the user's start routine
@@ -242,7 +242,7 @@ word haveparam(word CH) {
 ***/
 
 // creates a list cell with X and Y for its fields
-LIST cons(LIST X, LIST Y) {
+list cons(list X, list Y) {
 
   if (CONSP >= (CONSLIMIT - 1)) {
     GC();
@@ -254,7 +254,7 @@ LIST cons(LIST X, LIST Y) {
 #include <setjmp.h>
 
 void GC2(jmp_buf *);
-void GC3(jmp_buf *, LIST *STACKEND);
+void GC3(jmp_buf *, list *STACKEND);
 
 void GC() {
   // Put all registers onto the stack so that any pointers into
@@ -272,18 +272,18 @@ void GC2(jmp_buf *envp) {
   // including the jmp_buf containing the registers but
   // excluding anything that the real GC() might push onto the stack
   // for its own purposes.
-  LIST P;
+  list P;
   GC3(envp, &P);
 }
 
 // garbage collector - does a graph copy into the other semi-space
 // not static to avoid inlining
-void GC3(jmp_buf *envp, LIST *STACKEND) {
+void GC3(jmp_buf *envp, list *STACKEND) {
 
   // examine every pointer on the stack
   // P is a pointer to pointer, so incrementing it
   // moved it up by the size of one pointer.
-  LIST *P;
+  list *P;
 
   // In main.c
   extern void hold_interrupts(), release_interrupts();
@@ -322,9 +322,9 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
     word I;
     for (I = 0; I < 128; I++) {
       // val fields of atoms
-      ATOM A = HASHV[I];
+      atom A = HASHV[I];
       while (!(A == 0)) {
-        copy((LIST *)&(VAL(A)));
+        copy((list *)&(VAL(A)));
         A = LINK(A);
       }
     }
@@ -335,38 +335,38 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
   if (STACKBASE < STACKEND) {
     // stack grow upwards
     for (P = STACKBASE + 1; P < STACKEND; P++) {
-      if (CONSBASE <= (LIST)*P && (LIST)*P < CONSLIMIT) {
+      if (CONSBASE <= (list)*P && (list)*P < CONSLIMIT) {
         // an aligned address in listspace
-        if (((char *)*P - (char *)CONSBASE) % sizeof(struct LIST) == 0) {
+        if (((char *)*P - (char *)CONSBASE) % sizeof(struct list) == 0) {
           copy(P);
         }
 
-        if (((char *)*P - (char *)CONSBASE) % sizeof(struct LIST) ==
-            sizeof(struct LIST *)) {
+        if (((char *)*P - (char *)CONSBASE) % sizeof(struct list) ==
+            sizeof(struct list *)) {
           // Pointer to a tail cell, which also needs updating
-          *P = (LIST)((LIST *)*P - 1);
+          *P = (list)((list *)*P - 1);
           copy(P);
-          *P = (LIST)((LIST *)*P + 1);
+          *P = (list)((list *)*P + 1);
         }
       }
     }
   } else {
     // stack grows downwards
     for (P = STACKBASE - 1; P > STACKEND; P--) {
-      if (CONSBASE <= (LIST)*P && (LIST)*P < CONSLIMIT) {
-        if (((char *)*P - (char *)CONSBASE) % sizeof(struct LIST) == 0) {
+      if (CONSBASE <= (list)*P && (list)*P < CONSLIMIT) {
+        if (((char *)*P - (char *)CONSBASE) % sizeof(struct list) == 0) {
           // an aligned address in listspace
           copy(P);
         }
-        if (((char *)*P - (char *)CONSBASE) % sizeof(struct LIST) ==
-            sizeof(struct LIST *)) {
+        if (((char *)*P - (char *)CONSBASE) % sizeof(struct list) ==
+            sizeof(struct list *)) {
           // Pointer to a tail cells, which also needs updating
-          *P = (LIST)((LIST *)*P - 1);
+          *P = (list)((list *)*P - 1);
           copy(P);
-          *P = (LIST)((LIST *)*P + 1);
+          *P = (list)((list *)*P + 1);
         }
       }
-      if (P == (LIST *)(envp + 1)) {
+      if (P == (list *)(envp + 1)) {
         SHOW("stack");
 #ifdef __GLIBC__
         // The jmp_buf has 128 bytes to save the signal mask, which
@@ -379,7 +379,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
         // Here we make P hop over this nasty window to take it to
         // straight to the machine registers at the start of the
         // buffer.
-        P = (LIST *)((char *)(&((*envp)->__jmpbuf)) +
+        P = (list *)((char *)(&((*envp)->__jmpbuf)) +
                      sizeof((*envp)->__jmpbuf));
 #endif
       }
@@ -394,7 +394,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 
   // now swap semi-spaces
   {
-    LIST HOLD = CONSBASE;
+    list HOLD = CONSBASE;
     CONSBASE = OTHERBASE, CONSLIMIT = OTHERBASE + SPACE, OTHERBASE = HOLD;
   }
 
@@ -426,7 +426,7 @@ void GC3(jmp_buf *envp, LIST *STACKEND) {
 }
 
 // p is the address of a list field
-static void copy(LIST *P) {
+static void copy(list *P) {
   //   do $( bcpl_writes("copying ")
   //         printobj(*P)
   //         (*_WRCH)('\n')  $) <>
@@ -435,9 +435,9 @@ static void copy(LIST *P) {
       *P = TL(*P);
       return;
     }
-    LIST X = HD(*P);
-    LIST Y = TL(*P);
-    LIST Z = CONSP;
+    list X = HD(*P);
+    list Y = TL(*P);
+    list Z = CONSP;
     HD(*P) = GONETO;
     TL(*P) = Z;
     *P = Z;
@@ -452,18 +452,18 @@ static void copy(LIST *P) {
 
 static void copyheads() {
 
-  LIST Z = OTHERBASE;
+  list Z = OTHERBASE;
   while (!(Z == CONSP)) {
     copy(&(HD(Z)));
     Z = Z + 1;
   }
 }
 
-word iscons(LIST X)
+word iscons(list X)
 #ifdef INSTRUMENT_KRC_GC
 {
   if (CONSBASE <= X && X < CONSLIMIT) {
-    if (((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0) {
+    if (((char *)X - (char *)CONSLIMIT) % sizeof(struct list) != 0) {
       fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in iscons\n", X);
       return false;
     }
@@ -477,13 +477,13 @@ word iscons(LIST X)
 }
 #endif
 
-word isatom(LIST X) { return ATOMBASE <= (ATOM)X && (ATOM)X < ATOMP; }
+word isatom(list X) { return ATOMBASE <= (atom)X && (atom)X < ATOMP; }
 
-word isnum(LIST X)
+word isnum(list X)
 #ifdef INSTRUMENT_KRC_GC
 {
   if (CONSBASE <= X && X < CONSLIMIT) {
-    if (((char *)X - (char *)CONSLIMIT) % sizeof(struct LIST) != 0) {
+    if (((char *)X - (char *)CONSLIMIT) % sizeof(struct list) != 0) {
       fprintf(bcpl_OUTPUT, "\nMisaligned pointer %p in isnum\n", X);
       return false;
     }
@@ -503,21 +503,21 @@ word isnum(LIST X)
 // - take care not to leave them on the stack.
 
 // GCC warning expected
-LIST stonum(word N) { return cons(FULLWORD, (LIST)N); }
+list stonum(word N) { return cons(FULLWORD, (list)N); }
 
 // GCC warning expected
-word getnum(LIST X) { return (word)(TL(X)); }
+word getnum(list X) { return (word)(TL(X)); }
 
-// make an ATOM from a C string
+// make an atom from a C string
 // atoms are stored uniquely,
 // mkatom uses a hashing algorithm to accomplish this efficiently.
-ATOM mkatom(char *S) { return mkatomn(S, strlen(S)); }
+atom mkatom(char *S) { return mkatomn(S, strlen(S)); }
 
-// make an ATOM which might contain NULs
-ATOM mkatomn(char *S, int LEN) {
+// make an atom which might contain NULs
+atom mkatomn(char *S, int LEN) {
 
-  ATOM *BUCKET = &(HASHV[hash(S, LEN)]);
-  ATOM *P = BUCKET;
+  atom *BUCKET = &(HASHV[hash(S, LEN)]);
+  atom *P = BUCKET;
 
   // N is size of string counted as the number of pointers it occupies
   word N;
@@ -525,7 +525,7 @@ ATOM mkatomn(char *S, int LEN) {
   // search the appropriate bucket
   while (!(*P == 0)) {
     if (LEN == LEN(*P) && memcmp(S, PRINTNAME(*P), (size_t)LEN) == 0) {
-      return (ATOM)*P;
+      return (atom)*P;
     }
     P = &(LINK(*P));
   }
@@ -551,7 +551,7 @@ ATOM mkatomn(char *S, int LEN) {
   memcpy(NAME(ATOMP) + 1, S, (size_t)LEN);
   NAME(ATOMP)[LEN + 1] = '\0';
 
-  ATOMP = (ATOM)((word **)ATOMP + OFFSET + N);
+  ATOMP = (atom)((word **)ATOMP + OFFSET + N);
 
   return *P;
 }
@@ -595,8 +595,8 @@ void bufch(word ch) {
 
 // empties the buffer and returns an atom formed from the characters
 // which had been placed in it(by calling "mkatom")
-ATOM packbuffer() {
-  ATOM RESULT = mkatomn(BUFFER, BUFP);
+atom packbuffer() {
+  atom RESULT = mkatomn(BUFFER, BUFP);
   BUFP = 0;
   return RESULT;
 }
@@ -605,7 +605,7 @@ ATOM packbuffer() {
 
 // tests atoms for alphabetical order
 // A, B are atoms
-bool alfa_ls(ATOM A, ATOM B) { return strcmp(PRINTNAME(A), PRINTNAME(B)) < 0; }
+bool alfa_ls(atom A, atom B) { return strcmp(PRINTNAME(A), PRINTNAME(B)) < 0; }
 
 static void gcstats() {
 
@@ -657,7 +657,7 @@ void listpm() {
 
     if (HASHV[I] != 0) {
 
-      ATOM P = HASHV[I];
+      atom P = HASHV[I];
       fprintf(bcpl_OUTPUT, "%d :\t", (int)I);
 
       while (!(P == 0)) {
@@ -687,7 +687,7 @@ void listpm() {
 }
 
 // gives the length of list X
-word length(LIST X) {
+word length(list X) {
 
   word N = 0;
 
@@ -699,7 +699,7 @@ word length(LIST X) {
 }
 
 // says if "A" is = an element of X
-word member(LIST X, LIST A) {
+word member(list X, list A) {
 
   while (!(X == NIL || HD(X) == A)) {
     X = TL(X);
@@ -709,13 +709,13 @@ word member(LIST X, LIST A) {
 }
 
 // appends (a copy of) list X to the front of list Y
-LIST append(LIST X, LIST Y) { return shunt(shunt(X, NIL), Y); }
+list append(list X, list Y) { return shunt(shunt(X, NIL), Y); }
 
 // reverses the list X
-LIST reverse(LIST X) { return shunt(X, NIL); }
+list reverse(list X) { return shunt(X, NIL); }
 
 // appends reverse(X) to the list Y
-LIST shunt(LIST X, LIST Y) {
+list shunt(list X, list Y) {
 
   while (!(X == NIL)) {
     Y = cons(HD(X), Y);
@@ -725,18 +725,18 @@ LIST shunt(LIST X, LIST Y) {
 }
 
 // destructively removes a from x (if present)
-LIST sub1(LIST X, ATOM A) {
+list sub1(list X, atom A) {
   if (X == NIL) {
     return NIL;
   }
 
-  if (HD(X) == (LIST)A) {
+  if (HD(X) == (list)A) {
     return TL(X);
   }
 
   {
-    LIST *P = &(TL(X));
-    while (!((*P == NIL) || HD(*P) == (LIST)A)) {
+    list *P = &(TL(X));
+    while (!((*P == NIL) || HD(*P) == (list)A)) {
       P = &(TL(*P));
     }
 
@@ -749,7 +749,7 @@ LIST sub1(LIST X, ATOM A) {
 }
 
 // determines if list objects X and Y are isomorphic
-word equal(LIST X, LIST Y) {
+word equal(list X, list Y) {
 
   do {
     if (X == Y) {
@@ -769,7 +769,7 @@ word equal(LIST X, LIST Y) {
 }
 
 // returns the n'th element of list X
-LIST elem(LIST X, word N) {
+list elem(list X, word N) {
   while (!(N == 1)) {
     X = TL(X), N = N - 1;
   }
@@ -778,8 +778,8 @@ LIST elem(LIST X, word N) {
 
 // prints an arbitrary list object X
 // renamed from printob
-void printobj(LIST X) {
-  // LIST X or ATOM
+void printobj(list X) {
+  // list X or atom
 
   if (X == NIL) {
 
@@ -787,7 +787,7 @@ void printobj(LIST X) {
 
   } else if (isatom(X)) {
 
-    fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((ATOM)X));
+    fprintf(bcpl_OUTPUT, "\"%s\"", PRINTNAME((atom)X));
 
   } else if (isnum(X)) {
 
@@ -814,14 +814,14 @@ void printobj(LIST X) {
 // debugging function: ensure that P is a valid pointer into cons space
 // and bomb if not.
 // "is OK cons"
-LIST isokcons(LIST P) {
-  LIST Q;
+list isokcons(list P) {
+  list Q;
   if (COLLECTING)
     return P;
 
   if (CONSBASE <= P && P < CONSLIMIT) {
     // (only even addresses in listspace count)
-    if (((char *)P - (char *)CONSBASE) % sizeof(struct LIST) == 0) {
+    if (((char *)P - (char *)CONSBASE) % sizeof(struct list) == 0) {
       return P;
     } else {
       fprintf(bcpl_OUTPUT, "\nHD() or TL() called on ODD address %p\n", P);
@@ -830,6 +830,6 @@ LIST isokcons(LIST P) {
     fprintf(bcpl_OUTPUT, "\nHD() or TL() called on %p not in CONS space\n", P);
   }
   // cause segfault in caller
-  return (LIST)0;
+  return (list)0;
 }
 #endif
