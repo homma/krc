@@ -61,21 +61,22 @@ void init_argspace(void) {
 LIST S;
 
 // primitive functions
-static void functionp(LIST E);
-static void listp(LIST E);
-static void stringp(LIST E);
-static void numberp(LIST E);
-static void charp(LIST E);
-static void size(LIST E);
-static void code(LIST E);
-static void decode(LIST E);
-static void concat(LIST E);
-static void explode(LIST E);
-static void abort_(LIST E);
-static void startread(LIST E);
-static void read(LIST E);
-static void writeap(LIST E);
-static void seq(LIST E);
+// renamed to distinguish primitive functions
+static void prim_functionp(LIST E);
+static void prim_listp(LIST E);
+static void prim_stringp(LIST E);
+static void prim_numberp(LIST E);
+static void prim_char(LIST E);
+static void prim_size(LIST E);
+static void prim_code(LIST E);
+static void prim_decode(LIST E);
+static void prim_concat(LIST E);
+static void prim_explode(LIST E);
+static void prim_abort(LIST E);
+static void prim_startread(LIST E);
+static void prim_read(LIST E);
+static void prim_writeap(LIST E);
+static void prim_seq(LIST E);
 
 // local function delarations
 static void printfunction(LIST E);
@@ -119,21 +120,21 @@ void setup_primfns_etc(void) {
   INFINITY = CONS((LIST)QUOTE, (LIST)-3);
 
   // primitive functions
-  R("function__", functionp, 1);
-  R("list__", listp, 1);
-  R("string__", stringp, 1);
-  R("number__", numberp, 1);
-  R("char__", charp, 1);
-  R("printwidth__", size, 1);
-  R("ord__", code, 1);
-  R("chr__", decode, 1);
-  R("implode__", concat, 1);
-  R("explode__", explode, 1);
-  R("abort__", abort_, 1);
-  R("read__", startread, 1);
-  R("read ", read, 1);
-  R("seq__", seq, 2);
-  R("write__", writeap, 3);
+  R("function__", prim_functionp, 1);
+  R("list__", prim_listp, 1);
+  R("string__", prim_stringp, 1);
+  R("number__", prim_numberp, 1);
+  R("char__", prim_char, 1);
+  R("printwidth__", prim_size, 1);
+  R("ord__", prim_code, 1);
+  R("chr__", prim_decode, 1);
+  R("implode__", prim_concat, 1);
+  R("explode__", prim_explode, 1);
+  R("abort__", prim_abort, 1);
+  R("read__", prim_startread, 1);
+  R("read ", prim_read, 1);
+  R("seq__", prim_seq, 2);
+  R("write__", prim_writeap, 3);
   BADFILE = MKATOM("<cannot open file:>");
   READFN = MKATOM("read ");
   WRITEFN = MKATOM("write");
@@ -588,18 +589,13 @@ static void obey(LIST EQNS, LIST E) {
   badexp(E);
 }
 
-static void stringp(LIST E) {
+static void prim_functionp(LIST E) {
   *ARG = reduce(*ARG);
-  HD(E) = (LIST)INDIR,
-  TL(E) = ISCONS(*ARG) && HD(*ARG) == (LIST)QUOTE ? TRUTH : FALSITY;
+  HD(E) = (LIST)INDIR;
+  TL(E) = isfun(*ARG) ? TRUTH : FALSITY;
 }
 
-static void numberp(LIST E) {
-  *ARG = reduce(*ARG);
-  HD(E) = (LIST)INDIR, TL(E) = ISNUM(*ARG) ? TRUTH : FALSITY;
-}
-
-static void listp(LIST E) {
+static void prim_listp(LIST E) {
   *ARG = reduce(*ARG);
   HD(E) = (LIST)INDIR;
   TL(E) = (*ARG == NIL || (ISCONS(*ARG) && HD(*ARG) == (LIST)COLON_OP))
@@ -607,18 +603,22 @@ static void listp(LIST E) {
               : FALSITY;
 }
 
-static void functionp(LIST E) {
+static void stringp(LIST E) {
   *ARG = reduce(*ARG);
-  HD(E) = (LIST)INDIR;
-  TL(E) = isfun(*ARG) ? TRUTH : FALSITY;
+  HD(E) = (LIST)INDIR,
+  TL(E) = ISCONS(*ARG) && HD(*ARG) == (LIST)QUOTE ? TRUTH : FALSITY;
 }
 
-static bool isfun(LIST X) {
+static void prim_numberp(LIST E) {
+  *ARG = reduce(*ARG);
+  HD(E) = (LIST)INDIR, TL(E) = ISNUM(*ARG) ? TRUTH : FALSITY;
+}
+
+static bool prim_isfun(LIST X) {
   return ISATOM(X) || (ISCONS(X) && QUOTE != HD(X) && HD(X) != (LIST)COLON_OP);
 }
 
-// renamed from char to avoid conflict with char type
-static void charp(LIST E) {
+static void prim_char(LIST E) {
   *ARG = reduce(*ARG);
   HD(E) = (LIST)INDIR;
   TL(E) = ISCONS(*ARG) && HD(*ARG) == (LIST)QUOTE && LEN((ATOM)TL(*ARG)) == 1
@@ -629,7 +629,7 @@ static void charp(LIST E) {
 static word count;
 static void countch(word CH) { count = count + 1; }
 
-static void size(LIST E) {
+static void prim_size(LIST E) {
 
   count = 0;
   _WRCH = countch;
@@ -638,7 +638,7 @@ static void size(LIST E) {
   HD(E) = (LIST)INDIR, TL(E) = STONUM(count);
 }
 
-static void code(LIST E) {
+static void prim_code(LIST E) {
 
   *ARG = reduce(*ARG);
 
@@ -657,7 +657,7 @@ static void code(LIST E) {
   }
 }
 
-static void decode(LIST E) {
+static void prim_decode(LIST E) {
   *ARG = reduce(*ARG);
 
   if (!(ISNUM(*ARG) && 0 <= (word)TL(*ARG) && (word)TL(*ARG) <= 255)) {
@@ -668,7 +668,7 @@ static void decode(LIST E) {
   HD(E) = (LIST)INDIR, TL(E) = CONS((LIST)QUOTE, (LIST)PACKBUFFER());
 }
 
-static void concat(LIST E) {
+static void prim_concat(LIST E) {
 
   *ARG = reduce(*ARG);
 
@@ -709,7 +709,7 @@ static void concat(LIST E) {
   }
 }
 
-static void explode(LIST E) {
+static void prim_explode(LIST E) {
 
   *ARG = reduce(*ARG);
 
@@ -731,8 +731,7 @@ static void explode(LIST E) {
   }
 }
 
-// renamed from abort to avoid duplication of abort(3)
-static void abort_(LIST E) {
+static void prim_abort(LIST E) {
 
   FILE *HOLD = bcpl_OUTPUT;
   bcpl_OUTPUT_fp = (stderr);
@@ -748,7 +747,7 @@ static void abort_(LIST E) {
   raise(SIGINT);
 }
 
-static void startread(LIST E) {
+static void prim_startread(LIST E) {
 
   *ARG = reduce(*ARG);
 
@@ -767,8 +766,7 @@ static void startread(LIST E) {
   }
 }
 
-// caution: a name duplication of read(2)
-static void read(LIST E) {
+static void prim_read(LIST E) {
 
   FILE *IN = (FILE *)TL(E);
   bcpl_INPUT_fp = (IN);
@@ -802,10 +800,10 @@ static void read(LIST E) {
 }
 
 // called if write is applied to >2 ARGS
-static void writeap(LIST E) { badexp(E); }
+static void prim_writeap(LIST E) { badexp(E); }
 
 // seq a b evaluates a then returns b, added DT 2015
-static void seq(LIST E) {
+static void prim_seq(LIST E) {
 
   reduce(TL(HD(E)));
   HD(E) = (LIST)INDIR;
