@@ -688,7 +688,8 @@ word length(list X) {
   word N = 0;
 
   while (!(X == NIL)) {
-    X = TL(X), N = N + 1;
+    X = TL(X);
+    N = N + 1;
   }
 
   return N;
