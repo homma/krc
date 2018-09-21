@@ -20,9 +20,9 @@ extern int bcpl_unrdch(int c);
 extern void bcpl_wrch(word C);
 
 // and these are the variables that people can redirect if they want to
-extern int (*_RDCH)(void);
-extern int (*_UNRDCH)(int c);
-extern void (*_WRCH)(word D);
+extern int (*rdch)(void);
+extern int (*unrdch)(int c);
+extern void (*wrch)(word d);
 
 // output functions must go through WRCH
 extern void bcpl_writes(char *s);

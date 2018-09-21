@@ -124,9 +124,9 @@ void printexp(list E, word N) {
   } else if (isnum(E)) {
     word X = getnum(E);
     if (X < 0 && N > 5) {
-      (*_WRCH)('(');
+      wrch('(');
       bcpl_writen(X);
-      (*_WRCH)(')');
+      wrch(')');
     } else {
       bcpl_writen(X);
     }
@@ -146,18 +146,18 @@ void printexp(list E, word N) {
       list OP = HD(E);
       if (!isop(OP) && N <= 7) {
         printexp(OP, 7);
-        (*_WRCH)(' ');
+        wrch(' ');
         printexp(TL(E), 8);
       } else if (OP == (list)QUOTE) {
         printatom((atom)TL(E), true);
       } else if (OP == (list)INDIR || OP == (list)ALPHA) {
         printexp(TL(E), N);
       } else if (OP == (list)DOTDOT_OP || OP == (list)COMMADOTDOT_OP) {
-        (*_WRCH)('[');
+        wrch('[');
         E = TL(E);
         printexp(HD(E), 0);
         if (OP == (list)COMMADOTDOT_OP) {
-          (*_WRCH)(',');
+          wrch(',');
           E = TL(E);
           printexp(HD(E), 0);
         }
@@ -165,64 +165,64 @@ void printexp(list E, word N) {
         if (!(TL(E) == INFINITY)) {
           printexp(TL(E), 0);
         }
-        (*_WRCH)(']');
+        wrch(']');
       } else if (OP == (list)ZF_OP) {
-        (*_WRCH)('{');
+        wrch('{');
         printzf_exp(TL(E));
-        (*_WRCH)('}');
+        wrch('}');
       } else if (OP == (list)NOT_OP && N <= 3) {
-        (*_WRCH)('\\');
+        wrch('\\');
         printexp(TL(E), 3);
       } else if (OP == (list)NEG_OP && N <= 5) {
-        (*_WRCH)('-');
+        wrch('-');
         printexp(TL(E), 5);
       } else if (OP == (list)LENGTH_OP && N <= 7) {
-        (*_WRCH)('#');
+        wrch('#');
         printexp(TL(E), 7);
       } else if (OP == (list)QUOTE_OP) {
-        (*_WRCH)('\'');
+        wrch('\'');
         if (TL(E) == (list)LENGTH_OP) {
-          (*_WRCH)('#');
+          wrch('#');
         } else if (TL(E) == (list)NOT_OP) {
-          (*_WRCH)('\\');
+          wrch('\\');
         } else {
           writetoken(INFIXNAMEVEC[(word)TL(E)]);
         }
-        (*_WRCH)('\'');
+        wrch('\'');
       } else if (islistexp(E)) {
-        (*_WRCH)('[');
+        wrch('[');
         while (!(E == NIL)) {
           printexp(HD(TL(E)), 0);
           if (!(TL(TL(E)) == NIL)) {
-            (*_WRCH)(',');
+            wrch(',');
           }
           E = TL(TL(E));
         }
-        (*_WRCH)(']');
+        wrch(']');
       } else if (OP == (list)AND_OP && N <= 3 && rotate(E) &&
                  isrelation(HD(TL(E))) &&
                  isrelation_beginning(TL(TL(HD(TL(E)))), TL(TL(E)))) {
         // continued relations
         printexp(HD(TL(HD(TL(E)))), 4);
-        (*_WRCH)(' ');
+        wrch(' ');
         writetoken(INFIXNAMEVEC[(word)HD(HD(TL(E)))]);
-        (*_WRCH)(' ');
+        wrch(' ');
         printexp(TL(TL(E)), 2);
       } else if (isinfix(OP) && INFIXPRIOVEC[(word)OP] >= N) {
         printexp(HD(TL(E)), leftprec((OPERATOR)OP));
         if (!(OP == (list)COLON_OP)) {
           // DOT.OP should be spaced, DT 2015
-          (*_WRCH)(' ');
+          wrch(' ');
         }
         writetoken(INFIXNAMEVEC[(word)OP]);
         if (!(OP == (list)COLON_OP)) {
-          (*_WRCH)(' ');
+          wrch(' ');
         }
         printexp(TL(TL(E)), rightprec((OPERATOR)OP));
       } else {
-        (*_WRCH)('(');
+        wrch('(');
         printexp(E, 0);
-        (*_WRCH)(')');
+        wrch(')');
       }
     }
   }
@@ -239,9 +239,9 @@ static void printzf_exp(list X) {
 
   // print "such that" as bar if a generator directly follows
   if (iscons(HD(X)) && HD(HD(X)) == (list)GENERATOR) {
-    (*_WRCH)('|');
+    wrch('|');
   } else {
-    (*_WRCH)(';');
+    wrch(';');
   }
   while (!(TL(X) == NIL)) {
     list qualifier = HD(X);
@@ -258,7 +258,7 @@ static void printzf_exp(list X) {
              equal(TL(TL(HD(TL(X)))), TL(TL(qualifier)))) {
         X = TL(X);
         qualifier = HD(X);
-        (*_WRCH)(',');
+        wrch(',');
         printexp(HD(TL(qualifier)), 0);
       }
       bcpl_writes("<-");
@@ -268,7 +268,7 @@ static void printzf_exp(list X) {
     }
     X = TL(X);
     if (!(TL(X) == NIL)) {
-      (*_WRCH)(';');
+      wrch(';');
     }
   }
 }
@@ -347,15 +347,15 @@ void display(atom ID, bool WITHNOS, bool DOUBLESPACING) {
         bcpl_writes(NAME((atom)HD(C)));
         C = TL(C);
         if (!(C == NIL)) {
-          (*_WRCH)('\n');
+          wrch('\n');
           if (DOUBLESPACING) {
-            (*_WRCH)('\n');
+            wrch('\n');
           }
         }
       }
       bcpl_writes(";\n");
       if (DOUBLESPACING) {
-        (*_WRCH)('\n');
+        wrch('\n');
       }
     }
     if (COMMENT != NIL && N == 1 && HD(TL(HD(EQNS))) == (list)CALL_C) {
@@ -372,7 +372,7 @@ void display(atom ID, bool WITHNOS, bool DOUBLESPACING) {
       removelineno(HD(EQNS));
       displayeqn(ID, NARGS, HD(EQNS));
       if (DOUBLESPACING) {
-        (*_WRCH)('\n');
+        wrch('\n');
       }
       EQNS = TL(EQNS);
     }
@@ -391,12 +391,12 @@ void displayeqn(atom ID, word NARGS, list EQN) {
   } else {
 
     if (equal(LHS, LASTLHS)) {
-      _WRCH = shch;
+      wrch = shch;
     } else {
       LASTLHS = LHS;
     }
     printexp(LHS, 0);
-    _WRCH = TRUEWRCH;
+    wrch = TRUEWRCH;
   }
 
   bcpl_writes(" = ");
@@ -407,7 +407,7 @@ void displayeqn(atom ID, word NARGS, list EQN) {
     displayrhs(LHS, NARGS, CODE);
   }
 
-  (*_WRCH)('\n');
+  wrch('\n');
 }
 
 void displayrhs(list LHS, word NARGS, list CODE) {

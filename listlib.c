@@ -431,7 +431,7 @@ void GC3(jmp_buf *envp, list *STACKEND) {
 static void copy(list *P) {
   //   do $( bcpl_writes("copying ")
   //         printobj(*P)
-  //         (*_WRCH)('\n')  $) <>
+  //         wrch('\n')  $) <>
   while (CONSBASE <= *P && *P < CONSLIMIT) {
     if (HD(*P) == GONETO) {
       *P = TL(*P);
@@ -642,9 +642,9 @@ void listpm() {
   if (BUFP > 0) {
     bcpl_writes("Buffer: ");
     for (I = 0; I < BUFP; I++) {
-      (*_WRCH)(BUFFER[I]);
+      wrch(BUFFER[I]);
     }
-    (*_WRCH)('\n');
+    wrch('\n');
   }
 
   bcpl_writes("Atom buckets:\n");
@@ -671,7 +671,7 @@ void listpm() {
         }
       }
 
-      (*_WRCH)('\n');
+      wrch('\n');
 
     } else {
 
@@ -794,14 +794,14 @@ void printobj(list X) {
 
   } else if (iscons(X)) {
 
-    (*_WRCH)('(');
+    wrch('(');
     while (iscons(X)) {
       printobj(HD(X));
-      (*_WRCH)('.');
+      wrch('.');
       X = TL(X);
     }
     printobj(X);
-    (*_WRCH)(')');
+    wrch(')');
 
   } else {
 

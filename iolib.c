@@ -35,10 +35,10 @@ FILE *bcpl_findoutput(char *file) {
   return fopen(file, "w");
 }
 
-// the character that has been UNRDCH-ed. -1 means none are pending.
+// the character that has been unrdch-ed. -1 means none are pending.
 static int UNREADCH = -1;
 
-// the standard function for RDCH(c)
+// the standard function for rdch(c)
 int bcpl_rdch() {
 
   if (UNREADCH >= 0) {
@@ -61,32 +61,26 @@ int echo_rdch() {
   }
 
   CH = getc(bcpl_INPUT);
-  (*_WRCH)(CH);
+  wrch(CH);
 
   return CH;
 }
 
 int bcpl_unrdch(int c) { return (UNREADCH = c & 0xff); }
 
-// the standard function for WRCH(c)
-void bcpl_wrch(word C) { putc(C, bcpl_OUTPUT); }
+// the standard function for wrch(c)
+void bcpl_wrch(word c) { putc(c, bcpl_OUTPUT); }
 
-// _RDCH and _WRCH are the function pointers used to perform
-// RDCH() and WRCH() and may be modified to attain special effects.
-// normally in BCPL you would say "WRCH=WHATEVER"
-// but in C, WRCH and WRCH() would conflict so
-// say _WRCH=WHATEVER to change it,
+int (*rdch)() = bcpl_rdch;
+int (*unrdch)(int) = bcpl_unrdch;
+void (*wrch)(word c) = bcpl_wrch;
 
-int (*_RDCH)() = bcpl_rdch;
-int (*_UNRDCH)(int) = bcpl_unrdch;
-void (*_WRCH)(word C) = bcpl_wrch;
-
-// other output functions must go through WRCH so that
+// other output functions must go through wrch so that
 // callers may redirect it to some other function.
 void bcpl_writes(char *s) {
 
   while (*s) {
-    (*_WRCH)(*s++);
+    wrch(*s++);
   }
 }
 
@@ -97,13 +91,13 @@ static void bcpl_writep(word n) {
     bcpl_writep(n / 10);
   }
 
-  (*_WRCH)(n % 10 + '0');
+  wrch(n % 10 + '0');
 }
 
 void bcpl_writen(word n) {
 
   if (n < 0) {
-    (*_WRCH)('-');
+    wrch('-');
     n = -n;
   }
 

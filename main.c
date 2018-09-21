@@ -111,7 +111,7 @@ static void catchinterrupt(int signum) {
   // in case interrupt struck while reduce was dissecting a constant
   fixup_s();
 
-  _WRCH = TRUEWRCH;
+  wrch = TRUEWRCH;
   closechannels();
 
   // die quietly if running as script or ABORT() called
@@ -143,7 +143,7 @@ void release_interrupts() {
 static jmp_buf nextcommand;
 
 void escapetonextcommand() {
-  _WRCH = TRUEWRCH;
+  wrch = TRUEWRCH;
 
   if (bcpl_INPUT != stdin) {
     if (bcpl_INPUT_fp != stdin) {
@@ -279,11 +279,11 @@ static void parseline(char *line) {
 
   input_line = line;
 
-  _RDCH = str_rdch, _UNRDCH = str_unrdch;
+  rdch = str_rdch, unrdch = str_unrdch;
 
   readline();
 
-  _RDCH = bcpl_rdch, _UNRDCH = bcpl_unrdch;
+  rdch = bcpl_rdch, unrdch = bcpl_unrdch;
 }
 
 // ----- end of parseline
@@ -433,11 +433,11 @@ static void initialise() {
 
   if (USERSCRIPT) {
 
-    // if ( LISTSCRIPT ) _RDCH=echo_rdch;
+    // if ( LISTSCRIPT ) rdch = echo_rdch;
     getfile(USERSCRIPT);
     SAVED = true;
 
-    // if ( LISTSCRIPT ) _RDCH=bcpl_rdch;
+    // if ( LISTSCRIPT ) rdch = bcpl_rdch;
     LASTFILE = mkatom(USERSCRIPT);
   }
 
@@ -477,7 +477,7 @@ static void enterargv(int USERARGC, list USERARGV) {
 
 void space_error(char *MESSAGE) {
 
-  _WRCH = TRUEWRCH;
+  wrch = TRUEWRCH;
   closechannels();
 
   if (EVALUATING) {
@@ -588,7 +588,7 @@ void closechannels() {
     bcpl_OUTPUT_fp = ((FILE *)TL(HD(OUTFILES)));
 
     if (FORMATTING) {
-      (*_WRCH)('\n');
+      wrch('\n');
     }
 
     if (bcpl_OUTPUT != stdout) {
@@ -830,7 +830,7 @@ static void displayall(bool DOUBLESPACING) {
 
     // extra line between groups
     if (DOUBLESPACING && P != NIL) {
-      (*_WRCH)('\n');
+      wrch('\n');
     }
   }
 }
@@ -870,9 +870,9 @@ static bool makesure() {
   bcpl_writes("Are you sure? ");
 
   {
-    word CH = (*_RDCH)(), C;
-    (*_UNRDCH)(CH);
-    while (!((C = (*_RDCH)()) == '\n' || C == EOF)) {
+    word CH = rdch(), C;
+    unrdch(CH);
+    while (!((C = rdch()) == '\n' || C == EOF)) {
       continue;
     }
 
@@ -1085,11 +1085,11 @@ static void listcom() {
     bcpl_INPUT_fp = (IN);
 
     {
-      word CH = (*_RDCH)();
+      word CH = rdch();
 
       while (!(CH == EOF)) {
-        (*_WRCH)(CH);
-        CH = (*_RDCH)();
+        wrch(CH);
+        CH = rdch();
       }
 
       if (bcpl_INPUT_fp != stdin) {
@@ -1193,16 +1193,16 @@ static void scriptlist(list S) {
     COL = COL + strlen(N) + 1;
     if (COL > LINEWIDTH) {
       COL = 0;
-      (*_WRCH)('\n');
+      wrch('\n');
     }
 
     bcpl_writes(N);
-    (*_WRCH)(' ');
+    wrch(' ');
     I = I + 1, S = TL(S);
   }
 
   if (COL + 6 > LINEWIDTH) {
-    (*_WRCH)('\n');
+    wrch('\n');
   }
 
   fprintf(bcpl_OUTPUT, " (%" W ")\n", I);
@@ -1285,11 +1285,11 @@ static void renamecom() {
 
       while (!(DUPS == NIL)) {
         bcpl_writes(NAME((atom)HD(DUPS)));
-        (*_WRCH)(' ');
+        wrch(' ');
         DUPS = TL(DUPS);
       }
 
-      (*_WRCH)('\n');
+      wrch('\n');
       return;
     }
   }
@@ -1387,7 +1387,7 @@ static void newequation() {
       list EQN = TL(TL(X));
       if (ATOBJECT) {
         printobj(EQN);
-        (*_WRCH)('\n');
+        wrch('\n');
       }
 
       if (VAL(SUBJECT) == NIL) {
@@ -1557,7 +1557,7 @@ static void evaluation() {
 
   if (ATOBJECT) {
     printobj(CODE);
-    (*_WRCH)('\n');
+    wrch('\n');
   }
 
   E = buildexp(CODE);
@@ -1572,7 +1572,7 @@ static void evaluation() {
   printval(E, FORMATTING);
 
   if (FORMATTING) {
-    (*_WRCH)('\n');
+    wrch('\n');
   }
 
   closechannels();

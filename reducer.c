@@ -34,6 +34,7 @@ static list *ARGMAX;
 static list *ARGP;
 
 void init_argspace(void) {
+
   if (ARGSPACE == NULL) {
 
     // number of list cells, in listlib.c
@@ -42,16 +43,17 @@ void init_argspace(void) {
     // empirically, using edigits,
     // with SPACE/6, the argstack exhausts first.
     // with /5, it runs out of heap first.
-    int NARGS = SPACE / 5;
+    int nargs = SPACE / 5;
 
-    ARGSPACE = (list *)malloc(NARGS * sizeof(*ARGSPACE));
+    ARGSPACE = (list *)malloc(nargs * sizeof(*ARGSPACE));
 
     if (ARGSPACE == (void *)-1) {
       space_error("Cannot allocate argument stack");
     }
 
-    ARGMAX = ARGSPACE + NARGS - 1;
+    ARGMAX = ARGSPACE + nargs - 1;
   }
+
   ARG = ARGSPACE, ARGP = ARG - 1;
 }
 
@@ -93,17 +95,17 @@ static bool binds(list FORMAL, list X);
 // DT 2015
 static void showch(unsigned char c);
 
-static void R(char *S, void (*F)(list), word N) {
+static void R(char *str, void (*fun)(list), word num) {
 
   // ((atom sym) . (c_call . fun))
-  atom A = mkatom(S);
-  list EQN = cons((list)A, cons((list)CALL_C, (list)F));
+  atom a = mkatom(str);
+  list eqn = cons((list)a, cons((list)CALL_C, (list)fun));
 
-  if (!(F == prim_read)) {
-    enterscript(A);
+  if (fun != prim_read) {
+    enterscript(a);
   }
 
-  VAL(A) = cons(cons((list)N, NIL), cons(EQN, NIL));
+  VAL(a) = cons(cons((list)num, NIL), cons(eqn, NIL));
 }
 
 void setup_primfns_etc(void) {
@@ -143,7 +145,7 @@ void setup_primfns_etc(void) {
   INTERLEAVEFN = mkatom("interleave");
 }
 
-// little routine to avoid s having to be global, just because
+// little routine to avoid S having to be global, just because
 // it may need fixing up after an interrupt. this routine does that.
 void fixup_s(void) {
 
@@ -153,11 +155,14 @@ void fixup_s(void) {
   }
 }
 
+// string case converter
+//
 // return an upper-case copy of a string.
 // copy to static area of 80 chars, the same as BCPL
 // also to avoid calling strdup which calls malloc() and
 // contaminates the garbage collection done with Boehm GC.
 char *scaseconv(char *S) {
+
   static char T[80 + 1];
   char *p = S, *q = T;
 
@@ -174,127 +179,128 @@ void initstats() { REDS = 0; }
 void outstats() { fprintf(bcpl_OUTPUT, "reductions = %" W "\n", REDS); }
 
 // the possible values of a reduced expression are:
-//  VAL:= CONST | FUNCTION | LIST
-//  CONST:= NUM | cons(QUOTE, ATOM)
-//  LIST:= NIL | cons(COLON_OP,cons(EXP, EXP))
-//  FUNCTION:= NAME | cons(E1, E2)
+//  VAL      := CONST | FUNCTION | LIST
+//  CONST    := NUM | cons(QUOTE, ATOM)
+//  LIST     := NIL | cons(COLON_OP, cons(EXP, EXP))
+//  FUNCTION := NAME | cons(E1, E2)
 
-void printval(list E, bool FORMAT) {
+void printval(list e, bool format) {
 
-  E = reduce(E);
+  e = reduce(e);
 
-  if (E == NIL) {
+  if (e == NIL) {
 
-    if (FORMAT) {
+    if (format) {
       bcpl_writes("[]");
     }
 
-  } else if (isnum(E)) {
+  } else if (isnum(e)) {
 
-    bcpl_writen(getnum(E));
+    bcpl_writen(getnum(e));
 
-  } else if (iscons(E)) {
+  } else if (iscons(e)) {
 
-    list H = HD(E);
+    list h = HD(e);
 
-    if (H == (list)QUOTE) {
+    if (h == (list)QUOTE) {
 
-      printatom((atom)TL(E), FORMAT);
+      printatom((atom)TL(e), format);
 
-    } else if (H == (list)COLON_OP) {
+    } else if (h == (list)COLON_OP) {
 
-      if (FORMAT) {
-        (*_WRCH)('[');
+      if (format) {
+        wrch('[');
       }
 
-      E = TL(E);
+      e = TL(e);
       do {
-        printval(HD(E), FORMAT);
-        E = TL(E);
-        E = reduce(E);
+        printval(HD(e), format);
+        e = TL(e);
+        e = reduce(e);
 
-        if (!(iscons(E))) {
+        if (!(iscons(e))) {
           break;
         }
 
-        if (HD(E) == (list)COLON_OP) {
+        if (HD(e) == (list)COLON_OP) {
 
-          if (FORMAT) {
-            (*_WRCH)(',');
+          if (format) {
+            wrch(',');
           }
 
         } else {
           break;
         }
 
-        E = TL(E);
+        e = TL(e);
 
       } while (1);
 
-      if (E == NIL) {
+      if (e == NIL) {
 
-        if (FORMAT) {
-          (*_WRCH)(']');
+        if (format) {
+          wrch(']');
         }
 
       } else {
 
-        badexp(cons((list)COLON_OP, cons((list)ETC, E)));
+        badexp(cons((list)COLON_OP, cons((list)ETC, e)));
       }
 
-    } else if (iscons(H) && HD(H) == (list)WRITEFN) {
+    } else if (iscons(h) && HD(h) == (list)WRITEFN) {
 
-      TL(H) = reduce(TL(H));
+      TL(h) = reduce(TL(h));
 
-      if (!(iscons(TL(H)) && HD(TL(H)) == (list)QUOTE)) {
-        badexp(E);
+      if (!(iscons(TL(h)) && HD(TL(h)) == (list)QUOTE)) {
+        badexp(e);
       }
 
       {
-        char *F = NAME((atom)TL(TL(H)));
-        FILE *OUT = findchannel(F);
+        char *f = NAME((atom)TL(TL(h)));
+        FILE *OUT = findchannel(f);
         FILE *HOLD = bcpl_OUTPUT;
 
         if (!(OUT != NULL)) {
-          badexp(cons((list)BADFILE, TL(H)));
+          badexp(cons((list)BADFILE, TL(h)));
         }
 
         bcpl_OUTPUT_fp = (OUT);
-        printval(TL(E), FORMAT);
+        printval(TL(e), format);
         bcpl_OUTPUT_fp = (HOLD);
       }
 
     } else {
 
       // a partial application or composition
-      printfunction(E);
+      printfunction(e);
     }
   } else {
 
     // only possibility here should be name of function
-    printfunction(E);
+    printfunction(e);
   }
 }
 
-void printatom(atom A, bool FORMAT) {
+// prints atom
+void printatom(atom a, bool format) {
 
-  if (FORMAT) {
+  if (format) {
 
     // DT 2015
-    int I;
-    (*_WRCH)('"');
+    int i;
+    wrch('"');
 
-    for (I = 0; I < LEN(A); I++) {
-      showch(NAME(A)[I]);
+    for (i = 0; i < LEN(a); i++) {
+      showch(NAME(a)[i]);
     }
 
-    (*_WRCH)('"');
+    wrch('"');
 
   } else {
 
-    int I;
-    for (I = 0; I < LEN(A); I++) {
-      (*_WRCH)(NAME(A)[I]);
+    int i;
+    for (i = 0; i < LEN(a); i++) {
+      wrch(NAME(a)[i]);
     }
   }
 }
@@ -302,59 +308,59 @@ void printatom(atom A, bool FORMAT) {
 static void showch(unsigned char c) {
   switch (c) {
   case '\a':
-    (*_WRCH)('\\');
-    (*_WRCH)('a');
+    wrch('\\');
+    wrch('a');
     break;
   case '\b':
-    (*_WRCH)('\\');
-    (*_WRCH)('b');
+    wrch('\\');
+    wrch('b');
     break;
   case '\f':
-    (*_WRCH)('\\');
-    (*_WRCH)('f');
+    wrch('\\');
+    wrch('f');
     break;
   case '\n':
-    (*_WRCH)('\\');
-    (*_WRCH)('n');
+    wrch('\\');
+    wrch('n');
     break;
   case '\r':
-    (*_WRCH)('\\');
-    (*_WRCH)('r');
+    wrch('\\');
+    wrch('r');
     break;
   case '\t':
-    (*_WRCH)('\\');
-    (*_WRCH)('t');
+    wrch('\\');
+    wrch('t');
     break;
   case '\v':
-    (*_WRCH)('\\');
-    (*_WRCH)('v');
+    wrch('\\');
+    wrch('v');
     break;
   case '\\':
-    (*_WRCH)('\\');
-    (*_WRCH)('\\');
+    wrch('\\');
+    wrch('\\');
     break;
   case '\'':
-    (*_WRCH)('\\');
-    (*_WRCH)('\'');
+    wrch('\\');
+    wrch('\'');
     break;
   case '\"':
-    (*_WRCH)('\\');
-    (*_WRCH)('\"');
+    wrch('\\');
+    wrch('\"');
     break;
   default:
     if (iscntrl(c) || c >= 127) {
       printf("\\%03u", c);
     } else {
-      (*_WRCH)(c);
+      wrch(c);
     }
   }
 }
 
 static void printfunction(list E) {
 
-  (*_WRCH)('<');
+  wrch('<');
   printexp(E, 0);
-  (*_WRCH)('>');
+  wrch('>');
 }
 
 // unpredictable results if A,B both functions
@@ -396,7 +402,7 @@ static bool equalval(list A, list B) {
 // called for all evaluation errors
 static void badexp(list E) {
 
-  _WRCH = TRUEWRCH;
+  wrch = TRUEWRCH;
   closechannels();
   bcpl_writes("\n**undefined expression**\n  ");
   printexp(E, 0);
@@ -414,7 +420,7 @@ static void badexp(list E) {
 // integer overflow handler
 static void overflow(list E) {
 
-  _WRCH = TRUEWRCH;
+  wrch = TRUEWRCH;
   closechannels();
   bcpl_writes("\n**integer overflow**\n  ");
   printexp(E, 0);
@@ -434,9 +440,8 @@ list buildexp(list CODE) {
   return E;
 }
 
-// transform a piece of graph, E, in accordance
-// with EQNS - actual params are found in
-// *ARG ... *ARGP
+// transform a piece of graph, E, in accordance with EQNS
+// - actual params are found in *ARG ... *ARGP
 // (warning - has side effect of raising ARGP)
 static void obey(list EQNS, list E) {
 
@@ -633,9 +638,9 @@ static void countch(word CH) { count = count + 1; }
 static void prim_size(list E) {
 
   count = 0;
-  _WRCH = countch;
+  wrch = countch;
   printval(*ARG, false);
-  _WRCH = TRUEWRCH;
+  wrch = TRUEWRCH;
   HD(E) = (list)INDIR, TL(E) = stonum(count);
 }
 
@@ -743,7 +748,7 @@ static void prim_abort(list E) {
 
   printval(TL(E), false);
 
-  (*_WRCH)('\n');
+  wrch('\n');
 
   bcpl_OUTPUT_fp = (HOLD);
   ABORTED = true;
@@ -777,7 +782,7 @@ static void prim_read(list E) {
 
   {
     list *X = &(TL(E));
-    word C = (*_RDCH)();
+    word C = rdch();
 
     // read one character
     if (C != EOF) {

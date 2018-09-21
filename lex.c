@@ -89,10 +89,10 @@ void readline() {
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
 //          | cons(IDENT, ATOM) | cons(CONST, <ATOM | NUM>)
 static token readtoken(void) {
-  word CH = (*_RDCH)();
+  word CH = rdch();
 
   while ((CH == ' ' || CH == '\t')) {
-    CH = (*_RDCH)();
+    CH = rdch();
   }
 
   if (CH == '\n') {
@@ -110,12 +110,12 @@ static token readtoken(void) {
 
     do {
       bufch(CH);
-      CH = (*_RDCH)();
+      CH = rdch();
     } while (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z') ||
              isdigit(CH) || CH == '\'' || CH == '_' ||
              (EXPECTFILE && !isspace(CH)));
 
-    (*_UNRDCH)(CH);
+    unrdch(CH);
 
     {
       list X = (list)packbuffer();
@@ -136,11 +136,11 @@ static token readtoken(void) {
         bcpl_writes("\n**integer overflow**\n");
         escapetonextcommand();
       }
-      CH = (*_RDCH)();
+      CH = rdch();
     }
 
     if (CH != EOF) {
-      (*_UNRDCH)(CH);
+      unrdch(CH);
     }
 
     return cons((token)CONST, stonum(THE_NUM));
@@ -148,12 +148,12 @@ static token readtoken(void) {
 
   if (CH == '"') {
     atom A;
-    CH = (*_RDCH)();
+    CH = rdch();
 
     while (!(CH == '"' || CH == '\n' || CH == EOF)) {
       // add C escape chars, DT 2015
       if (CH == '\\') {
-        CH = (*_RDCH)();
+        CH = rdch();
         switch (CH) {
         case 'a':
           bufch('\a');
@@ -190,34 +190,34 @@ static token readtoken(void) {
         default:
           if ('0' <= CH && CH <= '9') {
             int i = 3, n = CH - '0', n1;
-            CH = (*_RDCH)();
+            CH = rdch();
             while (--i && '0' <= CH && CH <= '9' &&
                    (n1 = 10 * n + CH - '0') < 256)
-              n = n1, CH = (*_RDCH)();
+              n = n1, CH = rdch();
             bufch(n);
-            (*_UNRDCH)(CH);
+            unrdch(CH);
           }
         }
       } else
         bufch(CH);
-      CH = (*_RDCH)();
+      CH = rdch();
     }
     A = packbuffer();
     return CH != '"' ? (token)BADTOKEN : cons(CONST, (list)A);
   }
   {
-    word CH2 = (*_RDCH)();
+    word CH2 = rdch();
     if (CH == ':' && CH2 == '-' && TOKENS != NIL && iscons(HD(TOKENS)) &&
         HD(HD(TOKENS)) == IDENT && TL(TOKENS) == NIL) {
       list C = NIL;
       list SUBJECT = TL(HD(TOKENS));
       COMMENTFLAG = 1;
 
-      CH = (*_RDCH)();
+      CH = rdch();
 
       // ignore blank lines
       while (CH == '\n') {
-        COMMENTFLAG++, CH = (*_RDCH)();
+        COMMENTFLAG++, CH = rdch();
       }
 
       // option - s
@@ -226,7 +226,7 @@ static token readtoken(void) {
           if (CH == '\n') {
             COMMENTFLAG++;
           }
-          CH = (*_RDCH)();
+          CH = rdch();
         }
         return NIL;
       }
@@ -240,12 +240,12 @@ static token readtoken(void) {
           C = cons((list)packbuffer(), C);
           do {
             COMMENTFLAG++;
-            CH = (*_RDCH)();
+            CH = rdch();
           } while (CH == '\n');
           // ignore blank lines
         } else {
           bufch(CH);
-          CH = (*_RDCH)();
+          CH = rdch();
         }
 
       if (CH == EOF) {
@@ -277,7 +277,7 @@ static token readtoken(void) {
       // comment to end of line(new)
       if (CH == '|')
         do {
-          CH = (*_RDCH)();
+          CH = rdch();
           if (CH == '\n')
             return EOL;
           if (CH == EOF)
@@ -298,7 +298,7 @@ static token readtoken(void) {
         return NE_SY;
     }
 
-    (*_UNRDCH)(CH2);
+    unrdch(CH2);
 
     if (CH == '?' || CH == '!') {
       EXPFLAG = true;
@@ -316,14 +316,14 @@ static token readtoken(void) {
 word caseconv(word CH) { return tolower(CH); }
 
 static word peekalpha() {
-  word CH = (*_RDCH)();
-  (*_UNRDCH)(CH);
+  word CH = rdch();
+  unrdch(CH);
   return (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z'));
 }
 
 void writetoken(token T) {
   if (T < (token)256 && T > (token)32) {
-    (*_WRCH)((word)T);
+    wrch((word)T);
   } else {
     switch ((word)T) {
     case (word)'\n':
@@ -433,17 +433,17 @@ void syntax_error(char *message) {
 
   // unclosed string quotes
   if (iscons(TOKENS) && HD(TOKENS) != BADTOKEN) {
-    bcpl_writes("**unexpected `"), writetoken(HD(TOKENS)), (*_WRCH)('\'');
+    bcpl_writes("**unexpected `"), writetoken(HD(TOKENS)), wrch('\'');
     if (MISSING && MISSING != EOL && MISSING != (token)';' &&
         MISSING != (token)'\'') {
 
-      bcpl_writes(", missing `"), writetoken(MISSING), (*_WRCH)('\'');
+      bcpl_writes(", missing `"), writetoken(MISSING), wrch('\'');
 
       if (MISSING == (token)'?') {
         bcpl_writes(" or `!'");
       }
     }
-    (*_WRCH)('\n');
+    wrch('\n');
   }
   bcpl_writes(message);
 }
