@@ -54,7 +54,9 @@ static list collectcode(void);
 // global variables
 void (*TRUEWRCH)(word c) = bcpl_wrch;
 list LASTLHS = NIL;
-list TRUTH, FALSITY, INFINITY;
+list TRUTH;
+list FALSITY;
+list INFINITY;
 
 // setup_infixes() - interesting elements start at [1]
 // the indices correspond to the operator values in compiler.h
