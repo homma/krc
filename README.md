@@ -82,5 +82,4 @@ add features and extend.
 - add more I/O
 - add n+k pattern
 - add type system
-- add strict (eager) evaluation
 
