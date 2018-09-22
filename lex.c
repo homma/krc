@@ -22,9 +22,11 @@ extern void escapetonextcommand();
 word ERRORFLAG;
 
 // is equation
+// foo = bar
 word EQNFLAG;
 
 // is expression
+// foo! or bar?
 word EXPFLAG;
 
 // is comment and holds number of comment lines
