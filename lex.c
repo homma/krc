@@ -544,17 +544,22 @@ void writetoken(token t) {
   }
 }
 
+// examine one token from TOKENS
+// if it is not a requested token, return false
+// if it is, return true and set TOKENS the next token
+//
 // TOKENS = (t)
 // have t [] = "FALSE"
 // have t (x:xs) = x == t
-// get (x:xs) = xs
 bool have(token t) {
 
   if (TOKENS == NIL || HD(TOKENS) != t) {
     return false;
   }
 
+  // go to next token
   TOKENS = TL(TOKENS);
+
   return true;
 }
 
@@ -573,6 +578,11 @@ void check(token t) {
 
 void syntax() { ERRORFLAG = true; }
 
+// examine one token from TOKENS
+// if it is not an identifier, return false
+// if it is an identifier, set it to THE_ID
+// then set TOKENS the next token
+//
 // TOKENS = (("IDENT" . identifier))
 // haveid (x:xs) = list x & hd x == "IDENT"
 word haveid() {
@@ -581,12 +591,22 @@ word haveid() {
     return false;
   }
 
+  // set the identifier to share it to the caller
+  // it would be better to avoid using global variables
+  // and return this value as return val
   THE_ID = (atom)TL(HD(TOKENS));
+
+  // go to next token
   TOKENS = TL(TOKENS);
 
   return true;
 }
 
+// examine one token from TOKENS
+// if it is not a constant, return false
+// if it is a constant, set it to THE_CONST
+// then set TOKENS the next token
+//
 // TOKENS = (("CONST" . constant))
 // haveconst (x:xs) = list x & hd x == "CONST"
 word haveconst() {
@@ -595,12 +615,20 @@ word haveconst() {
     return false;
   }
 
+  // set the constant to share it to the caller
   THE_CONST = TL(HD(TOKENS));
+
+  // go to next token
   TOKENS = TL(TOKENS);
 
   return true;
 }
 
+// examine one token from TOKENS
+// if it is not a number, return false
+// if it is a number, set it to THE_NUM
+// then set TOKENS the next token
+//
 // TOKENS = (("CONST" . number))
 word havenum() {
 
@@ -609,7 +637,10 @@ word havenum() {
     return false;
   }
 
+  // set the number to share it to the caller
   THE_NUM = getnum(TL(HD(TOKENS)));
+
+  // go to next token
   TOKENS = TL(TOKENS);
 
   return true;

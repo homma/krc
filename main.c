@@ -287,11 +287,13 @@ static void parseline(char *line) {
 
   input_line = line;
 
-  rdch = str_rdch, unrdch = str_unrdch;
+  rdch = str_rdch;
+  unrdch = str_unrdch;
 
   readline();
 
-  rdch = bcpl_rdch, unrdch = bcpl_unrdch;
+  rdch = bcpl_rdch;
+  unrdch = bcpl_unrdch;
 }
 
 // ----- end of parseline
