@@ -48,7 +48,9 @@ word THE_NUM;
 
 // local function declarations
 static token readtoken(void);
-static word peekalpha(void);
+
+// unused
+// static word peekalpha(void);
 
 // local variables
 
@@ -467,6 +469,7 @@ static token readtoken(void) {
 
 word caseconv(word ch) { return tolower(ch); }
 
+/* unused
 // peek one alphabet
 // returns value in hundredths
 static word peekalpha() {
@@ -475,6 +478,7 @@ static word peekalpha() {
   unrdch(ch);
   return (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z'));
 }
+*/
 
 void writetoken(token t) {
 
