@@ -34,7 +34,7 @@ word COMMENTFLAG;
 bool SKIPCOMMENTS;
 
 // list of tokens
-// set value by readline, have, haveid, haveconst, havenum
+// set value by readline and modified by have, haveid, haveconst, havenum
 list TOKENS = 0;
 
 // set value by haveid
