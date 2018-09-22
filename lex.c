@@ -652,7 +652,7 @@ word havenum() {
   return true;
 }
 
-// syntax error diagnosis(needs refining)
+// syntax error diagnosis (needs refining)
 void syntax_error(char *message) {
 
   // unclosed string quotes
