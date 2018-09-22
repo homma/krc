@@ -111,7 +111,8 @@ void readline() {
       return;
     }
 
-    // malformed
+    // BADTOKEN
+    // malformed string
     bcpl_writes("Closing quote missing - line ignored\n");
     ERRORFLAG = true;
 
