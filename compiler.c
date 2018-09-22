@@ -832,11 +832,15 @@ static void simple() {
 
     // ZF expressions bug?
     word n = 0;
-    list HOLD = TOKENS;
+
+    // unused
+    // list hold = TOKENS;
+
     perform_alpha_conversions();
     expr(0);
+
     // implicit zf body no longer legal
-    // if ( HD(TOKENS)==BACKARROW_SY ) TOKENS=HOLD; else
+    // if ( HD(TOKENS)==BACKARROW_SY ) TOKENS=hold; else
     check((token)';');
 
     do {
@@ -1003,14 +1007,16 @@ static void alpha_convert(list var, list p) {
 
 static list skipchunk(list p) {
 
+  // select a bracket
   word ket = HD(p) == (token)'{' ? '}' : HD(p) == (token)'[' ? ']' : -1;
+
   p = TL(p);
 
+  // NG
   if (ket == -1) {
     return p;
   }
 
-  // OK
   while (!(HD(p) == (list)ket || HD(p) == EOL)) {
     p = skipchunk(p);
   }
