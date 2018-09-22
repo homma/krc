@@ -544,6 +544,9 @@ void writetoken(token t) {
   }
 }
 
+// have t [] = "FALSE"
+// have t (x:xs) = x == t
+// get (x:xs) = xs
 bool have(token t) {
 
   if (TOKENS == NIL || HD(TOKENS) != t) {
@@ -569,9 +572,11 @@ void check(token t) {
 
 void syntax() { ERRORFLAG = true; }
 
+// TOKEN = (("IDENT" . identifier))
+// haveid (x:xs) = list x & hd x == "IDENT"
 word haveid() {
 
-  while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
+  if (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
     return false;
   }
 
@@ -581,9 +586,11 @@ word haveid() {
   return true;
 }
 
+// TOKEN = (("CONST" . constant))
+// haveconst (x:xs) = list x & hd x == "CONST"
 word haveconst() {
 
-  while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
+  if (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
     return false;
   }
 
@@ -593,10 +600,11 @@ word haveconst() {
   return true;
 }
 
+// TOKEN = (("CONST" . number))
 word havenum() {
 
-  while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST &&
-           isnum(TL(HD(TOKENS))))) {
+  if (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST &&
+        isnum(TL(HD(TOKENS))))) {
     return false;
   }
 
