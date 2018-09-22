@@ -94,7 +94,8 @@ typedef enum {
   NOT_OP = 25,
   QUOTE_OP = 26
   // used to convert an infix into a function
-} operator;
+}
+operator;
 
 // internal representation of KRC equations
 // VAL FIELD OF ATOM ::= cons(cons(NARGS,COMMENT),LISTOF(EQN))
@@ -141,7 +142,7 @@ typedef enum {
   // the lineno command has no effect at execution time, it is used
   // to give an equation a non standard line number for insertion
   // purposes
-} INSTRUCTION;
+} instruction;
 
 // external syntax for KRC expressions and equations
 // EQUATION ::= LHS=EXP | LHS=EXP,EXP

@@ -46,9 +46,9 @@ static list internalise(list VAL);
 static list pattern(void);
 static void compilelhs(list LHS, word NARGS);
 static void compileformal(list X, word I);
-static void plant0(INSTRUCTION op);
-static void plant1(INSTRUCTION op, list A);
-static void plant2(INSTRUCTION op, list A, list B);
+static void plant0(instruction op);
+static void plant1(instruction op, list A);
+static void plant2(instruction op, list A, list B);
 static list collectcode(void);
 
 // global variables
@@ -209,7 +209,7 @@ void printexp(list E, word N) {
         wrch(' ');
         printexp(TL(TL(E)), 2);
       } else if (isinfix(op) && INFIXPRIOVEC[(word)op] >= N) {
-        printexp(HD(TL(E)), leftprec((operator)op));
+        printexp(HD(TL(E)), leftprec((operator) op));
         if (!(op == (list)COLON_OP)) {
           // DOT.OP should be spaced, DT 2015
           wrch(' ');
@@ -218,7 +218,7 @@ void printexp(list E, word N) {
         if (!(op == (list)COLON_OP)) {
           wrch(' ');
         }
-        printexp(TL(TL(E)), rightprec((operator)op));
+        printexp(TL(TL(E)), rightprec((operator) op));
       } else {
         wrch('(');
         printexp(E, 0);
@@ -1026,22 +1026,22 @@ static void compileformal(list X, word I) {
   }
 }
 
-// plant stores INSTRUCTIONs and their operands in the code vector
+// plant stores instructions and their operands in the code vector
 // op is always an instruction code (*_C);
 // A and B can be operators (*_op), INTs, CONSTs, IDs (names) or
 // the address of a C function - all are mapped to list type.
 
 // APPLY_C IF_C STOP_C
-static void plant0(INSTRUCTION op) { CODEV = cons((list)op, CODEV); }
+static void plant0(instruction op) { CODEV = cons((list)op, CODEV); }
 
 // everything else
-static void plant1(INSTRUCTION op, list A) {
+static void plant1(instruction op, list A) {
   CODEV = cons((list)op, CODEV);
   CODEV = cons(A, CODEV);
 }
 
 // MATCH_C MATCHARG_C
-static void plant2(INSTRUCTION op, list A, list B) {
+static void plant2(instruction op, list A, list B) {
   CODEV = cons((list)op, CODEV);
   CODEV = cons(A, CODEV);
   CODEV = cons(B, CODEV);
