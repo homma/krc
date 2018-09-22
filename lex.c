@@ -91,7 +91,7 @@ void readline() {
   } while (1);
 }
 
-#define NOTCH(CH) (CH == '\\' || CH == '~' && LEGACY)
+#define NOTCH(ch) (ch == '\\' || ch == '~' && LEGACY)
 
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
 //          | cons(IDENT, ATOM) | cons(CONST, <ATOM | NUM>)
@@ -218,6 +218,7 @@ static token readtoken(void) {
 
   {
     word ch2 = rdch();
+
     if (ch == ':' && ch2 == '-' && TOKENS != NIL && iscons(HD(TOKENS)) &&
         HD(HD(TOKENS)) == IDENT && TL(TOKENS) == NIL) {
       list c = NIL;
@@ -272,28 +273,36 @@ static token readtoken(void) {
       return reverse(c);
     }
 
+    // consecutive two same chars
     if (ch == ch2) {
+
+      // ++
       if (ch == '+') {
         return PLUSPLUS_SY;
       }
 
+      // ..
       if (ch == '.') {
         return DOTDOT_SY;
       }
 
+      // --
       if (ch == '-') {
         return DASHDASH_SY;
       }
 
+      // **
       if (ch == '*') {
         return STARSTAR_SY;
       }
 
+      // ==
       // added DT 2015
       if (ch == '=') {
         return EQ_SY;
       }
 
+      // ||
       // comment to end of line(new)
       if (ch == '|') {
         do {
@@ -306,10 +315,12 @@ static token readtoken(void) {
       }
     }
 
+    // <-
     if (ch == '<' && '-' == ch2) {
       return BACKARROW_SY;
     }
 
+    // >=, <=, \=, ~= (legacy)
     if (ch2 == '=') {
       if (ch == '>') {
         return GE_SY;
@@ -326,10 +337,12 @@ static token readtoken(void) {
 
     unrdch(ch2);
 
+    // expression
     if (ch == '?' || ch == '!') {
       EXPFLAG = true;
     }
 
+    // equation
     if (ch == '=' && !LEGACY) {
       EQNFLAG = true;
     }
@@ -341,6 +354,7 @@ static token readtoken(void) {
 
 word caseconv(word ch) { return tolower(ch); }
 
+// peek one alphabet
 static word peekalpha() {
 
   word ch = rdch();
@@ -349,9 +363,13 @@ static word peekalpha() {
 }
 
 void writetoken(token t) {
+
   if (t < (token)256 && t > (token)32) {
+
     wrch((word)t);
+
   } else {
+
     switch ((word)t) {
     case (word)'\n':
       bcpl_writes("newline");
@@ -385,13 +403,26 @@ void writetoken(token t) {
       break;
     default:
       if (!(iscons(t) && (HD(t) == IDENT || HD(t) == CONST))) {
+
+        // unknown token
+
         fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", t);
+
       } else if (HD(t) == IDENT) {
+
+        // identifier
+
         bcpl_writes(NAME((atom)(
             iscons(TL(t)) && HD(TL(t)) == (list)ALPHA ? TL(TL(t)) : TL(t))));
+
       } else if (isnum(TL(t))) {
+
+        // number
+
         bcpl_writen(getnum(TL(t)));
+
       } else {
+
         fprintf(bcpl_OUTPUT, "\"%s\"", NAME((atom)TL(t)));
       }
     }

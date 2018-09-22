@@ -976,7 +976,7 @@ static void alpha_convert(list var, list p) {
     edge = skipchunk(edge);
   }
 
-  while (!(t == edge)) {
+  while (t != edge) {
     conv1(t, var, var1);
     t = TL(t);
   }
@@ -992,7 +992,7 @@ static void alpha_convert(list var, list p) {
     edge = skipchunk(edge);
   }
 
-  while (!(t == edge)) {
+  while (t != edge) {
     conv1(t, var, var1);
     t = TL(t);
   }
@@ -1013,7 +1013,7 @@ static list skipchunk(list p) {
     p = skipchunk(p);
   }
 
-  if (!(HD(p) == EOL)) {
+  if (HD(p) != EOL) {
     p = TL(p);
   }
 

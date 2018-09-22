@@ -11,8 +11,12 @@
 // in-core tokens can be CONSes
 #define token list
 
+// identifier
 #define IDENT (token)0
+
+// constant
 #define CONST (token)1
+
 #define EOL (token)'\n'
 #define BADTOKEN (token)256
 #define PLUSPLUS_SY (token)257
@@ -25,7 +29,7 @@
 #define DASHDASH_SY (token)264
 #define STARSTAR_SY (token)265
 
-//-1
+// -1
 #define ENDSTREAMCH (token) EOF
 
 // lex analyser globals

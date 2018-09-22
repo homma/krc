@@ -18,7 +18,7 @@ typedef struct list {
   struct list *tl;
 } * list;
 
-// HD can contain:
+// hd can contain:
 // - the memory address of another cell in the CONS space
 // - the memory address of a cell in the atom space
 // - improbable pointer values of HD() for special values:
