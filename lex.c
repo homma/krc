@@ -165,7 +165,11 @@ static token readtoken(void) {
     // ||(ch == '_' && peekalpha())
 
     do {
+
+      // keep it in BUFFER
       bufch(ch);
+
+      // read next char
       ch = rdch();
 
       // 1. alphanumeric, '\'', '_'
