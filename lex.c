@@ -17,12 +17,22 @@
 extern void escapetonextcommand();
 
 // global variables owned by lex.c
+
+// error happend : syntax errors, file read errors, etc.
 word ERRORFLAG;
+
+// is equation
 word EQNFLAG;
+
+// is expression
 word EXPFLAG;
+
+// is comment and holds number of comment lines
 word COMMENTFLAG;
 
+// set by -s option
 bool SKIPCOMMENTS;
+
 list TOKENS = 0;
 atom THE_ID = 0;
 list THE_CONST = 0;
@@ -32,11 +42,13 @@ word THE_DECIMALS;
 
 // local function declarations
 static token readtoken(void);
-static word read_decimals(void);
 static word peekalpha(void);
 
 // local variables
+
+// in the FILECOMMANDS and expects a filename
 static bool EXPECTFILE = false;
+
 static token MISSING;
 
 // reads the next line into "TOKENS"
@@ -69,7 +81,7 @@ void readline() {
       p = &(TL(*p));
 
     } while (
-        !(t == (token)EOL || t == (token)ENDSTREAMCH || t == (token)BADTOKEN));
+        !(t == (token)EOL || t == (token)EOFTOKEN || t == (token)BADTOKEN));
 
     // ignore first line of Unix script file
     if (HD(TOKENS) == (list)'#' && iscons(TL(TOKENS)) &&
@@ -77,7 +89,7 @@ void readline() {
       continue;
     }
 
-    if (t == (token)EOL || t == (token)ENDSTREAMCH) {
+    if (t == (token)EOL || t == (token)EOFTOKEN) {
       return;
     }
 
@@ -89,33 +101,49 @@ void readline() {
   } while (1);
 }
 
+// char for NOT -- '\' or '~' (legacy)
 #define NOTCH(ch) (ch == '\\' || ch == '~' && LEGACY)
 
+// read one token
+//
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
 //          | cons(IDENT, ATOM) | cons(CONST, <ATOM | NUM>)
 static token readtoken(void) {
+
   word ch = rdch();
 
+  // skip initial spaces
   while ((ch == ' ' || ch == '\t')) {
     ch = rdch();
   }
 
+  // no token found
   if (ch == '\n') {
     return (token)EOL;
   }
 
+  // no token found
   if (ch == EOF) {
-    return (token)ENDSTREAMCH;
+    return (token)EOFTOKEN;
   }
 
+  // lexer for KRC program and KRC shell commands are mixed here.
+
+  // initial character is
+  // 1. alphabet chars
+  // 2. non-space chars for filename if we are in FILECOMMANDS
   if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') ||
       (EXPECTFILE && !isspace(ch))) {
-    // expt to allow _ID, discontinued
+
+    // starting with '_' as _ID is discontinued
     // ||(ch == '_' && peekalpha())
 
     do {
       bufch(ch);
       ch = rdch();
+
+      // 1. alphanumeric, '\'', '_'
+      // 2. non-space for a filename
     } while (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') ||
              isdigit(ch) || ch == '\'' || ch == '_' ||
              (EXPECTFILE && !isspace(ch)));
@@ -123,21 +151,36 @@ static token readtoken(void) {
     unrdch(ch);
 
     {
+      // creates an atom from BUFFER
       list x = (list)packbuffer();
+
+      // if token is a FILECOMMAND
       if (TOKENS != NIL && HD(TOKENS) == (token)'/' && TL(TOKENS) == NIL &&
           member(FILECOMMANDS, x)) {
         EXPECTFILE = true;
       }
+
+      // make identifier
       return cons((list)IDENT, x);
     }
   }
 
+  // initial character is number
   if (isdigit(ch)) {
-    THE_NUM = 0;
+
+    // avoid globals
+    // THE_NUM = 0;
+
+    word n = 0;
 
     while (isdigit(ch)) {
-      THE_NUM = THE_NUM * 10 + ch - '0';
-      if (THE_NUM < 0) {
+
+      // avoid globals
+      // THE_NUM = THE_NUM * 10 + ch - '0';
+      // if (THE_NUM < 0) {
+
+      n = n * 10 + ch - '0';
+      if (n < 0) {
         bcpl_writes("\n**integer overflow**\n");
         escapetonextcommand();
       }
@@ -148,17 +191,27 @@ static token readtoken(void) {
       unrdch(ch);
     }
 
-    return cons((token)CONST, stonum(THE_NUM));
+    // avoid globals
+    // return cons((token)CONST, stonum(THE_NUM));
+
+    // make constant
+    return cons((token)CONST, stonum(n));
   }
 
+  // the token is expect to be a string
   if (ch == '"') {
+
     atom a;
     ch = rdch();
 
     while (!(ch == '"' || ch == '\n' || ch == EOF)) {
+
+      // escape chars
       // add C escape chars, DT 2015
       if (ch == '\\') {
+
         ch = rdch();
+
         switch (ch) {
         case 'a':
           bufch('\a');
@@ -193,6 +246,7 @@ static token readtoken(void) {
         case '\n':
           return (token)BADTOKEN;
         default:
+          // coded char such as "\97" == "a"
           if ('0' <= ch && ch <= '9') {
             int i = 3;
             int n = ch - '0';
@@ -200,23 +254,44 @@ static token readtoken(void) {
             ch = rdch();
             while (--i && '0' <= ch && ch <= '9' &&
                    (n1 = 10 * n + ch - '0') < 256) {
-              n = n1, ch = rdch();
+              n = n1;
+              ch = rdch();
             }
             bufch(n);
             unrdch(ch);
           }
         }
-      } else
+      } else {
+
+        // not escape chars
         bufch(ch);
+      }
+
       ch = rdch();
     }
+
+    // create an atom from BUFFER
     a = packbuffer();
-    return ch != '"' ? (token)BADTOKEN : cons(CONST, (list)a);
+
+    // return ch != '"' ? (token)BADTOKEN : cons(CONST, (list)a);
+    if (ch != '"') {
+
+      // malformed string
+      return (token)BADTOKEN;
+
+    } else {
+
+      // make a constant
+      return cons(CONST, (list)a);
+    }
   }
 
+  // need to check the second char
   {
     word ch2 = rdch();
 
+    // comment found
+    // :-
     if (ch == ':' && ch2 == '-' && TOKENS != NIL && iscons(HD(TOKENS)) &&
         HD(HD(TOKENS)) == IDENT && TL(TOKENS) == NIL) {
       list c = NIL;
@@ -231,7 +306,7 @@ static token readtoken(void) {
         ch = rdch();
       }
 
-      // option - s
+      // option -s
       if (SKIPCOMMENTS) {
         while (!(ch == ';' || ch == EOF)) {
           if (ch == '\n') {
@@ -246,7 +321,7 @@ static token readtoken(void) {
         return NIL;
       }
 
-      while (!(ch == ';' || ch == EOF))
+      while (!(ch == ';' || ch == EOF)) {
         if (ch == '\n') {
           c = cons((list)packbuffer(), c);
           do {
@@ -258,20 +333,26 @@ static token readtoken(void) {
           bufch(ch);
           ch = rdch();
         }
+      }
 
       if (ch == EOF) {
+
+        // malformed comment
         fprintf(bcpl_OUTPUT, "%s :- ...", NAME((atom)subject)),
             bcpl_writes(" missing \";\"\n");
         COMMENTFLAG--;
         syntax();
+
       } else {
         c = cons((list)packbuffer(), c);
       }
 
       return reverse(c);
     }
+    // comments end
 
     // consecutive two same chars
+    // operators and comment
     if (ch == ch2) {
 
       // ++
@@ -308,10 +389,12 @@ static token readtoken(void) {
           if (ch == '\n')
             return EOL;
           if (ch == EOF)
-            return ENDSTREAMCH;
+            return EOFTOKEN;
         } while (1);
       }
     }
+
+    // other operators
 
     // <-
     if (ch == '<' && '-' == ch2) {
@@ -333,6 +416,8 @@ static token readtoken(void) {
       }
     }
 
+    // not a two char symbol
+
     unrdch(ch2);
 
     // expression
@@ -346,7 +431,15 @@ static token readtoken(void) {
     }
 
     // GCC warning expected
-    return (token)(NOTCH(ch) ? '\\' : ch);
+    // return (token)(NOTCH(ch) ? '\\' : ch);
+
+    if (NOTCH(ch)) {
+      // '\\', '~'
+      return (token)'\\';
+
+    } else {
+      return (token)ch;
+    }
   }
 }
 
@@ -404,20 +497,17 @@ void writetoken(token t) {
       if (!(iscons(t) && (HD(t) == IDENT || HD(t) == CONST))) {
 
         // unknown token
-
         fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", t);
 
       } else if (HD(t) == IDENT) {
 
         // identifier
-
         bcpl_writes(NAME((atom)(
             iscons(TL(t)) && HD(TL(t)) == (list)ALPHA ? TL(TL(t)) : TL(t))));
 
       } else if (isnum(TL(t))) {
 
         // number
-
         bcpl_writen(getnum(TL(t)));
 
       } else {

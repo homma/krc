@@ -29,8 +29,8 @@
 #define DASHDASH_SY (token)264
 #define STARSTAR_SY (token)265
 
-// -1
-#define ENDSTREAMCH (token) EOF
+// renamed from ENDSTREAMCH
+#define EOFTOKEN (token) EOF
 
 // lex analyser globals
 

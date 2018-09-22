@@ -81,7 +81,7 @@ bool LEGACY = false;
 
 list FILECOMMANDS = NIL;
 
-// SET BY -s OPTION
+// set by -s option
 bool SKIPCOMMENTS;
 
 // SET BY -l OPTION
@@ -530,6 +530,9 @@ void bases(void (*F)(list *)) {
 }
 
 static void setup_commands() {
+
+  // F creates commands
+  // FF creates file commands (save, get, list, file, f)
 
 #define F(S, R)                                                                \
   { COMMANDS = cons(cons((list)mkatom(S), (list)R), COMMANDS); }
@@ -1051,7 +1054,7 @@ static bool getfile(char *filename) {
         continue;
       }
 
-      if (HD(TOKENS) == ENDSTREAMCH) {
+      if (HD(TOKENS) == EOFTOKEN) {
         break;
       }
 

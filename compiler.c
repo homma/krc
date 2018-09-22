@@ -657,7 +657,7 @@ list equation() {
         code = append(code, expcode);
       }
 
-      if (!(HD(TOKENS) == ENDSTREAMCH)) {
+      if (!(HD(TOKENS) == EOFTOKEN)) {
         check(EOL);
       }
 

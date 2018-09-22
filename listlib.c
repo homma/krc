@@ -68,7 +68,10 @@ bool COLLECTING = false;
 
 static atom HASHV[128];
 
+// read buffer
 static char BUFFER[ATOMSIZE + 1];
+
+// current pointer in BUFFER
 static word BUFP = 0;
 
 int ARGC;
@@ -536,7 +539,7 @@ atom mkatomn(char *s, int len) {
   word n;
 
   // search the appropriate bucket
-  while (!(*p == 0)) {
+  while (*p != 0) {
     if (len == LEN(*p) && memcmp(s, NAME(*p), (size_t)len) == 0) {
       return (atom)*p;
     }
@@ -604,7 +607,7 @@ void bufch(word ch) {
 }
 
 // empties the buffer and returns an atom formed from the characters
-// which had been placed in it(by calling "mkatom")
+// which had been placed in it (by calling "mkatom")
 atom packbuffer() {
 
   atom result = mkatomn(BUFFER, BUFP);
