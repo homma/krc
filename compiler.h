@@ -94,7 +94,7 @@ typedef enum {
   NOT_OP = 25,
   QUOTE_OP = 26
   // used to convert an infix into a function
-} OPERATOR;
+} operator;
 
 // internal representation of KRC equations
 // VAL FIELD OF ATOM ::= cons(cons(NARGS,COMMENT),LISTOF(EQN))

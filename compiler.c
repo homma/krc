@@ -17,14 +17,14 @@
 static bool isop(list X);
 static bool isinfix(list X);
 static bool isrelop(list X);
-static word diprio(OPERATOR OP);
-static OPERATOR mkinfix(token T);
+static word diprio(operator op);
+static operator mkinfix(token T);
 static void printzf_exp(list X);
 static bool islistexp(list E);
 static bool isrelation(list X);
 static bool isrelation_beginning(list A, list X);
-static word leftprec(OPERATOR OP);
-static word rightprec(OPERATOR OP);
+static word leftprec(operator op);
+static word rightprec(operator op);
 static bool rotate(list E);
 static bool parmy(list X);
 static list rest(list C);
@@ -46,9 +46,9 @@ static list internalise(list VAL);
 static list pattern(void);
 static void compilelhs(list LHS, word NARGS);
 static void compileformal(list X, word I);
-static void plant0(INSTRUCTION OP);
-static void plant1(INSTRUCTION OP, list A);
-static void plant2(INSTRUCTION OP, list A, list B);
+static void plant0(INSTRUCTION op);
+static void plant1(INSTRUCTION op, list A);
+static void plant2(INSTRUCTION op, list A, list B);
 static list collectcode(void);
 
 // global variables
@@ -57,7 +57,7 @@ list LASTLHS = NIL;
 list TRUTH, FALSITY, INFINITY;
 
 // setup_infixes() - interesting elements start at [1]
-// the indices correspond to the OPERATOR values in compiler.h
+// the indices correspond to the operator values in compiler.h
 // EQ_SY was (token)'=', changed DT May 2015
 static token INFIXNAMEVEC[] = {
     (token)0,   (token)':', PLUSPLUS_SY, DASHDASH_SY, (token)'|',
@@ -93,11 +93,11 @@ static bool isinfix(list X) { return (list)COLON_OP <= X && X <= (list)DOT_OP; }
 static bool isrelop(list X) { return (list)GR_OP <= X && X <= (list)LS_OP; }
 
 // return the priority of an operator from its index in INFIX*
-static word diprio(OPERATOR OP) { return OP == -1 ? -1 : INFIXPRIOVEC[OP]; }
+static word diprio(operator op) { return op == -1 ? -1 : INFIXPRIOVEC[op]; }
 
 // takes a token , returns an operator
 // else -1 if t not the name of an infix
-static OPERATOR mkinfix(token T) {
+static operator mkinfix(token T) {
   word I = 1;
   if (T == (token)'=') {
     // legacy, accept "=" for "=="
@@ -143,20 +143,20 @@ void printexp(list E, word N) {
     }
     {
       // maybe could be operator
-      list OP = HD(E);
-      if (!isop(OP) && N <= 7) {
-        printexp(OP, 7);
+      list op = HD(E);
+      if (!isop(op) && N <= 7) {
+        printexp(op, 7);
         wrch(' ');
         printexp(TL(E), 8);
-      } else if (OP == (list)QUOTE) {
+      } else if (op == (list)QUOTE) {
         printatom((atom)TL(E), true);
-      } else if (OP == (list)INDIR || OP == (list)ALPHA) {
+      } else if (op == (list)INDIR || op == (list)ALPHA) {
         printexp(TL(E), N);
-      } else if (OP == (list)DOTDOT_OP || OP == (list)COMMADOTDOT_OP) {
+      } else if (op == (list)DOTDOT_OP || op == (list)COMMADOTDOT_OP) {
         wrch('[');
         E = TL(E);
         printexp(HD(E), 0);
-        if (OP == (list)COMMADOTDOT_OP) {
+        if (op == (list)COMMADOTDOT_OP) {
           wrch(',');
           E = TL(E);
           printexp(HD(E), 0);
@@ -166,20 +166,20 @@ void printexp(list E, word N) {
           printexp(TL(E), 0);
         }
         wrch(']');
-      } else if (OP == (list)ZF_OP) {
+      } else if (op == (list)ZF_OP) {
         wrch('{');
         printzf_exp(TL(E));
         wrch('}');
-      } else if (OP == (list)NOT_OP && N <= 3) {
+      } else if (op == (list)NOT_OP && N <= 3) {
         wrch('\\');
         printexp(TL(E), 3);
-      } else if (OP == (list)NEG_OP && N <= 5) {
+      } else if (op == (list)NEG_OP && N <= 5) {
         wrch('-');
         printexp(TL(E), 5);
-      } else if (OP == (list)LENGTH_OP && N <= 7) {
+      } else if (op == (list)LENGTH_OP && N <= 7) {
         wrch('#');
         printexp(TL(E), 7);
-      } else if (OP == (list)QUOTE_OP) {
+      } else if (op == (list)QUOTE_OP) {
         wrch('\'');
         if (TL(E) == (list)LENGTH_OP) {
           wrch('#');
@@ -199,7 +199,7 @@ void printexp(list E, word N) {
           E = TL(TL(E));
         }
         wrch(']');
-      } else if (OP == (list)AND_OP && N <= 3 && rotate(E) &&
+      } else if (op == (list)AND_OP && N <= 3 && rotate(E) &&
                  isrelation(HD(TL(E))) &&
                  isrelation_beginning(TL(TL(HD(TL(E)))), TL(TL(E)))) {
         // continued relations
@@ -208,17 +208,17 @@ void printexp(list E, word N) {
         writetoken(INFIXNAMEVEC[(word)HD(HD(TL(E)))]);
         wrch(' ');
         printexp(TL(TL(E)), 2);
-      } else if (isinfix(OP) && INFIXPRIOVEC[(word)OP] >= N) {
-        printexp(HD(TL(E)), leftprec((OPERATOR)OP));
-        if (!(OP == (list)COLON_OP)) {
+      } else if (isinfix(op) && INFIXPRIOVEC[(word)op] >= N) {
+        printexp(HD(TL(E)), leftprec((operator)op));
+        if (!(op == (list)COLON_OP)) {
           // DOT.OP should be spaced, DT 2015
           wrch(' ');
         }
-        writetoken(INFIXNAMEVEC[(word)OP]);
-        if (!(OP == (list)COLON_OP)) {
+        writetoken(INFIXNAMEVEC[(word)op]);
+        if (!(op == (list)COLON_OP)) {
           wrch(' ');
         }
-        printexp(TL(TL(E)), rightprec((OPERATOR)OP));
+        printexp(TL(TL(E)), rightprec((operator)op));
       } else {
         wrch('(');
         printexp(E, 0);
@@ -295,23 +295,23 @@ static bool isrelation_beginning(list A, list X) {
           isrelation_beginning(A, HD(TL(X))));
 }
 
-static word leftprec(OPERATOR OP) {
-  return OP == COLON_OP || OP == APPEND_OP || OP == LISTDIFF_OP ||
-                 OP == AND_OP || OP == OR_OP || OP == EXP_OP ||
-                 isrelop((list)OP)
-             ? INFIXPRIOVEC[OP] + 1
-             : INFIXPRIOVEC[OP];
+static word leftprec(operator op) {
+  return op == COLON_OP || op == APPEND_OP || op == LISTDIFF_OP ||
+                 op == AND_OP || op == OR_OP || op == EXP_OP ||
+                 isrelop((list)op)
+             ? INFIXPRIOVEC[op] + 1
+             : INFIXPRIOVEC[op];
 }
 
 // relops are non-associative
 // colon, append, and, or are right-associative
 // all other infixes are left-associative
 
-static word rightprec(OPERATOR OP) {
-  return OP == COLON_OP || OP == APPEND_OP || OP == LISTDIFF_OP ||
-                 OP == AND_OP || OP == OR_OP || OP == EXP_OP
-             ? INFIXPRIOVEC[OP]
-             : INFIXPRIOVEC[OP] + 1;
+static word rightprec(operator op) {
+  return op == COLON_OP || op == APPEND_OP || op == LISTDIFF_OP ||
+                 op == AND_OP || op == OR_OP || op == EXP_OP
+             ? INFIXPRIOVEC[op]
+             : INFIXPRIOVEC[op] + 1;
 }
 
 // puts nested and's into rightist form to ensure
@@ -662,35 +662,35 @@ static void expr(word N) {
     return;
   }
   {
-    OPERATOR OP = mkinfix(HD(TOKENS));
-    while (diprio(OP) >= N) {
+    operator op = mkinfix(HD(TOKENS));
+    while (diprio(op) >= N) {
       // for continued relations
       word I, AND_COUNT = 0;
 
       TOKENS = TL(TOKENS);
-      expr(rightprec(OP));
+      expr(rightprec(op));
 
       if (ERRORFLAG) {
         return;
       }
 
-      while (isrelop((list)OP) && isrelop((list)mkinfix(HD(TOKENS)))) {
+      while (isrelop((list)op) && isrelop((list)mkinfix(HD(TOKENS)))) {
         // continued relations
         AND_COUNT = AND_COUNT + 1;
-        plant1(CONTINUE_INFIX_C, (list)OP);
-        OP = mkinfix(HD(TOKENS));
+        plant1(CONTINUE_INFIX_C, (list)op);
+        op = mkinfix(HD(TOKENS));
         TOKENS = TL(TOKENS);
         expr(4);
         if (ERRORFLAG) {
           return;
         }
       }
-      plant1(APPLYINFIX_C, (list)OP);
+      plant1(APPLYINFIX_C, (list)op);
       for (I = 1; I <= AND_COUNT; I++) {
         plant1(APPLYINFIX_C, (list)AND_OP);
       }
       // for continued relations
-      OP = mkinfix(HD(TOKENS));
+      op = mkinfix(HD(TOKENS));
     }
   }
 }
@@ -778,15 +778,15 @@ static void simple() {
     } else if (have((token)'\\') || have((token)'~')) {
       plant1(LOAD_C, (list)NOT_OP);
     } else {
-      OPERATOR OP = mkinfix((token)(HD(TOKENS)));
-      if (isinfix((list)OP)) {
+      operator op = mkinfix((token)(HD(TOKENS)));
+      if (isinfix((list)op)) {
         TOKENS = TL(TOKENS);
       } else {
         // missing infix or prefix operator
         syntax();
       }
       plant1(LOAD_C, (list)QUOTE_OP);
-      plant1(LOAD_C, (list)OP);
+      plant1(LOAD_C, (list)op);
       plant0(APPLY_C);
     }
     check((token)'\'');
@@ -1027,22 +1027,22 @@ static void compileformal(list X, word I) {
 }
 
 // plant stores INSTRUCTIONs and their operands in the code vector
-// OP is always an instruction code (*_C);
-// A and B can be operators (*_OP), INTs, CONSTs, IDs (names) or
+// op is always an instruction code (*_C);
+// A and B can be operators (*_op), INTs, CONSTs, IDs (names) or
 // the address of a C function - all are mapped to list type.
 
 // APPLY_C IF_C STOP_C
-static void plant0(INSTRUCTION OP) { CODEV = cons((list)OP, CODEV); }
+static void plant0(INSTRUCTION op) { CODEV = cons((list)op, CODEV); }
 
 // everything else
-static void plant1(INSTRUCTION OP, list A) {
-  CODEV = cons((list)OP, CODEV);
+static void plant1(INSTRUCTION op, list A) {
+  CODEV = cons((list)op, CODEV);
   CODEV = cons(A, CODEV);
 }
 
 // MATCH_C MATCHARG_C
-static void plant2(INSTRUCTION OP, list A, list B) {
-  CODEV = cons((list)OP, CODEV);
+static void plant2(INSTRUCTION op, list A, list B) {
+  CODEV = cons((list)op, CODEV);
   CODEV = cons(A, CODEV);
   CODEV = cons(B, CODEV);
 }
