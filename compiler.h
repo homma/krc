@@ -32,8 +32,6 @@
 
 // bases
 extern list TOKENS, THE_CONST;
-
-// bases
 extern atom THE_ID;
 
 // DECIMALS are never used
@@ -47,16 +45,21 @@ extern list FILECOMMANDS;
 extern bool LEGACY;
 extern void writetoken(token T);
 
+//
 // KRC expression representations
 // the internal representations of expressions is as follows
-// EXP::= ID|CONST|APPLN|OTHER
-// ID::= ATOM
-// CONST::= NUM|cons(QUOTE,ATOM)|NIL
-// APPLN::= cons(EXP,EXP)
-// OTHER::= cons(OPERATOR,OPERANDS)
-// note that the internal form of ZF exessions is cons(ZF_OP,BODY) :-
-//  BODY::= cons(EXP,NIL) | cons(QUALIFIER,BODY)
-//  QUALIFIER::= EXP | cons(GENERATOR,cons(ID,EXP))
+//
+// EXP   ::= ID | CONST | APPLN | OTHER
+// ID    ::= ATOM
+// CONST ::= NUM | cons(QUOTE, ATOM) | NIL
+// APPLN ::= cons(EXP, EXP)
+// OTHER ::= cons(OPERATOR, OPERANDS)
+//
+// note that the internal form of ZF exessions is
+// cons(ZF_OP,BODY) :-
+//  BODY ::= cons(EXP, NIL) | cons(QUALIFIER, BODY)
+//  QUALIFIER::= EXP | cons(GENERATOR, cons(ID, EXP))
+//
 
 // operator values:
 typedef enum {
@@ -97,32 +100,41 @@ typedef enum {
 }
 operator;
 
+//
 // internal representation of KRC equations
-// VAL FIELD OF ATOM ::= cons(cons(NARGS,COMMENT),LISTOF(EQN))
-// COMMENT ::= NIL | cons(ATOM,COMMENT)
-// EQN ::= cons(LHS,CODE)
-//(if NARGS=0 there is only one equation in the list and its lhs field
-// is used to remember the value of the variable)
-// LHS ::= ID | cons(LHS,FORMAL)
-// FORMAL ::= ID | CONST | cons(COLON_OP,cons(FORMAL,FORMAL))
-// CODE ::= INSTR*
-// INSTR ::= LOAD_C <ID|CONST|MONOP> |
-//           LOADARG_C INT |
-//           APPLY_C |
-//           APPLYINFIX_C DIOP |
-//           IF_C |
-//           FORMLIST_C INT |
-//           MATCH_C INT CONST
-//           MATCHARG_C INT INT |
-//           MATCHPAIR_C INT |
-//           STOP_C |
-//           LINENO_C INT |
-//           CONTINUE.INFIX_C DIOP |
-//           CONT.GENERATOR_C INT|
-//           FORMZF_C INT|
-//           CALL_C BCPL_FN
+//
+// VAL FIELD OF ATOM ::= cons(cons(NARGS, COMMENT), LISTOF(EQN))
+// COMMENT ::= NIL | cons(ATOM, COMMENT)
+// EQN     ::= cons(LHS, CODE)
+//
+// (if NARGS=0 there is only one equation in the list and its lhs field
+//  is used to remember the value of the variable)
+//
+// LHS     ::= ID | cons(LHS,FORMAL)
+// FORMAL  ::= ID | CONST | cons(COLON_OP,cons(FORMAL,FORMAL))
+// CODE    ::= INSTR*
+// INSTR   ::= LOAD_C <ID | CONST | MONOP> |
+//             LOADARG_C INT |
+//             APPLY_C |
+//             APPLYINFIX_C DIOP |
+//             IF_C |
+//             FORMLIST_C INT |
+//             MATCH_C INT CONST
+//             MATCHARG_C INT INT |
+//             MATCHPAIR_C INT |
+//             STOP_C |
+//             LINENO_C INT |
+//             CONTINUE.INFIX_C DIOP |
+//             CONT.GENERATOR_C INT |
+//             FORMZF_C INT |
+//             CALL_C BCPL_FN
+//
 
 // instruction codes
+//
+// the lineno command has no effect at execution time, it is used
+// to give an equation a non standard line number for insertion purposes
+
 typedef enum {
   LOAD_C = 0,
   LOADARG_C = 1,
@@ -139,25 +151,26 @@ typedef enum {
   CONTINUE_INFIX_C = 12,
   FORMZF_C = 13,
   CONT_GENERATOR_C = 14,
-  // the lineno command has no effect at execution time, it is used
-  // to give an equation a non standard line number for insertion
-  // purposes
 } instruction;
 
+//
 // external syntax for KRC expressions and equations
-// EQUATION ::= LHS=EXP | LHS=EXP,EXP
-// LHS ::= ID FORMAL*
-// FORMAL ::= ID | CONST | (PATTERN) | [PATTERN-LIST?]
-// PATTERN ::= FORMAL:PATTERN | FORMAL
-// EXP ::= PREFIX EXP | EXP INFIX EXP | SIMPLE SIMPLE*
-// SIMPLE ::= ID | CONST | (EXP) | [EXP-LIST?] | [EXP..EXP] | [EXP..] |
-//            [EXP,EXP..EXP] | [EXP,EXP..] | {EXP;QUALIFIERS}
+//
+// EQUATION   ::= LHS=EXP | LHS=EXP,EXP
+// LHS        ::= ID FORMAL*
+// FORMAL     ::= ID | CONST | (PATTERN) | [PATTERN-LIST?]
+// PATTERN    ::= FORMAL:PATTERN | FORMAL
+// EXP        ::= PREFIX EXP | EXP INFIX EXP | SIMPLE SIMPLE*
+// SIMPLE     ::= ID | CONST | (EXP) | [EXP-LIST?] | [EXP..EXP] | [EXP..] |
+//                [EXP,EXP..EXP] | [EXP,EXP..] | {EXP;QUALIFIERS}
 // QUALIFIERS ::= QUALIFIER | QUALIFIER;QUALIFIERS
-// QUALIFIER ::= EXP | NAME-LIST<-EXP
-// CONST ::= INT | "STRING"
+// QUALIFIER  ::= EXP | NAME-LIST<-EXP
+// CONST      ::= INT | "STRING"
+//
 
+//
 // prefix and infix operators, in order of increasing binding power:
-
+//
 //    (prefix)               (infix)            (remarks)
 //                          :  ++  --           right associative
 //                             |
@@ -171,8 +184,9 @@ typedef enum {
 //      #
 // Notes - "%" is remainder operator, "." is functional composition and "#"
 // takes the length of lists
+//
 
-// compiler globals
+//// compiler globals
 
 // defined in lex.c
 extern void readline(void);
@@ -192,20 +206,21 @@ extern void printexp(list, word);
 extern list expression(void);
 extern void removelineno(list);
 extern bool isid(list);
-extern void display(atom ID, bool WITHNOS, bool DOUBLESPACING);
-extern void displayeqn(atom ID, word NARGS, list EQN);
-extern void displayrhs(list LHS, word NARGS, list CODE);
+extern void display(atom id, bool withnos, bool doublespacing);
+extern void displayeqn(atom id, word nargs, list eqn);
+extern void displayrhs(list lhs, word nargs, list code);
 
 // defined in reducer.c
-extern void printatom(atom A, bool FORMAT);
+extern void printatom(atom a, bool format);
 
 // others
-extern void (*TRUEWRCH)(word C);
+extern void (*TRUEWRCH)(word c);
 
 // bases
 extern list TRUTH, FALSITY, INFINITY, LASTLHS;
 
 //// GC helpers
+
 // defined in compiler.c
 extern void compiler_bases(void (*F)(list *));
 
