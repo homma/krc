@@ -1401,7 +1401,7 @@ static void newequation() {
   word eqno = -1;
 
   if (havenum()) {
-    eqno = 100 * THE_NUM + THE_DECIMALS;
+    eqno = 100 * THE_NUM;
     check((token)')');
   }
 

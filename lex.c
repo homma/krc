@@ -33,12 +33,18 @@ word COMMENTFLAG;
 // set by -s option
 bool SKIPCOMMENTS;
 
+// list of tokens
+// set value by readline, have, haveid, haveconst, havenum
 list TOKENS = 0;
+
+// set value by haveid
 atom THE_ID = 0;
+
+// set value by haveconst
 list THE_CONST = 0;
 
+// set value by havenum
 word THE_NUM;
-word THE_DECIMALS;
 
 // local function declarations
 static token readtoken(void);
@@ -51,7 +57,8 @@ static bool EXPECTFILE = false;
 
 static token MISSING;
 
-// reads the next line into "TOKENS"
+// read one line
+// tokens are stored into TOKENS
 void readline() {
 
   do {
@@ -59,7 +66,6 @@ void readline() {
     token t = 0;
     MISSING = 0;
     TOKENS = NIL;
-    THE_DECIMALS = 0;
     ERRORFLAG = false;
 
     // will get set if the line contains "?" or "!"
@@ -68,43 +74,58 @@ void readline() {
     // >0 records number of lines in the comment
     COMMENTFLAG = 0;
 
+    // not in FILECOMMANDS yet
     EXPECTFILE = false;
 
     // will get set if the line contains "="
     EQNFLAG = false;
 
+    // reads token one by one
     do {
       t = readtoken();
 
       // GCC
+
+      // first time : ( TOKENS = t:[] )
+      // after that : ( t1 : t2 : ... : p ++ t:[] )
       *p = cons((list)t, NIL);
+
+      // p = tail(t:[])
       p = &(TL(*p));
 
     } while (
         !(t == (token)EOL || t == (token)EOFTOKEN || t == (token)BADTOKEN));
 
     // ignore first line of Unix script file
+    //
+    // tokens = [ "#", "!", "/" ]
+    // "#" == hd tokens & list (tl tokens) & "!" == (hd (tl tokens))?
+    //
     if (HD(TOKENS) == (list)'#' && iscons(TL(TOKENS)) &&
         HD(TL(TOKENS)) == (list)'!') {
       continue;
     }
 
+    // finished reading one line
     if (t == (token)EOL || t == (token)EOFTOKEN) {
       return;
     }
 
+    // malformed
     bcpl_writes("Closing quote missing - line ignored\n");
     ERRORFLAG = true;
 
     return;
 
+    // loops only when the line stared with shebang
   } while (1);
 }
 
 // char for NOT -- '\' or '~' (legacy)
 #define NOTCH(ch) (ch == '\\' || ch == '~' && LEGACY)
 
-// read one token
+// reads one token
+// returns a token as a list
 //
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
 //          | cons(IDENT, ATOM) | cons(CONST, <ATOM | NUM>)

@@ -38,8 +38,7 @@
 extern list TOKENS, THE_CONST;
 extern atom THE_ID;
 
-// DECIMALS are never used
-extern word THE_NUM, THE_DECIMALS;
+extern word THE_NUM;
 
 extern word EXPFLAG, ERRORFLAG, EQNFLAG;
 extern token MISSEDTOK;
