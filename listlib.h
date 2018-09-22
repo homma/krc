@@ -68,7 +68,7 @@ typedef struct atom {
 #define atomsize (sizeof(struct atom))
 
 // unused
-// word haveparam(word CH);
+// word haveparam(word ch);
 
 extern int ARGC;
 extern char **ARGV;
@@ -94,12 +94,12 @@ extern bool ATGC;
 
 extern void GO(void);
 extern void bases(void (*f)(list *));
-extern void space_error(char *MESSAGE);
+extern void space_error(char *message);
 
-list cons(list X, list Y);
+list cons(list x, list y);
 
-list stonum(word N);
-word getnum(list X);
+list stonum(word n);
+word getnum(list x);
 
 atom mkatom(char *s);
 atom mkatomn(char *s, int len);
@@ -119,24 +119,24 @@ atom packbuffer(void);
 // NOTES for 2960/EMAS implementation at UKC:
 // "small" here means less than 8 meg -- 2^23?
 
-word iscons(list X);
-word isatom(list X);
-word isnum(list X);
+word iscons(list x);
+word isatom(list x);
+word isnum(list x);
 
-bool alfa_ls(atom A, atom B);
-word length(list X);
-word member(list X, list A);
-list append(list X, list Y);
-word equal(list X, list Y);
-list elem(list X, word N);
-void printobj(list X);
+bool alfa_ls(atom a, atom b);
+word length(list x);
+word member(list x, list a);
+list append(list x, list y);
+word equal(list x, list y);
+list elem(list x, word n);
+void printobj(list x);
 void resetgcstats(void);
 void force_gc(void);
 void reportdic(void);
 void listpm(void);
-list reverse(list X);
-list shunt(list X, list Y);
-list sub1(list X, atom A);
+list reverse(list x);
+list shunt(list x, list y);
+list sub1(list x, atom a);
 
 // NOTES for 2960/EMAS implementation at UKC:
 
