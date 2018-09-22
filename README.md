@@ -42,6 +42,7 @@ $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 ## Plans
 
 make it looks like a plain C software.
+keep it simple and small.
 
 - remove BCPL dependency completely
 - change CAPITAL LETTER to small letter
