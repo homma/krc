@@ -58,6 +58,12 @@ make it looks like a plain C software.
 - replace linenoise with its unicode supported version
 - reduce macros in order to apply source code formatter properly
 
+### Middle Term
+port to JavaScript.
+
+- define PEG
+- add FFI
+
 ### Long Term
 add features and extend.
 
@@ -71,11 +77,9 @@ add features and extend.
 - add floating point numeral
 - add user defined operator (infix)
 - add date library
-- port to JavaScript
 
 ### Someday..
 - add more I/O
-- add FFI
 - add n+k pattern
 - add type system
 - add strict (eager) evaluation
