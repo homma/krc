@@ -87,7 +87,7 @@ void readline() {
       // GCC
 
       // first time : ( TOKENS = t:[] )
-      // after that : ( t1 : t2 : ... : p ++ t:[] )
+      // after that : ( t1 : t2 : ... : p ++ t : [] )
       *p = cons((list)t, NIL);
 
       // p = tail(t:[])
