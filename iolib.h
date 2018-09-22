@@ -17,7 +17,7 @@ extern FILE *bcpl_findoutput(char *file);
 extern int bcpl_rdch(void);
 extern int echo_rdch(void);
 extern int bcpl_unrdch(int c);
-extern void bcpl_wrch(word C);
+extern void bcpl_wrch(word c);
 
 // and these are the variables that people can redirect if they want to
 extern int (*rdch)(void);
@@ -26,7 +26,7 @@ extern void (*wrch)(word d);
 
 // output functions must go through WRCH
 extern void bcpl_writes(char *s);
-extern void bcpl_writen(word N);
+extern void bcpl_writen(word n);
 
 // other stuff;
 //

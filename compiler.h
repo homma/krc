@@ -39,11 +39,11 @@ extern word THE_NUM, THE_DECIMALS;
 
 extern word EXPFLAG, ERRORFLAG, EQNFLAG;
 extern token MISSEDTOK;
-extern word caseconv(word CH);
+extern word caseconv(word ch);
 extern word COMMENTFLAG;
 extern list FILECOMMANDS;
 extern bool LEGACY;
-extern void writetoken(token T);
+extern void writetoken(token t);
 
 //
 // KRC expression representations
@@ -217,7 +217,10 @@ extern void printatom(atom a, bool format);
 extern void (*TRUEWRCH)(word c);
 
 // bases
-extern list TRUTH, FALSITY, INFINITY, LASTLHS;
+extern list TRUTH;
+extern list FALSITY;
+extern list INFINITY;
+extern list LASTLHS;
 
 //// GC helpers
 
