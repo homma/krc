@@ -39,13 +39,12 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 ````
 $ clang-format -style="{BasedOnStyle: llvm, SortIncludes: false}" -i *.c *.h
 ````
-## Plan
+## Plans
 
-### Short Term
 make it looks like a plain C software.
 
 - remove BCPL dependency completely
-- CAPITAL LETTER to small letter
+- change CAPITAL LETTER to small letter
 - remove global variables if unnecessary to be exposed
 - separate main() from listlib
 - separate commands into their own file
@@ -57,29 +56,4 @@ make it looks like a plain C software.
 - remove `(!(`
 - replace linenoise with its unicode supported version
 - reduce macros in order to apply source code formatter properly
-
-### Middle Term
-port to JavaScript.
-
-- define PEG
-- add FFI
-
-### Long Term
-add features and extend.
-
-- add anonymous function
-- add where clause
-- add record type
-- add unicode string support
-- add char literal ('c' as special string)
-- add tuple literal (as a special list)
-- add array type
-- add floating point numeral
-- add user defined operator (infix)
-- add date library
-
-### Someday..
-- add more I/O
-- add n+k pattern
-- add type system
 
