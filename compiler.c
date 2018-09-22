@@ -97,7 +97,7 @@ static bool isrelop(list x) { return (list)GR_OP <= x && x <= (list)LS_OP; }
 // return the priority of an operator from its index in INFIX*
 static word diprio(operator op) { return op == -1 ? -1 : INFIXPRIOVEC[op]; }
 
-// takes a token , returns an operator
+// takes a token, returns an operator
 // else -1 if t not the name of an infix
 static operator mkinfix(token t) {
 
