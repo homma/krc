@@ -69,7 +69,7 @@ static word INFIXPRIOVEC[] = {0, 0, 0, 0, 1, 2, 3, 3, 3, 3,
                               3, 3, 4, 4, 5, 5, 5, 6, 6};
 
 // bases for garbage collection
-// store for opcodes and ther params, which may be operators,
+// store for opcodes and their params, which may be operators,
 // various CONStructs or the addresses of C functions.
 static list CODEV = NIL;
 
