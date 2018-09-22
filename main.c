@@ -28,7 +28,7 @@ static bool startdisplaycom();
 
 static void parseline(char *line);
 static void initialise();
-static void enterargv(int USERARGC, list USERARGV);
+static void enterargv(int userargc, list userargv);
 static void setup_commands();
 static void command();
 static void displayall(bool DOUBLESPACING);
@@ -54,14 +54,22 @@ static void remove_atom(atom A);
 static list extract(atom A, atom B);
 
 // bases
-static list COMMANDS = NIL, SCRIPT = NIL, OUTFILES = NIL;
-static atom LASTFILE = 0;
-static list LIBSCRIPT = NIL, HOLDSCRIPT = NIL, GET_HITS = NIL;
+static list COMMANDS = NIL;
+static list SCRIPT = NIL;
+static list OUTFILES = NIL;
 
-static bool SIGNOFF = false, SAVED = true, EVALUATING = false;
+static atom LASTFILE = 0;
+static list LIBSCRIPT = NIL;
+static list HOLDSCRIPT = NIL;
+static list GET_HITS = NIL;
+
+static bool SIGNOFF = false;
+static bool SAVED = true;
+static bool EVALUATING = false;
 
 // flags used in debugging system
-static bool ATOBJECT = false, ATCOUNT = false;
+static bool ATOBJECT = false;
+static bool ATCOUNT = false;
 
 // for calling emas
 static char PARAMV[256];
@@ -299,24 +307,22 @@ static char TITLE[] = "Kent Recursive Calculator 1.0";
 static void initialise() {
 
   // do we need to read the prelude?
-  bool LOADPRELUDE = true;
+  bool loadprelude = true;
 
   // use legacy prelude?
-  bool OLDLIB = false;
+  bool oldlib = false;
 
   // script given on command line
-  char *USERSCRIPT = NULL;
+  char *userscript = NULL;
 
   // reversed list of args after script name
-  list USERARGV = NIL;
+  list userargv = NIL;
 
-  // how many items in USERARGV?
-  int USERARGC = 0;
+  // how many items in userargv?
+  int userargc = 0;
 
   // list the script as we read it?
-  // bool LISTSCRIPT = false;
-
-  int I;
+  // bool listscript = false;
 
   if (!isatty(0)) {
     QUIET = true;
@@ -324,12 +330,12 @@ static void initialise() {
 
   setup_primfns_etc();
 
-  for (I = 1; I < ARGC; I++) {
+  for (int i = 1; i < ARGC; i++) {
 
-    if (ARGV[I][0] == '-') {
-      switch (ARGV[I][1]) {
+    if (ARGV[i][0] == '-') {
+      switch (ARGV[i][1]) {
       case 'n':
-        LOADPRELUDE = false;
+        loadprelude = false;
         break;
       case 's':
         SKIPCOMMENTS = true;
@@ -343,11 +349,11 @@ static void initialise() {
       case 'd': // handled in listlib.c
       case 'l': // handled in listlib.c
       case 'h':
-        ++I;    // handled in listlib.c
+        ++i;    // handled in listlib.c
       case 'g': // handled in listlib.c
         break;
       case 'e':
-        if (++I >= ARGC || ARGV[I][0] == '-') {
+        if (++i >= ARGC || ARGV[i][0] == '-') {
           bcpl_writes("krc: -e What?\n");
           exit(0);
         }
@@ -355,7 +361,7 @@ static void initialise() {
           bcpl_writes("krc: Only one -e flag allowed\n");
           exit(0);
         }
-        EVALUATE = ARGV[I];
+        EVALUATE = ARGV[i];
         QUIET = true;
         break;
       case 'z':
@@ -364,41 +370,41 @@ static void initialise() {
         bcpl_writes("LISTBASE=1\n");
         break;
       case 'L':
-        OLDLIB = 1;
+        oldlib = 1;
         break;
-        // case 'v': LISTSCRIPT=true; break;
+        // case 'v': listscript=true; break;
         // other parameters may be detected using haveparam()
       case 'C':
       case 'N':
       case 'O': // used only by testcomp, disabled
       default:
-        fprintf(bcpl_OUTPUT, "krc: invalid option -%c\n", ARGV[I][1]);
+        fprintf(bcpl_OUTPUT, "krc: invalid option -%c\n", ARGV[i][1]);
         exit(0);
         break;
       }
     } else {
 
       // filename of script to load, or arguments for script
-      if (USERSCRIPT == NULL) {
+      if (userscript == NULL) {
         // was if ... else
-        USERSCRIPT = ARGV[I];
+        userscript = ARGV[i];
       }
 
-      USERARGV = cons((list)mkatom(ARGV[I]), USERARGV), USERARGC++;
+      userargv = cons((list)mkatom(ARGV[i]), userargv), userargc++;
     }
   }
 
   if (EVALUATE) {
 
-    enterargv(USERARGC, USERARGV);
+    enterargv(userargc, userargv);
 
-  } else if (USERARGC > 1) {
+  } else if (userargc > 1) {
 
     bcpl_writes("krc: too many arguments\n");
     exit(0);
   }
 
-  if (LOADPRELUDE) {
+  if (loadprelude) {
     if (USERLIB) {
 
       // -l option was used
@@ -410,17 +416,17 @@ static void initialise() {
 
       if (stat("krclib", &buf) == 0) {
 
-        getfile(OLDLIB ? "krclib/lib1981" : "krclib/prelude");
+        getfile(oldlib ? "krclib/lib1981" : "krclib/prelude");
 
       } else {
 
-        getfile(OLDLIB ? LIBDIR "/lib1981" : LIBDIR "/prelude");
+        getfile(oldlib ? LIBDIR "/lib1981" : LIBDIR "/prelude");
       }
     }
 
   } else {
 
-    // if ( USERLIB || OLDLIB )
+    // if ( USERLIB || oldlib )
     // { bcpl_writes("krc: invalid combination -n and -l or -L\n"); exit(0); }
     // else
     bcpl_writes("\"PRELUDE\" suppressed\n");
@@ -431,14 +437,14 @@ static void initialise() {
 
   LIBSCRIPT = sort(SCRIPT), SCRIPT = NIL;
 
-  if (USERSCRIPT) {
+  if (userscript) {
 
-    // if ( LISTSCRIPT ) rdch = echo_rdch;
-    getfile(USERSCRIPT);
+    // if ( listscript ) rdch = echo_rdch;
+    getfile(userscript);
     SAVED = true;
 
-    // if ( LISTSCRIPT ) rdch = bcpl_rdch;
-    LASTFILE = mkatom(USERSCRIPT);
+    // if ( listscript ) rdch = bcpl_rdch;
+    LASTFILE = mkatom(userscript);
   }
 
   setup_commands();
@@ -461,33 +467,33 @@ static void initialise() {
 //     LOAD.(QUOTE."one").LOAD.(QUOTE."two").LOAD.(QUOTE."three").
 //     FORMLIST.0x03.STOP.NIL ).
 //   NIL )
-static void enterargv(int USERARGC, list USERARGV) {
+static void enterargv(int userargc, list userargv) {
 
-  atom A = mkatom("argv");
-  list CODE =
-      cons((list)FORMLIST_C, cons((list)USERARGC, cons((list)STOP_C, NIL)));
+  atom a = mkatom("argv");
+  list code =
+      cons((list)FORMLIST_C, cons((list)userargc, cons((list)STOP_C, NIL)));
 
-  for (; USERARGV != NIL; USERARGV = TL(USERARGV)) {
-    CODE = cons((list)LOAD_C, cons(cons((list)QUOTE, HD(USERARGV)), CODE));
+  for (; userargv != NIL; userargv = TL(userargv)) {
+    code = cons((list)LOAD_C, cons(cons((list)QUOTE, HD(userargv)), code));
   }
 
-  VAL(A) = cons(cons((list)0, NIL), cons(cons((list)0, CODE), NIL));
-  enterscript(A);
+  VAL(a) = cons(cons((list)0, NIL), cons(cons((list)0, code), NIL));
+  enterscript(a);
 }
 
-void space_error(char *MESSAGE) {
+void space_error(char *message) {
 
   wrch = TRUEWRCH;
   closechannels();
 
   if (EVALUATING) {
 
-    fprintf(bcpl_OUTPUT, "\n**%s**\n**evaluation abandoned**\n", MESSAGE);
+    fprintf(bcpl_OUTPUT, "\n**%s**\n**evaluation abandoned**\n", message);
     escapetonextcommand();
 
   } else if (MEMORIES == NIL) {
 
-    fprintf(bcpl_OUTPUT, "\n%s - recovery impossible\n", MESSAGE);
+    fprintf(bcpl_OUTPUT, "\n%s - recovery impossible\n", message);
     exit(0);
 
   } else {
@@ -601,23 +607,23 @@ void closechannels() {
   bcpl_OUTPUT_fp = (stdout);
 }
 
-FILE *findchannel(char *F) {
-  list P = OUTFILES;
+FILE *findchannel(char *f) {
+  list p = OUTFILES;
 
-  while (!(P == NIL || strcmp((char *)HD(HD(P)), F) == 0)) {
-    P = TL(P);
+  while (!(p == NIL || strcmp((char *)HD(HD(p)), f) == 0)) {
+    p = TL(p);
   }
 
-  if (P == NIL) {
-    FILE *OUT = bcpl_findoutput(F);
+  if (p == NIL) {
+    FILE *out = bcpl_findoutput(f);
 
-    if (OUT != NULL) {
-      OUTFILES = cons(cons((list)F, (list)OUT), OUTFILES);
+    if (out != NULL) {
+      OUTFILES = cons(cons((list)f, (list)out), OUTFILES);
     }
 
-    return OUT;
+    return out;
   } else {
-    return (FILE *)TL(HD(P));
+    return (FILE *)TL(HD(p));
   }
 }
 
@@ -655,8 +661,10 @@ FILE *findchannel(char *F) {
 static void helpcom() {
 
   struct stat buf;
-  char strbuf[BUFLEN + 1], *topic;
-  int local = stat("krclib", &buf) == 0, r;
+  char strbuf[BUFLEN + 1];
+  char *topic;
+  int local = stat("krclib", &buf) == 0;
+  int r;
 
   if (have(EOL)) {
 
@@ -721,27 +729,27 @@ static void command() {
 
     } else {
 
-      list P = COMMANDS;
+      list p = COMMANDS;
 
       if (haveid()) {
         THE_ID = mkatom(scaseconv(NAME(THE_ID)));
         // always accept commands in either case
       } else {
-        P = NIL;
+        p = NIL;
       }
 
-      while (!(P == NIL || THE_ID == (atom)HD(HD(P)))) {
-        P = TL(P);
+      while (!(p == NIL || THE_ID == (atom)HD(HD(p)))) {
+        p = TL(p);
       }
 
-      if (P == NIL) {
+      if (p == NIL) {
 
         bcpl_writes("command not recognised\nfor help type /h\n");
 
       } else {
 
         // see "setup_commands()"
-        ((void (*)())TL(HD(P)))();
+        ((void (*)())TL(HD(p)))();
       }
     }
 
@@ -769,10 +777,10 @@ static void command() {
 
 static bool startdisplaycom() {
 
-  list HOLD = TOKENS;
-  word R = haveid() && (have(EOL) || have((token)DOTDOT_SY));
-  TOKENS = HOLD;
-  return R;
+  list hold = TOKENS;
+  word r = haveid() && (have(EOL) || have((token)DOTDOT_SY));
+  TOKENS = hold;
+  return r;
 }
 
 static void displaycom() {
@@ -785,20 +793,20 @@ static void displaycom() {
 
     } else if (have((token)DOTDOT_SY)) {
 
-      atom A = THE_ID;
-      list X = NIL;
+      atom a = THE_ID;
+      list x = NIL;
 
       // BUG?
-      atom B = have(EOL) ? (atom)EOL : haveid() && have(EOL) ? THE_ID : 0;
-      if (B == 0) {
+      atom b = have(EOL) ? (atom)EOL : haveid() && have(EOL) ? THE_ID : 0;
+      if (b == 0) {
         syntax();
       } else {
-        X = extract(A, B);
+        x = extract(a, b);
       }
 
-      while (!(X == NIL)) {
-        display((atom)HD(X), false, false);
-        X = TL(X);
+      while (!(x == NIL)) {
+        display((atom)HD(x), false, false);
+        x = TL(x);
       }
 
       // could insert extra line here between groups
@@ -812,37 +820,37 @@ static void displaycom() {
 }
 
 // "SCRIPT" is a list of all user defined names in alphabetical order
-static void displayall(bool DOUBLESPACING) {
+static void displayall(bool doublespacing) {
 
-  list P = SCRIPT;
-  if (P == NIL) {
+  list p = SCRIPT;
+  if (p == NIL) {
     bcpl_writes("Script=empty\n");
   }
 
-  while (!(P == NIL)) {
+  while (!(p == NIL)) {
 
     // don't display builtin fns (relevant only in /openlib)
-    if (!(primitive((atom)HD(P)))) {
-      display((atom)HD(P), false, false);
+    if (!(primitive((atom)HD(p)))) {
+      display((atom)HD(p), false, false);
     }
 
-    P = TL(P);
+    p = TL(p);
 
     // extra line between groups
-    if (DOUBLESPACING && P != NIL) {
+    if (doublespacing && p != NIL) {
       wrch('\n');
     }
   }
 }
 
-static bool primitive(atom A) {
+static bool primitive(atom a) {
 
-  if (TL(VAL(A)) == NIL) {
-    // A has comment but no eqns
+  if (TL(VAL(a)) == NIL) {
+    // a has comment but no eqns
     return false;
   }
 
-  return HD(TL(HD(TL(VAL(A))))) == (list)CALL_C;
+  return HD(TL(HD(TL(VAL(a))))) == (list)CALL_C;
 }
 
 static void quitcom() {
@@ -870,13 +878,14 @@ static bool makesure() {
   bcpl_writes("Are you sure? ");
 
   {
-    word CH = rdch(), C;
-    unrdch(CH);
-    while (!((C = rdch()) == '\n' || C == EOF)) {
+    word ch = rdch();
+    word c;
+    unrdch(ch);
+    while (!((c = rdch()) == '\n' || c == EOF)) {
       continue;
     }
 
-    if (CH == 'y' || CH == 'Y') {
+    if (ch == 'y' || ch == 'Y') {
       return true;
     }
 
@@ -978,30 +987,33 @@ static void filecom() {
   }
 }
 
-static bool okfile(FILE *STR, char *FILENAME) {
+static bool okfile(FILE *STR, char *filename) {
 
   if (STR != NULL) {
     return true;
   }
 
-  fprintf(bcpl_OUTPUT, "Cannot open \"%s\"\n", FILENAME);
+  fprintf(bcpl_OUTPUT, "Cannot open \"%s\"\n", filename);
   return false;
 }
 
 static void getcom() {
 
-  bool CLEAN = SCRIPT == NIL;
+  bool clean = SCRIPT == NIL;
 
   filename();
   if (ERRORFLAG) {
     return;
   }
 
-  HOLDSCRIPT = SCRIPT, SCRIPT = NIL, GET_HITS = NIL;
+  HOLDSCRIPT = SCRIPT;
+  SCRIPT = NIL;
+  GET_HITS = NIL;
+
   getfile(NAME(THE_ID));
   check_hits();
 
-  SCRIPT = append(HOLDSCRIPT, SCRIPT), SAVED = CLEAN, HOLDSCRIPT = NIL;
+  SCRIPT = append(HOLDSCRIPT, SCRIPT), SAVED = clean, HOLDSCRIPT = NIL;
 }
 
 static void check_hits() {
@@ -1013,14 +1025,14 @@ static void check_hits() {
   }
 }
 
-static bool getfile(char *FILENAME) {
+static bool getfile(char *filename) {
 
-  FILE *IN = bcpl_findinput(FILENAME);
-  if (!(okfile(IN, FILENAME))) {
+  FILE *in = bcpl_findinput(filename);
+  if (!(okfile(in, filename))) {
     return false;
   }
 
-  bcpl_INPUT_fp = (IN);
+  bcpl_INPUT_fp = (in);
 
   {
     // to locate line number of error in file
@@ -1030,7 +1042,7 @@ static bool getfile(char *FILENAME) {
       line++;
       readline();
 
-      if (ferror(IN)) {
+      if (ferror(in)) {
         ERRORFLAG = true;
         break;
       }
@@ -1052,7 +1064,7 @@ static bool getfile(char *FILENAME) {
 
       if (ERRORFLAG) {
         syntax_error("**syntax error in file ");
-        fprintf(bcpl_OUTPUT, "%s at line %d\n", FILENAME, line);
+        fprintf(bcpl_OUTPUT, "%s at line %d\n", filename, line);
       }
     } while (1);
 
@@ -1075,21 +1087,21 @@ static void listcom() {
   }
 
   {
-    char *FNAME = NAME(THE_ID);
-    FILE *IN = bcpl_findinput(FNAME);
+    char *fname = NAME(THE_ID);
+    FILE *in = bcpl_findinput(fname);
 
-    if (!(okfile(IN, FNAME))) {
+    if (!(okfile(in, fname))) {
       return;
     }
 
-    bcpl_INPUT_fp = (IN);
+    bcpl_INPUT_fp = (in);
 
     {
-      word CH = rdch();
+      word ch = rdch();
 
-      while (!(CH == EOF)) {
-        wrch(CH);
-        CH = rdch();
+      while (!(ch == EOF)) {
+        wrch(ch);
+        ch = rdch();
       }
 
       if (bcpl_INPUT_fp != stdin) {
@@ -1119,34 +1131,35 @@ static void namescom() {
 // searches the script for names used but not defined
 static void find_undefs() {
 
-  list S = SCRIPT, UNDEFS = NIL;
+  list s = SCRIPT;
+  list undefs = NIL;
 
-  while (!(S == NIL)) {
-    list EQNS = TL(VAL((atom)HD(S)));
-    while (!(EQNS == NIL)) {
-      list CODE = TL(HD(EQNS));
-      while (iscons(CODE)) {
-        list A = HD(CODE);
+  while (!(s == NIL)) {
+    list eqns = TL(VAL((atom)HD(s)));
+    while (!(eqns == NIL)) {
+      list code = TL(HD(eqns));
+      while (iscons(code)) {
+        list a = HD(code);
 
-        if (isatom(A) && !isdefined((atom)A) && !member(UNDEFS, A)) {
-          UNDEFS = cons(A, UNDEFS);
+        if (isatom(a) && !isdefined((atom)a) && !member(undefs, a)) {
+          undefs = cons(a, undefs);
         }
 
-        CODE = TL(CODE);
+        code = TL(code);
       }
-      EQNS = TL(EQNS);
+      eqns = TL(eqns);
     }
-    S = TL(S);
+    s = TL(s);
   }
 
-  if (!(UNDEFS == NIL)) {
+  if (!(undefs == NIL)) {
     bcpl_writes("\nNames used but not defined:\n");
-    scriptlist(reverse(UNDEFS));
+    scriptlist(reverse(undefs));
   }
 }
 
-static bool isdefined(atom X) {
-  return VAL(X) == NIL || TL(VAL(X)) == NIL ? false : true;
+static bool isdefined(atom x) {
+  return VAL(x) == NIL || TL(VAL(x)) == NIL ? false : true;
 }
 
 static void libcom() {
@@ -1175,37 +1188,39 @@ static void clearcom() {
   clearmemory();
 }
 
-static void scriptlist(list S) {
+static void scriptlist(list s) {
 
-  word COL = 0, I = 0;
+  word col = 0;
+  word i = 0;
 
 // the minimum of various devices
 #define LINEWIDTH 68
 
-  while (!(S == NIL)) {
-    char *N = NAME((atom)HD(S));
+  while (!(s == NIL)) {
+    char *n = NAME((atom)HD(s));
 
-    if (primitive((atom)HD(S))) {
-      S = TL(S);
+    if (primitive((atom)HD(s))) {
+      s = TL(s);
       continue;
     }
 
-    COL = COL + strlen(N) + 1;
-    if (COL > LINEWIDTH) {
-      COL = 0;
+    col = col + strlen(n) + 1;
+    if (col > LINEWIDTH) {
+      col = 0;
       wrch('\n');
     }
 
-    bcpl_writes(N);
+    bcpl_writes(n);
     wrch(' ');
-    I = I + 1, S = TL(S);
+    i = i + 1;
+    s = TL(s);
   }
 
-  if (COL + 6 > LINEWIDTH) {
+  if (col + 6 > LINEWIDTH) {
     wrch('\n');
   }
 
-  fprintf(bcpl_OUTPUT, " (%" W ")\n", I);
+  fprintf(bcpl_OUTPUT, " (%" W ")\n", i);
 }
 
 static void openlibcom() {
@@ -1223,16 +1238,18 @@ static void openlibcom() {
 
 static void renamecom() {
 
-  list X = NIL, Y = NIL, Z = NIL;
+  list x = NIL;
+  list y = NIL;
+  list z = NIL;
 
   while (haveid()) {
-    X = cons((list)THE_ID, X);
+    x = cons((list)THE_ID, x);
   }
 
   check((token)',');
 
   while (haveid()) {
-    Y = cons((list)THE_ID, Y);
+    y = cons((list)THE_ID, y);
   }
 
   check(EOL);
@@ -1242,13 +1259,15 @@ static void renamecom() {
 
   // first check lists are of same length
   {
-    list X1 = X, Y1 = Y;
+    list x1 = x, y1 = y;
 
-    while (!(X1 == NIL || Y1 == NIL)) {
-      Z = cons(cons(HD(X1), HD(Y1)), Z), X1 = TL(X1), Y1 = TL(Y1);
+    while (!(x1 == NIL || y1 == NIL)) {
+      z = cons(cons(HD(x1), HD(y1)), z);
+      x1 = TL(x1);
+      y1 = TL(y1);
     }
 
-    if (!(X1 == NIL && Y1 == NIL && Z != NIL)) {
+    if (!(x1 == NIL && y1 == NIL && z != NIL)) {
       syntax();
       return;
     }
@@ -1256,37 +1275,39 @@ static void renamecom() {
 
   // now check legality of rename
   {
-    list Z1 = Z, POSTDEFS = NIL, DUPS = NIL;
+    list z1 = z;
+    list postdefs = NIL;
+    list dups = NIL;
 
-    while (!(Z1 == NIL)) {
-      if (member(SCRIPT, HD(HD(Z1)))) {
-        POSTDEFS = cons(TL(HD(Z1)), POSTDEFS);
+    while (!(z1 == NIL)) {
+      if (member(SCRIPT, HD(HD(z1)))) {
+        postdefs = cons(TL(HD(z1)), postdefs);
       }
 
-      if (isdefined((atom)TL(HD(Z1))) &&
-          (!member(X, TL(HD(Z1))) || !member(SCRIPT, TL(HD(Z1))))) {
-        POSTDEFS = cons(TL(HD(Z1)), POSTDEFS);
+      if (isdefined((atom)TL(HD(z1))) &&
+          (!member(x, TL(HD(z1))) || !member(SCRIPT, TL(HD(z1))))) {
+        postdefs = cons(TL(HD(z1)), postdefs);
       }
 
-      Z1 = TL(Z1);
+      z1 = TL(z1);
     }
 
-    while (!(POSTDEFS == NIL)) {
+    while (!(postdefs == NIL)) {
 
-      if (member(TL(POSTDEFS), HD(POSTDEFS)) && !member(DUPS, HD(POSTDEFS))) {
-        DUPS = cons(HD(POSTDEFS), DUPS);
+      if (member(TL(postdefs), HD(postdefs)) && !member(dups, HD(postdefs))) {
+        dups = cons(HD(postdefs), dups);
       }
 
-      POSTDEFS = TL(POSTDEFS);
+      postdefs = TL(postdefs);
     }
 
-    if (!(DUPS == NIL)) {
+    if (!(dups == NIL)) {
       bcpl_writes("/rename illegal because of conflicting uses of ");
 
-      while (!(DUPS == NIL)) {
-        bcpl_writes(NAME((atom)HD(DUPS)));
+      while (!(dups == NIL)) {
+        bcpl_writes(NAME((atom)HD(dups)));
         wrch(' ');
-        DUPS = TL(DUPS);
+        dups = TL(dups);
       }
 
       wrch('\n');
@@ -1299,54 +1320,60 @@ static void renamecom() {
 
   // prepare for assignment to val fields
   {
-    list X1 = X, XVALS = NIL, TARGETS = NIL;
-    while (!(X1 == NIL)) {
+    list x1 = x;
+    list xvals = NIL;
+    list targets = NIL;
 
-      if (member(SCRIPT, HD(X1))) {
-        XVALS = cons(VAL((atom)HD(X1)), XVALS), TARGETS = cons(HD(Y), TARGETS);
+    while (!(x1 == NIL)) {
+
+      if (member(SCRIPT, HD(x1))) {
+        xvals = cons(VAL((atom)HD(x1)), xvals), targets = cons(HD(y), targets);
       }
 
-      X1 = TL(X1), Y = TL(Y);
+      x1 = TL(x1);
+      y = TL(y);
     }
 
     // now convert all occurrences in the script
     {
-      list S = SCRIPT;
-      while (!(S == NIL)) {
-        list EQNS = TL(VAL((atom)HD(S)));
-        word NARGS = (word)HD(HD(VAL((atom)HD(S))));
-        while (!(EQNS == NIL)) {
-          list CODE = TL(HD(EQNS));
-          if (NARGS > 0) {
-            list LHS = HD(HD(EQNS));
-            word I;
+      list s = SCRIPT;
 
-            for (I = 2; I <= NARGS; I++) {
-              LHS = HD(LHS);
+      while (!(s == NIL)) {
+        list eqns = TL(VAL((atom)HD(s)));
+        word nargs = (word)HD(HD(VAL((atom)HD(s))));
+        while (!(eqns == NIL)) {
+          list code = TL(HD(eqns));
+          if (nargs > 0) {
+            list lhs = HD(HD(eqns));
+
+            for (word i = 2; i <= nargs; i++) {
+              lhs = HD(lhs);
             }
 
-            HD(LHS) = subst(Z, HD(LHS));
+            HD(lhs) = subst(z, HD(lhs));
           }
 
-          while (iscons(CODE)) {
-            HD(CODE) = subst(Z, HD(CODE)), CODE = TL(CODE);
+          while (iscons(code)) {
+            HD(code) = subst(z, HD(code));
+            code = TL(code);
           }
 
-          EQNS = TL(EQNS);
+          eqns = TL(eqns);
         }
 
-        if (member(X, HD(S))) {
-          VAL((atom)HD(S)) = NIL;
+        if (member(x, HD(s))) {
+          VAL((atom)HD(s)) = NIL;
         }
 
-        HD(S) = subst(Z, HD(S));
-        S = TL(S);
+        HD(s) = subst(z, HD(s));
+        s = TL(s);
       }
 
       // now reassign val fields
-      while (!(TARGETS == NIL)) {
-        VAL((atom)HD(TARGETS)) = HD(XVALS);
-        TARGETS = TL(TARGETS), XVALS = TL(XVALS);
+      while (!(targets == NIL)) {
+        VAL((atom)HD(targets)) = HD(xvals);
+        targets = TL(targets);
+        xvals = TL(xvals);
       }
 
       release_interrupts();
@@ -1354,124 +1381,124 @@ static void renamecom() {
   }
 }
 
-static list subst(list Z, list A) {
+static list subst(list z, list a) {
 
-  while (!(Z == NIL)) {
-    if (A == HD(HD(Z))) {
+  while (!(z == NIL)) {
+    if (a == HD(HD(z))) {
       SAVED = false;
-      return TL(HD(Z));
+      return TL(HD(z));
     }
-    Z = TL(Z);
+    z = TL(z);
   }
-  return A;
+  return a;
 }
 
 static void newequation() {
 
-  word EQNO = -1;
+  word eqno = -1;
 
   if (havenum()) {
-    EQNO = 100 * THE_NUM + THE_DECIMALS;
+    eqno = 100 * THE_NUM + THE_DECIMALS;
     check((token)')');
   }
 
   {
-    list X = equation();
+    list x = equation();
     if (ERRORFLAG) {
       return;
     }
 
     {
-      atom SUBJECT = (atom)HD(X);
-      word NARGS = (word)HD(TL(X));
-      list EQN = TL(TL(X));
+      atom subject = (atom)HD(x);
+      word nargs = (word)HD(TL(x));
+      list eqn = TL(TL(x));
       if (ATOBJECT) {
-        printobj(EQN);
+        printobj(eqn);
         wrch('\n');
       }
 
-      if (VAL(SUBJECT) == NIL) {
-        VAL(SUBJECT) = cons(cons((list)NARGS, NIL), cons(EQN, NIL));
-        enterscript(SUBJECT);
-      } else if (protected(SUBJECT)) {
+      if (VAL(subject) == NIL) {
+        VAL(subject) = cons(cons((list)nargs, NIL), cons(eqn, NIL));
+        enterscript(subject);
+      } else if (protected(subject)) {
         return;
-      } else if (TL(VAL(SUBJECT)) == NIL) {
+      } else if (TL(VAL(subject)) == NIL) {
         // subject currently defined only by a comment
-        HD(HD(VAL(SUBJECT))) = (list)NARGS;
-        TL(VAL(SUBJECT)) = cons(EQN, NIL);
-      } else if (NARGS != (word)HD(HD(VAL(SUBJECT)))) {
+        HD(HD(VAL(subject))) = (list)nargs;
+        TL(VAL(subject)) = cons(eqn, NIL);
+      } else if (nargs != (word)HD(HD(VAL(subject)))) {
 
-        // simple def silently overwriting existing EQNS -
+        // simple def silently overwriting existing eqns -
         // removed DT 2015
-        // if ( NARGS==0) {
-        // VAL(SUBJECT)=cons(cons(0,TL(HD(VAL(SUBJECT)))),cons(EQN,NIL));
+        // if ( nargs==0) {
+        // VAL(subject)=cons(cons(0,TL(HD(VAL(subject)))),cons(eqn,NIL));
         //            clearmemory(); } else
 
-        fprintf(bcpl_OUTPUT, "Wrong no of args for \"%s\"\n", NAME(SUBJECT));
+        fprintf(bcpl_OUTPUT, "Wrong no of args for \"%s\"\n", NAME(subject));
         bcpl_writes("Equation rejected\n");
         return;
-      } else if (EQNO == -1) {
+      } else if (eqno == -1) {
         // unnumbered EQN
-        list EQNS = TL(VAL(SUBJECT));
-        list P = profile(EQN);
+        list eqns = TL(VAL(subject));
+        list p = profile(eqn);
 
         do {
-          if (equal(P, profile(HD(EQNS)))) {
-            list CODE = TL(HD(EQNS));
-            if (HD(CODE) == (list)LINENO_C) {
-              // if old EQN has line no,
+          if (equal(p, profile(HD(eqns)))) {
+            list code = TL(HD(eqns));
+            if (HD(code) == (list)LINENO_C) {
+              // if old eqn has line no,
 
-              // new EQN inherits
-              TL(TL(CODE)) = TL(EQN);
+              // new eqn inherits
+              TL(TL(code)) = TL(eqn);
 
-              HD(HD(EQNS)) = HD(EQN);
+              HD(HD(eqns)) = HD(eqn);
             } else {
-              HD(EQNS) = EQN;
+              HD(eqns) = eqn;
             }
             clearmemory();
             break;
           }
-          if (TL(EQNS) == NIL) {
-            TL(EQNS) = cons(EQN, NIL);
+          if (TL(eqns) == NIL) {
+            TL(eqns) = cons(eqn, NIL);
             break;
           }
-          EQNS = TL(EQNS);
+          eqns = TL(eqns);
         } while (1);
 
       } else {
-        // numbered EQN
+        // numbered eqn
 
-        list EQNS = TL(VAL(SUBJECT));
-        word N = 0;
-        if (EQNO % 100 != 0 || EQNO == 0) {
-          // if EQN has non standard lineno
+        list eqns = TL(VAL(subject));
+        word n = 0;
+        if (eqno % 100 != 0 || eqno == 0) {
+          // if eqn has non standard lineno
 
           // mark with no.
-          TL(EQN) = cons((list)LINENO_C, cons((list)EQNO, TL(EQN)));
+          TL(eqn) = cons((list)LINENO_C, cons((list)eqno, TL(eqn)));
         }
 
         do {
-          N = HD(TL(HD(EQNS))) == (list)LINENO_C ? (word)HD(TL(TL(HD(EQNS))))
-                                                 : (N / 100 + 1) * 100;
-          if (EQNO == N) {
-            HD(EQNS) = EQN;
+          n = HD(TL(HD(eqns))) == (list)LINENO_C ? (word)HD(TL(TL(HD(eqns))))
+                                                 : (n / 100 + 1) * 100;
+          if (eqno == n) {
+            HD(eqns) = eqn;
             clearmemory();
             break;
           }
 
-          if (EQNO < N) {
-            list HOLD = HD(EQNS);
-            HD(EQNS) = EQN;
-            TL(EQNS) = cons(HOLD, TL(EQNS));
+          if (eqno < n) {
+            list hold = HD(eqns);
+            HD(eqns) = eqn;
+            TL(eqns) = cons(hold, TL(eqns));
             clearmemory();
             break;
           }
 
-          if (TL(EQNS) == NIL) {
-            TL(EQNS) = cons(EQN, NIL);
+          if (TL(eqns) == NIL) {
+            TL(eqns) = cons(eqn, NIL);
             break;
           }
-          EQNS = TL(EQNS);
+          eqns = TL(eqns);
         } while (1);
       }
       SAVED = false;
@@ -1483,55 +1510,55 @@ static void newequation() {
 // inserted (other than at the end of a definition)
 static void clearmemory() {
 
-  // memories holds a list of all vars whose memo
+  // MEMORIES holds a list of all vars whose memo
   while (!(MEMORIES == NIL)) {
 
     // fields have been set
-    list X = VAL((atom)HD(MEMORIES));
+    list x = VAL((atom)HD(MEMORIES));
 
-    if (!(X == NIL)) {
+    if (!(x == NIL)) {
       // unset memo field
-      HD(HD(TL(X))) = 0;
+      HD(HD(TL(x))) = 0;
     }
 
     MEMORIES = TL(MEMORIES);
   }
 }
 
-// enters "A" in the script
-void enterscript(atom A) {
+// enters a in the script
+void enterscript(atom a) {
 
   if (SCRIPT == NIL) {
-    SCRIPT = cons((list)A, NIL);
+    SCRIPT = cons((list)a, NIL);
   } else {
-    list S = SCRIPT;
+    list s = SCRIPT;
 
-    while (!(TL(S) == NIL)) {
-      S = TL(S);
+    while (!(TL(s) == NIL)) {
+      s = TL(s);
     }
 
-    TL(S) = cons((list)A, NIL);
+    TL(s) = cons((list)a, NIL);
   }
 }
 
 static void comment() {
 
-  atom SUBJECT = (atom)TL(HD(TOKENS));
-  list COMMENT = HD(TL(TOKENS));
+  atom subject = (atom)TL(HD(TOKENS));
+  list comment = HD(TL(TOKENS));
 
-  if (VAL(SUBJECT) == NIL) {
-    VAL(SUBJECT) = cons(cons(0, NIL), NIL);
-    enterscript(SUBJECT);
+  if (VAL(subject) == NIL) {
+    VAL(subject) = cons(cons(0, NIL), NIL);
+    enterscript(subject);
   }
 
-  if (protected(SUBJECT)) {
+  if (protected(subject)) {
     return;
   }
 
-  TL(HD(VAL(SUBJECT))) = COMMENT;
+  TL(HD(VAL(subject))) = comment;
 
-  if (COMMENT == NIL && TL(VAL(SUBJECT)) == NIL) {
-    remove_atom(SUBJECT);
+  if (comment == NIL && TL(VAL(subject)) == NIL) {
+    remove_atom(subject);
   }
 
   SAVED = false;
@@ -1539,11 +1566,11 @@ static void comment() {
 
 static void evaluation() {
 
-  list CODE = expression();
-  word CH = (word)HD(TOKENS);
+  list code = expression();
+  word ch = (word)HD(TOKENS);
 
   // static so invisible to garbage collector
-  list E = 0;
+  list e = 0;
 
   if (!(have((token)'!'))) {
     check((token)'?');
@@ -1556,11 +1583,11 @@ static void evaluation() {
   check(EOL);
 
   if (ATOBJECT) {
-    printobj(CODE);
+    printobj(code);
     wrch('\n');
   }
 
-  E = buildexp(CODE);
+  e = buildexp(code);
 
   if (ATCOUNT) {
     resetgcstats();
@@ -1568,8 +1595,8 @@ static void evaluation() {
 
   initstats();
   EVALUATING = true;
-  FORMATTING = CH == '?';
-  printval(E, FORMATTING);
+  FORMATTING = ch == '?';
+  printval(e, FORMATTING);
 
   if (FORMATTING) {
     wrch('\n');
@@ -1585,40 +1612,49 @@ static void evaluation() {
 
 static void abordercom() { SCRIPT = sort(SCRIPT), SAVED = false; }
 
-static list sort(list X) {
+static list sort(list x) {
 
-  if (X == NIL || TL(X) == NIL) {
-    return X;
+  if (x == NIL || TL(x) == NIL) {
+    return x;
   }
 
   {
     // first split x
-    list A = NIL, B = NIL, HOLD = NIL;
+    list a = NIL;
+    list b = NIL;
+    list hold = NIL;
 
-    while (!(X == NIL)) {
-      HOLD = A, A = cons(HD(X), B), B = HOLD, X = TL(X);
+    while (!(x == NIL)) {
+      hold = a;
+      a = cons(HD(x), b);
+      b = hold;
+      x = TL(x);
     }
 
-    A = sort(A), B = sort(B);
+    a = sort(a);
+    b = sort(b);
 
     // now merge the two halves back together
-    while (!(A == NIL || B == NIL)) {
-      if (alfa_ls((atom)HD(A), (atom)HD(B))) {
-        X = cons(HD(A), X), A = TL(A);
+    while (!(a == NIL || b == NIL)) {
+      if (alfa_ls((atom)HD(a), (atom)HD(b))) {
+        x = cons(HD(a), x);
+        a = TL(a);
       } else {
-        X = cons(HD(B), X), B = TL(B);
+        x = cons(HD(b), x);
+        b = TL(b);
       }
     }
 
-    if (A == NIL) {
-      A = B;
+    if (a == NIL) {
+      a = b;
     }
 
-    while (!(A == NIL)) {
-      X = cons(HD(A), X), A = TL(A);
+    while (!(a == NIL)) {
+      x = cons(HD(a), x);
+      a = TL(a);
     }
 
-    return reverse(X);
+    return reverse(x);
   }
 }
 
@@ -1628,17 +1664,16 @@ static void reordercom() {
       (isid(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (list)DOTDOT_SY)) {
     scriptreorder();
   } else if (haveid() && HD(TOKENS) != EOL) {
-    list NOS = NIL;
-    word MAX = no_of_eqns(THE_ID);
+    list nos = NIL;
+    word max = no_of_eqns(THE_ID);
 
     while (havenum()) {
-      word A = THE_NUM;
-      word B = have(DOTDOT_SY) ? havenum() ? THE_NUM : MAX : A;
-      word I;
+      word a = THE_NUM;
+      word b = have(DOTDOT_SY) ? havenum() ? THE_NUM : max : a;
 
-      for (I = A; I <= B; I++) {
-        if (!member(NOS, (list)I) && 1 <= I && I <= MAX) {
-          NOS = cons((list)I, NOS);
+      for (word i = a; i <= b; i++) {
+        if (!member(nos, (list)i) && 1 <= i && i <= max) {
+          nos = cons((list)i, nos);
         }
       }
       // nos out of range are silently ignored
@@ -1659,28 +1694,27 @@ static void reordercom() {
     }
 
     {
-      word I;
-      for (I = 1; I <= MAX; I++) {
-        if (!(member(NOS, (list)I))) {
-          NOS = cons((list)I, NOS);
+      for (word i = 1; i <= max; i++) {
+        if (!(member(nos, (list)i))) {
+          nos = cons((list)i, nos);
         }
       }
       // any eqns left out are tacked on at the end
     }
 
-    // note that "NOS" are in reverse order
+    // note that "nos" are in reverse order
     {
-      list NEW = NIL;
-      list EQNS = TL(VAL(THE_ID));
-      while (!(NOS == NIL)) {
-        list EQN = elem(EQNS, (word)HD(NOS));
-        removelineno(EQN);
-        NEW = cons(EQN, NEW);
-        NOS = TL(NOS);
+      list new = NIL;
+      list eqns = TL(VAL(THE_ID));
+      while (!(nos == NIL)) {
+        list eqn = elem(eqns, (word)HD(nos));
+        removelineno(eqn);
+        new = cons(eqn, new);
+        nos = TL(nos);
       }
 
-      // note that the EQNS in "NEW" are now in the correct order
-      TL(VAL(THE_ID)) = NEW;
+      // note that the eqns in "new" are now in the correct order
+      TL(VAL(THE_ID)) = new;
       display(THE_ID, true, false);
       SAVED = false;
       clearmemory();
@@ -1692,34 +1726,35 @@ static void reordercom() {
 
 static void scriptreorder() {
 
-  list R = NIL;
+  list r = NIL;
   while ((haveid())) {
 
     if (have(DOTDOT_SY)) {
-      atom A = THE_ID, B = 0;
-      list X = NIL;
+      atom a = THE_ID;
+      atom b = 0;
+      list x = NIL;
 
       if (haveid()) {
-        B = THE_ID;
+        b = THE_ID;
       } else if (HD(TOKENS) == EOL) {
-        B = (atom)EOL;
+        b = (atom)EOL;
       }
 
-      if (B == 0) {
+      if (b == 0) {
         syntax();
       } else {
-        X = extract(A, B);
+        x = extract(a, b);
       }
 
-      if (X == NIL) {
+      if (x == NIL) {
         syntax();
       }
 
-      R = shunt(X, R);
+      r = shunt(x, r);
 
     } else if (member(SCRIPT, (list)THE_ID)) {
 
-      R = cons((list)THE_ID, R);
+      r = cons((list)THE_ID, r);
 
     } else {
 
@@ -1734,105 +1769,109 @@ static void scriptreorder() {
   }
 
   {
-    list R1 = NIL;
-    while (!(TL(R) == NIL)) {
-      if (!(member(TL(R), HD(R))))
-        SCRIPT = sub1(SCRIPT, (atom)HD(R)), R1 = cons(HD(R), R1);
-      R = TL(R);
+    list r1 = NIL;
+    while (!(TL(r) == NIL)) {
+      if (!(member(TL(r), HD(r)))) {
+        SCRIPT = sub1(SCRIPT, (atom)HD(r)), r1 = cons(HD(r), r1);
+      }
+
+      r = TL(r);
     }
-    SCRIPT = append(extract((atom)HD(SCRIPT), (atom)HD(R)),
-                    append(R1, TL(extract((atom)HD(R), (atom)EOL))));
+    SCRIPT = append(extract((atom)HD(SCRIPT), (atom)HD(r)),
+                    append(r1, TL(extract((atom)HD(r), (atom)EOL))));
     SAVED = false;
   }
 }
 
-static word no_of_eqns(atom A) {
+static word no_of_eqns(atom a) {
 
-  return VAL(A) == NIL ? 0 : length(TL(VAL(A)));
+  return VAL(a) == NIL ? 0 : length(TL(VAL(a)));
 }
 
 // library functions are recognisable by not being part of the script
-static bool protected(atom A) {
+static bool protected(atom a) {
 
-  if (member(SCRIPT, (list)A)) {
+  if (member(SCRIPT, (list)a)) {
     return false;
   }
 
-  if (member(HOLDSCRIPT, (list)A)) {
-    if (!(member(GET_HITS, (list)A))) {
-      GET_HITS = cons((list)A, GET_HITS);
+  if (member(HOLDSCRIPT, (list)a)) {
+    if (!(member(GET_HITS, (list)a))) {
+      GET_HITS = cons((list)a, GET_HITS);
     }
     return false;
   }
-  fprintf(bcpl_OUTPUT, "\"%s\" is predefined and cannot be altered\n", NAME(A));
+  fprintf(bcpl_OUTPUT, "\"%s\" is predefined and cannot be altered\n", NAME(a));
   return true;
 }
 
-// removes "A" from the script
+// removes "a" from the script
 // renamed to avoid conflict with remove(3)
-static void remove_atom(atom A) {
+static void remove_atom(atom a) {
 
-  SCRIPT = sub1(SCRIPT, A);
-  VAL(A) = NIL;
+  SCRIPT = sub1(SCRIPT, a);
+  VAL(a) = NIL;
 }
 
 // returns a segment of the script
-static list extract(atom A, atom B) {
+static list extract(atom a, atom b) {
 
-  list S = SCRIPT, X = NIL;
+  list s = SCRIPT;
+  list x = NIL;
 
-  while (!(S == NIL || HD(S) == (list)A)) {
-    S = TL(S);
+  while (!(s == NIL || HD(s) == (list)a)) {
+    s = TL(s);
   }
 
-  while (!(S == NIL || HD(S) == (list)B)) {
-    X = cons(HD(S), X), S = TL(S);
+  while (!(s == NIL || HD(s) == (list)b)) {
+    x = cons(HD(s), x);
+    s = TL(s);
   }
 
-  if (!(S == NIL)) {
-    X = cons(HD(S), X);
+  if (!(s == NIL)) {
+    x = cons(HD(s), x);
   }
 
-  if (S == NIL && B != (atom)EOL) {
-    X = NIL;
+  if (s == NIL && b != (atom)EOL) {
+    x = NIL;
   }
 
-  if (X == NIL) {
-    fprintf(bcpl_OUTPUT, "\"%s..%s\" not in script\n", NAME(A),
-            B == (atom)EOL ? "" : NAME(B));
+  if (x == NIL) {
+    fprintf(bcpl_OUTPUT, "\"%s..%s\" not in script\n", NAME(a),
+            b == (atom)EOL ? "" : NAME(b));
   }
 
-  return reverse(X);
+  return reverse(x);
 }
 
 static void deletecom() {
 
-  list DLIST = NIL;
+  list dlist = NIL;
   while (haveid()) {
 
     if (have(DOTDOT_SY)) {
-      atom A = THE_ID, B = (atom)EOL;
+      atom a = THE_ID;
+      atom b = (atom)EOL;
       if (haveid()) {
-        B = THE_ID;
+        b = THE_ID;
       } else if (!(HD(TOKENS) == EOL)) {
         syntax();
       }
-      DLIST = cons(cons((list)A, (list)B), DLIST);
+      dlist = cons(cons((list)a, (list)b), dlist);
     } else {
-      word MAX = no_of_eqns(THE_ID);
-      list NLIST = NIL;
+      word max = no_of_eqns(THE_ID);
+      list nlist = NIL;
 
       while (havenum()) {
-        word A = THE_NUM;
-        word B = have(DOTDOT_SY) ? havenum() ? THE_NUM : MAX : A;
-        word I;
+        word a = THE_NUM;
+        word b = have(DOTDOT_SY) ? havenum() ? THE_NUM : max : a;
 
-        for (I = A; I <= B; I++) {
-          NLIST = cons((list)I, NLIST);
+        for (word i = a; i <= b; i++) {
+          nlist = cons((list)i, nlist);
         }
       }
 
-      DLIST = cons(cons((list)THE_ID, NLIST), DLIST);
+      dlist = cons(cons((list)THE_ID, nlist), dlist);
     }
   }
 
@@ -1842,10 +1881,10 @@ static void deletecom() {
   }
 
   {
-    word DELS = 0;
+    word dels = 0;
 
     // delete all
-    if (DLIST == NIL) {
+    if (dlist == NIL) {
       if (SCRIPT == NIL) {
         displayall(false);
       } else {
@@ -1854,71 +1893,71 @@ static void deletecom() {
         }
 
         while (!(SCRIPT == NIL)) {
-          DELS = DELS + no_of_eqns((atom)HD(SCRIPT));
+          dels = dels + no_of_eqns((atom)HD(SCRIPT));
           VAL((atom)HD(SCRIPT)) = NIL;
           SCRIPT = TL(SCRIPT);
         }
       }
     }
-    while (!(DLIST == NIL)) {
+    while (!(dlist == NIL)) {
       //"NAME..NAME"
-      if (isatom(TL(HD(DLIST))) || TL(HD(DLIST)) == EOL) {
+      if (isatom(TL(HD(dlist))) || TL(HD(dlist)) == EOL) {
 
-        list X = extract((atom)HD(HD(DLIST)), (atom)TL(HD(DLIST)));
-        DLIST = TL(DLIST);
+        list x = extract((atom)HD(HD(dlist)), (atom)TL(HD(dlist)));
+        dlist = TL(dlist);
 
-        while (!(X == NIL)) {
-          DLIST = cons(cons(HD(X), NIL), DLIST), X = TL(X);
+        while (!(x == NIL)) {
+          dlist = cons(cons(HD(x), NIL), dlist);
+          x = TL(x);
         }
 
       } else {
 
-        atom NAME = (atom)HD(HD(DLIST));
-        list NOS = TL(HD(DLIST));
-        list NEW = NIL;
-        DLIST = TL(DLIST);
+        atom name = (atom)HD(HD(dlist));
+        list nos = TL(HD(dlist));
+        list new = NIL;
+        dlist = TL(dlist);
 
-        if (VAL(NAME) == NIL) {
-          display(NAME, false, false);
+        if (VAL(name) == NIL) {
+          display(name, false, false);
           continue;
         }
 
-        if (protected(NAME)) {
+        if (protected(name)) {
           continue;
         }
 
-        if (NOS == NIL) {
+        if (nos == NIL) {
 
-          DELS = DELS + no_of_eqns(NAME);
-          remove_atom(NAME);
+          dels = dels + no_of_eqns(name);
+          remove_atom(name);
           continue;
 
         } else {
 
-          word I;
-
-          for (I = no_of_eqns(NAME); I >= 1; I = I - 1) {
-            if (member(NOS, (list)I)) {
-              DELS = DELS + 1;
+          for (word i = no_of_eqns(name); i >= 1; i = i - 1) {
+            if (member(nos, (list)i)) {
+              dels = dels + 1;
             } else {
-              list EQN = elem(TL(VAL(NAME)), I);
-              removelineno(EQN);
-              NEW = cons(EQN, NEW);
+              list eqn = elem(TL(VAL(name)), i);
+              removelineno(eqn);
+              new = cons(eqn, new);
             }
           }
         }
 
-        TL(VAL(NAME)) = NEW;
+        TL(VAL(name)) = new;
 
         // comment field
-        if (NEW == NIL && TL(HD(VAL(NAME))) == NIL) {
-          remove_atom(NAME);
+        if (new == NIL && TL(HD(VAL(name))) == NIL) {
+          remove_atom(name);
         }
       }
     }
 
-    fprintf(bcpl_OUTPUT, "%" W " equations deleted\n", DELS);
-    if (DELS > 0) {
+    fprintf(bcpl_OUTPUT, "%" W " equations deleted\n", dels);
+
+    if (dels > 0) {
       SAVED = false;
       clearmemory();
     }
