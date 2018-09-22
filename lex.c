@@ -17,12 +17,18 @@
 extern void escapetonextcommand();
 
 // global variables owned by lex.c
-word ERRORFLAG, EQNFLAG, EXPFLAG, COMMENTFLAG;
+word ERRORFLAG;
+word EQNFLAG;
+word EXPFLAG;
+word COMMENTFLAG;
+
 bool SKIPCOMMENTS;
 list TOKENS = 0;
 atom THE_ID = 0;
 list THE_CONST = 0;
-word THE_NUM, THE_DECIMALS;
+
+word THE_NUM;
+word THE_DECIMALS;
 
 // local function declarations
 static token readtoken(void);
@@ -39,8 +45,8 @@ static token MISSING;
 void readline() {
 
   do {
-    list *P = &TOKENS;
-    token T = 0;
+    list *p = &TOKENS;
+    token t = 0;
     MISSING = 0;
     TOKENS = NIL;
     THE_DECIMALS = 0;
@@ -58,14 +64,14 @@ void readline() {
     EQNFLAG = false;
 
     do {
-      T = readtoken();
+      t = readtoken();
 
       // GCC
-      *P = cons((list)T, NIL);
-      P = &(TL(*P));
+      *p = cons((list)t, NIL);
+      p = &(TL(*p));
 
     } while (
-        !(T == (token)EOL || T == (token)ENDSTREAMCH || T == (token)BADTOKEN));
+        !(t == (token)EOL || t == (token)ENDSTREAMCH || t == (token)BADTOKEN));
 
     // ignore first line of Unix script file
     if (HD(TOKENS) == (list)'#' && iscons(TL(TOKENS)) &&
@@ -73,7 +79,7 @@ void readline() {
       continue;
     }
 
-    if (T == (token)EOL || T == (token)ENDSTREAMCH) {
+    if (t == (token)EOL || t == (token)ENDSTREAMCH) {
       return;
     }
 
@@ -81,6 +87,7 @@ void readline() {
     ERRORFLAG = true;
 
     return;
+
   } while (1);
 }
 
@@ -89,72 +96,72 @@ void readline() {
 // TOKEN: := CHAR | <certain digraphs, represented by nos above 256 > |
 //          | cons(IDENT, ATOM) | cons(CONST, <ATOM | NUM>)
 static token readtoken(void) {
-  word CH = rdch();
+  word ch = rdch();
 
-  while ((CH == ' ' || CH == '\t')) {
-    CH = rdch();
+  while ((ch == ' ' || ch == '\t')) {
+    ch = rdch();
   }
 
-  if (CH == '\n') {
+  if (ch == '\n') {
     return (token)EOL;
   }
 
-  if (CH == EOF) {
+  if (ch == EOF) {
     return (token)ENDSTREAMCH;
   }
 
-  if (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z') ||
-      (EXPECTFILE && !isspace(CH))) {
+  if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') ||
+      (EXPECTFILE && !isspace(ch))) {
     // expt to allow _ID, discontinued
-    // ||(CH == '_' && peekalpha())
+    // ||(ch == '_' && peekalpha())
 
     do {
-      bufch(CH);
-      CH = rdch();
-    } while (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z') ||
-             isdigit(CH) || CH == '\'' || CH == '_' ||
-             (EXPECTFILE && !isspace(CH)));
+      bufch(ch);
+      ch = rdch();
+    } while (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') ||
+             isdigit(ch) || ch == '\'' || ch == '_' ||
+             (EXPECTFILE && !isspace(ch)));
 
-    unrdch(CH);
+    unrdch(ch);
 
     {
-      list X = (list)packbuffer();
+      list x = (list)packbuffer();
       if (TOKENS != NIL && HD(TOKENS) == (token)'/' && TL(TOKENS) == NIL &&
-          member(FILECOMMANDS, X)) {
+          member(FILECOMMANDS, x)) {
         EXPECTFILE = true;
       }
-      return cons((list)IDENT, X);
+      return cons((list)IDENT, x);
     }
   }
 
-  if (isdigit(CH)) {
+  if (isdigit(ch)) {
     THE_NUM = 0;
 
-    while (isdigit(CH)) {
-      THE_NUM = THE_NUM * 10 + CH - '0';
+    while (isdigit(ch)) {
+      THE_NUM = THE_NUM * 10 + ch - '0';
       if (THE_NUM < 0) {
         bcpl_writes("\n**integer overflow**\n");
         escapetonextcommand();
       }
-      CH = rdch();
+      ch = rdch();
     }
 
-    if (CH != EOF) {
-      unrdch(CH);
+    if (ch != EOF) {
+      unrdch(ch);
     }
 
     return cons((token)CONST, stonum(THE_NUM));
   }
 
-  if (CH == '"') {
-    atom A;
-    CH = rdch();
+  if (ch == '"') {
+    atom a;
+    ch = rdch();
 
-    while (!(CH == '"' || CH == '\n' || CH == EOF)) {
+    while (!(ch == '"' || ch == '\n' || ch == EOF)) {
       // add C escape chars, DT 2015
-      if (CH == '\\') {
-        CH = rdch();
-        switch (CH) {
+      if (ch == '\\') {
+        ch = rdch();
+        switch (ch) {
         case 'a':
           bufch('\a');
           break;
@@ -188,144 +195,164 @@ static token readtoken(void) {
         case '\n':
           return (token)BADTOKEN;
         default:
-          if ('0' <= CH && CH <= '9') {
-            int i = 3, n = CH - '0', n1;
-            CH = rdch();
-            while (--i && '0' <= CH && CH <= '9' &&
-                   (n1 = 10 * n + CH - '0') < 256)
-              n = n1, CH = rdch();
+          if ('0' <= ch && ch <= '9') {
+            int i = 3;
+            int n = ch - '0';
+            int n1;
+            ch = rdch();
+            while (--i && '0' <= ch && ch <= '9' &&
+                   (n1 = 10 * n + ch - '0') < 256) {
+              n = n1, ch = rdch();
+            }
             bufch(n);
-            unrdch(CH);
+            unrdch(ch);
           }
         }
       } else
-        bufch(CH);
-      CH = rdch();
+        bufch(ch);
+      ch = rdch();
     }
-    A = packbuffer();
-    return CH != '"' ? (token)BADTOKEN : cons(CONST, (list)A);
+    a = packbuffer();
+    return ch != '"' ? (token)BADTOKEN : cons(CONST, (list)a);
   }
+
   {
-    word CH2 = rdch();
-    if (CH == ':' && CH2 == '-' && TOKENS != NIL && iscons(HD(TOKENS)) &&
+    word ch2 = rdch();
+    if (ch == ':' && ch2 == '-' && TOKENS != NIL && iscons(HD(TOKENS)) &&
         HD(HD(TOKENS)) == IDENT && TL(TOKENS) == NIL) {
-      list C = NIL;
-      list SUBJECT = TL(HD(TOKENS));
+      list c = NIL;
+      list subject = TL(HD(TOKENS));
       COMMENTFLAG = 1;
 
-      CH = rdch();
+      ch = rdch();
 
       // ignore blank lines
-      while (CH == '\n') {
-        COMMENTFLAG++, CH = rdch();
+      while (ch == '\n') {
+        COMMENTFLAG++;
+        ch = rdch();
       }
 
       // option - s
       if (SKIPCOMMENTS) {
-        while (!(CH == ';' || CH == EOF)) {
-          if (CH == '\n') {
+        while (!(ch == ';' || ch == EOF)) {
+          if (ch == '\n') {
             COMMENTFLAG++;
           }
-          CH = rdch();
+          ch = rdch();
         }
         return NIL;
       }
 
-      if (CH == ';') {
+      if (ch == ';') {
         return NIL;
       }
 
-      while (!(CH == ';' || CH == EOF))
-        if (CH == '\n') {
-          C = cons((list)packbuffer(), C);
+      while (!(ch == ';' || ch == EOF))
+        if (ch == '\n') {
+          c = cons((list)packbuffer(), c);
           do {
             COMMENTFLAG++;
-            CH = rdch();
-          } while (CH == '\n');
+            ch = rdch();
+          } while (ch == '\n');
           // ignore blank lines
         } else {
-          bufch(CH);
-          CH = rdch();
+          bufch(ch);
+          ch = rdch();
         }
 
-      if (CH == EOF) {
-        fprintf(bcpl_OUTPUT, "%s :- ...", NAME((atom)SUBJECT)),
+      if (ch == EOF) {
+        fprintf(bcpl_OUTPUT, "%s :- ...", NAME((atom)subject)),
             bcpl_writes(" missing \";\"\n");
         COMMENTFLAG--;
         syntax();
       } else {
-        C = cons((list)packbuffer(), C);
+        c = cons((list)packbuffer(), c);
       }
 
-      return reverse(C);
+      return reverse(c);
     }
 
-    if (CH == CH2) {
-      if (CH == '+')
+    if (ch == ch2) {
+      if (ch == '+') {
         return PLUSPLUS_SY;
-      if (CH == '.')
+      }
+
+      if (ch == '.') {
         return DOTDOT_SY;
-      if (CH == '-')
+      }
+
+      if (ch == '-') {
         return DASHDASH_SY;
-      if (CH == '*')
+      }
+
+      if (ch == '*') {
         return STARSTAR_SY;
+      }
 
       // added DT 2015
-      if (CH == '=')
+      if (ch == '=') {
         return EQ_SY;
+      }
 
       // comment to end of line(new)
-      if (CH == '|')
+      if (ch == '|') {
         do {
-          CH = rdch();
-          if (CH == '\n')
+          ch = rdch();
+          if (ch == '\n')
             return EOL;
-          if (CH == EOF)
+          if (ch == EOF)
             return ENDSTREAMCH;
         } while (1);
+      }
     }
 
-    if (CH == '<' && '-' == CH2) {
+    if (ch == '<' && '-' == ch2) {
       return BACKARROW_SY;
     }
 
-    if (CH2 == '=') {
-      if (CH == '>')
+    if (ch2 == '=') {
+      if (ch == '>') {
         return GE_SY;
-      if (CH == '<')
+      }
+
+      if (ch == '<') {
         return LE_SY;
-      if (NOTCH(CH))
+      }
+
+      if (NOTCH(ch)) {
         return NE_SY;
+      }
     }
 
-    unrdch(CH2);
+    unrdch(ch2);
 
-    if (CH == '?' || CH == '!') {
+    if (ch == '?' || ch == '!') {
       EXPFLAG = true;
     }
 
-    if (CH == '=' && !LEGACY) {
+    if (ch == '=' && !LEGACY) {
       EQNFLAG = true;
     }
 
     // GCC warning expected
-    return (token)(NOTCH(CH) ? '\\' : CH);
+    return (token)(NOTCH(ch) ? '\\' : ch);
   }
 }
 
-word caseconv(word CH) { return tolower(CH); }
+word caseconv(word ch) { return tolower(ch); }
 
 static word peekalpha() {
-  word CH = rdch();
-  unrdch(CH);
-  return (('a' <= CH && CH <= 'z') || ('A' <= CH && CH <= 'Z'));
+
+  word ch = rdch();
+  unrdch(ch);
+  return (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z'));
 }
 
-void writetoken(token T) {
-  if (T < (token)256 && T > (token)32) {
-    wrch((word)T);
+void writetoken(token t) {
+  if (t < (token)256 && t > (token)32) {
+    wrch((word)t);
   } else {
-    switch ((word)T) {
+    switch ((word)t) {
     case (word)'\n':
       bcpl_writes("newline");
       break;
@@ -357,21 +384,23 @@ void writetoken(token T) {
       bcpl_writes("..");
       break;
     default:
-      if (!(iscons(T) && (HD(T) == IDENT || HD(T) == CONST)))
-        fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", T);
-      else if (HD(T) == IDENT)
+      if (!(iscons(t) && (HD(t) == IDENT || HD(t) == CONST))) {
+        fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", t);
+      } else if (HD(t) == IDENT) {
         bcpl_writes(NAME((atom)(
-            iscons(TL(T)) && HD(TL(T)) == (list)ALPHA ? TL(TL(T)) : TL(T))));
-      else if (isnum(TL(T)))
-        bcpl_writen(getnum(TL(T)));
-      else
-        fprintf(bcpl_OUTPUT, "\"%s\"", NAME((atom)TL(T)));
+            iscons(TL(t)) && HD(TL(t)) == (list)ALPHA ? TL(TL(t)) : TL(t))));
+      } else if (isnum(TL(t))) {
+        bcpl_writen(getnum(TL(t)));
+      } else {
+        fprintf(bcpl_OUTPUT, "\"%s\"", NAME((atom)TL(t)));
+      }
     }
   }
 }
 
-bool have(token T) {
-  if (TOKENS == NIL || HD(TOKENS) != T) {
+bool have(token t) {
+
+  if (TOKENS == NIL || HD(TOKENS) != t) {
     return false;
   }
 
@@ -379,21 +408,23 @@ bool have(token T) {
   return true;
 }
 
-void check(token T) {
-  if (have(T)) {
+void check(token t) {
+
+  if (have(t)) {
     return;
   }
 
   ERRORFLAG = true;
 
   if (MISSING == 0) {
-    MISSING = T;
+    MISSING = t;
   }
 }
 
 void syntax() { ERRORFLAG = true; }
 
 word haveid() {
+
   while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
     return false;
   }
@@ -405,6 +436,7 @@ word haveid() {
 }
 
 word haveconst() {
+
   while (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
     return false;
   }
