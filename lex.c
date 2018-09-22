@@ -33,8 +33,6 @@ word THE_DECIMALS;
 // local function declarations
 static token readtoken(void);
 static word read_decimals(void);
-
-// returns value in hundredths
 static word peekalpha(void);
 
 // local variables
@@ -355,6 +353,7 @@ static token readtoken(void) {
 word caseconv(word ch) { return tolower(ch); }
 
 // peek one alphabet
+// returns value in hundredths
 static word peekalpha() {
 
   word ch = rdch();
