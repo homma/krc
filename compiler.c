@@ -61,17 +61,24 @@ list TRUTH;
 list FALSITY;
 list INFINITY;
 
-// setup_infixes() - interesting elements start at [1]
+// infix operator names
+//
+// interesting elements start at [1]
 // the indices correspond to the operator values in compiler.h
 // EQ_SY was (token)'=', changed DT May 2015
-static token INFIXNAMEVEC[] = {
+// renamed from INFIXNAMEVEC
+static token infix_names[] = {
     (token)0,   (token)':', PLUSPLUS_SY, DASHDASH_SY, (token)'|',
     (token)'&', (token)'>', GE_SY,       NE_SY,       EQ_SY,
     LE_SY,      (token)'<', (token)'+',  (token)'-',  (token)'*',
     (token)'/', (token)'%', STARSTAR_SY, (token)'.',
 };
-static word INFIXPRIOVEC[] = {0, 0, 0, 0, 1, 2, 3, 3, 3, 3,
-                              3, 3, 4, 4, 5, 5, 5, 6, 6};
+
+// infix operator priorities
+//
+// renamed from INIFXPRIOVEC
+static word infix_pri[] = {0, 0, 0, 0, 1, 2, 3, 3, 3, 3,
+                           3, 3, 4, 4, 5, 5, 5, 6, 6};
 
 // code vector
 //
@@ -107,7 +114,7 @@ static bool isinfix(list x) { return (list)COLON_OP <= x && x <= (list)DOT_OP; }
 static bool isrelop(list x) { return (list)GR_OP <= x && x <= (list)LS_OP; }
 
 // return the priority of an operator from its index in INFIX*
-static word diprio(operator op) { return op == -1 ? -1 : INFIXPRIOVEC[op]; }
+static word diprio(operator op) { return op == -1 ? -1 : infix_pri[op]; }
 
 // make infix operator
 //
@@ -120,10 +127,10 @@ static operator mkinfix(token t) {
     return EQ_OP;
   }
 
-  // search t in INFIXNAMEVEC
+  // search t in infix_names
   // infix operator's range is (COLON_OP(1) .. DOT_OP(18))
   word i = 1;
-  while (!(i > DOT_OP || INFIXNAMEVEC[i] == t)) {
+  while (!(i > DOT_OP || infix_names[i] == t)) {
     i++;
   }
 
@@ -254,7 +261,7 @@ void printexp(list e, word n) {
         } else if (TL(e) == (list)NOT_OP) {
           wrch('\\');
         } else {
-          writetoken(INFIXNAMEVEC[(word)TL(e)]);
+          writetoken(infix_names[(word)TL(e)]);
         }
 
         wrch('\'');
@@ -281,11 +288,11 @@ void printexp(list e, word n) {
 
         printexp(HD(TL(HD(TL(e)))), 4);
         wrch(' ');
-        writetoken(INFIXNAMEVEC[(word)HD(HD(TL(e)))]);
+        writetoken(infix_names[(word)HD(HD(TL(e)))]);
         wrch(' ');
         printexp(TL(TL(e)), 2);
 
-      } else if (isinfix(op) && INFIXPRIOVEC[(word)op] >= n) {
+      } else if (isinfix(op) && infix_pri[(word)op] >= n) {
 
         printexp(HD(TL(e)), leftprec((operator) op));
 
@@ -294,7 +301,7 @@ void printexp(list e, word n) {
           wrch(' ');
         }
 
-        writetoken(INFIXNAMEVEC[(word)op]);
+        writetoken(infix_names[(word)op]);
 
         if (op != (list)COLON_OP) {
           wrch(' ');
@@ -438,18 +445,18 @@ static word leftprec(operator op) {
 
   if (is_right_associative(op) || is_non_associative(op)) {
 
-    return INFIXPRIOVEC[op] + 1;
+    return infix_pri[op] + 1;
 
   } else {
 
-    return INFIXPRIOVEC[op];
+    return infix_pri[op];
   }
 
   // return op == COLON_OP || op == APPEND_OP || op == LISTDIFF_OP ||
   //                op == AND_OP || op == OR_OP || op == EXP_OP ||
   //                isrelop((list)op)
-  //            ? INFIXPRIOVEC[op] + 1
-  //            : INFIXPRIOVEC[op];
+  //            ? infix_pri[op] + 1
+  //            : infix_pri[op];
 }
 
 // returns operator precedence
@@ -457,17 +464,17 @@ static word rightprec(operator op) {
 
   if (is_right_associative(op)) {
 
-    return INFIXPRIOVEC[op];
+    return infix_pri[op];
 
   } else {
 
-    return INFIXPRIOVEC[op] + 1;
+    return infix_pri[op] + 1;
   }
 
   // return op == COLON_OP || op == APPEND_OP || op == LISTDIFF_OP ||
   //                op == AND_OP || op == OR_OP || op == EXP_OP
-  //            ? INFIXPRIOVEC[op]
-  //            : INFIXPRIOVEC[op] + 1;
+  //            ? infix_pri[op]
+  //            : infix_pri[op] + 1;
 }
 
 // puts nested and's into rightist form to ensure
