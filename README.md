@@ -61,4 +61,4 @@ keep it simple and small.
 
 ## To be fixed
 - `write "foo.txt" "foo"?` does not work
-- `'#'?`, `#!` causes segmentation fault
+- `'#'?`, `'#'!` causes segmentation fault
