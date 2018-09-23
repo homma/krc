@@ -194,7 +194,7 @@ typedef enum {
 //
 // needs to be confirmed
 //
-// precedences came from INFIXPRIOVEC
+// precedences came from infix_pri[]
 //
 // op name         symbol     symbol name     assoc   precedence   comment
 // ALPHA                                      -                    quasi op
