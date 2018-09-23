@@ -243,7 +243,7 @@ static void printzf_exp(list x) {
   // body
   printexp(HD(y), 0);
 
-  // print "such that" as bar if a generator directly follows
+  // print "such that" as bar '|' if a generator directly follows
   if (iscons(HD(x)) && HD(HD(x)) == (list)GENERATOR) {
     wrch('|');
   } else {
@@ -937,8 +937,6 @@ static word qualifier() {
   }
 }
 
-// also recognises the "such that" bar and converts it to ';'
-// to distinguish it from "or"
 static void perform_alpha_conversions() {
 
   list p = TOKENS;
@@ -949,6 +947,8 @@ static void perform_alpha_conversions() {
       continue;
     }
 
+    // recognises the "such that" bar '|' and converts it to ';'
+    // to distinguish it from "or"
     if (HD(p) == (token)'|' && isid(HD(TL(p))) && isgenerator(TL(TL(p)))) {
       HD(p) = (token)';';
     }
