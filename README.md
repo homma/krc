@@ -57,6 +57,7 @@ keep it simple and small.
 - change `(!( x == y ))` to `( x != y )` when there are only one condition
 - replace linenoise with its unicode supported version
 - reduce macros in order to apply source code formatter properly
+- put a proper name to list processings such as `HD(TL(HD(TL...` one by one
 
 ## To be fixed
 - `write "foo.txt" "foo"?` does not work
