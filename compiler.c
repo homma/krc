@@ -136,7 +136,7 @@ void printexp(list e, word n) {
     }
   } else {
 
-    if (!(iscons(e))) {
+    if (!iscons(e)) {
       if (e == (list)NOT_OP) {
         bcpl_writes("'\\'");
       } else if (e == (list)LENGTH_OP) {
@@ -168,7 +168,7 @@ void printexp(list e, word n) {
           printexp(HD(e), 0);
         }
         bcpl_writes("..");
-        if (!(TL(e) == INFINITY)) {
+        if (TL(e) != INFINITY) {
           printexp(TL(e), 0);
         }
         wrch(']');
@@ -197,9 +197,9 @@ void printexp(list e, word n) {
         wrch('\'');
       } else if (islistexp(e)) {
         wrch('[');
-        while (!(e == NIL)) {
+        while (e != NIL) {
           printexp(HD(TL(e)), 0);
-          if (!(TL(TL(e)) == NIL)) {
+          if (TL(TL(e)) != NIL) {
             wrch(',');
           }
           e = TL(TL(e));
@@ -216,12 +216,12 @@ void printexp(list e, word n) {
         printexp(TL(TL(e)), 2);
       } else if (isinfix(op) && INFIXPRIOVEC[(word)op] >= n) {
         printexp(HD(TL(e)), leftprec((operator) op));
-        if (!(op == (list)COLON_OP)) {
+        if (op != (list)COLON_OP) {
           // DOT.OP should be spaced, DT 2015
           wrch(' ');
         }
         writetoken(INFIXNAMEVEC[(word)op]);
-        if (!(op == (list)COLON_OP)) {
+        if (op != (list)COLON_OP) {
           wrch(' ');
         }
         printexp(TL(TL(e)), rightprec((operator) op));
@@ -235,8 +235,10 @@ void printexp(list e, word n) {
 }
 
 static void printzf_exp(list x) {
+
   list y = x;
-  while (!(TL(y) == NIL)) {
+
+  while (TL(y) != NIL) {
     y = TL(y);
   }
 
@@ -249,7 +251,8 @@ static void printzf_exp(list x) {
   } else {
     wrch(';');
   }
-  while (!(TL(x) == NIL)) {
+
+  while (TL(x) != NIL) {
     list qualifier = HD(x);
 
     if (iscons(qualifier) && HD(qualifier) == (list)GENERATOR) {
@@ -267,19 +270,25 @@ static void printzf_exp(list x) {
         wrch(',');
         printexp(HD(TL(qualifier)), 0);
       }
+
       bcpl_writes("<-");
       printexp(TL(TL(qualifier)), 0);
+
     } else {
+
       printexp(qualifier, 0);
     }
+
     x = TL(x);
-    if (!(TL(x) == NIL)) {
+
+    if (TL(x) != NIL) {
       wrch(';');
     }
   }
 }
 
 static bool islistexp(list e) {
+
   while (iscons(e) && HD(e) == (list)COLON_OP) {
     list e1 = TL(TL(e));
 
@@ -290,18 +299,21 @@ static bool islistexp(list e) {
     TL(TL(e)) = e1;
     e = e1;
   }
+
   return e == NIL;
 }
 
 static bool isrelation(list x) { return iscons(x) && isrelop(HD(x)); }
 
 static bool isrelation_beginning(list a, list x) {
+
   return (isrelation(x) && equal(HD(TL(x)), a)) ||
          (iscons(x) && HD(x) == (list)AND_OP &&
           isrelation_beginning(a, HD(TL(x))));
 }
 
 static word leftprec(operator op) {
+
   return op == COLON_OP || op == APPEND_OP || op == LISTDIFF_OP ||
                  op == AND_OP || op == OR_OP || op == EXP_OP ||
                  isrelop((list)op)
@@ -314,6 +326,7 @@ static word leftprec(operator op) {
 // all other infixes are left-associative
 
 static word rightprec(operator op) {
+
   return op == COLON_OP || op == APPEND_OP || op == LISTDIFF_OP ||
                  op == AND_OP || op == OR_OP || op == EXP_OP
              ? INFIXPRIOVEC[op]
@@ -323,6 +336,7 @@ static word rightprec(operator op) {
 // puts nested and's into rightist form to ensure
 // detection of continued relations
 static bool rotate(list e) {
+
   while (iscons(HD(TL(e))) && HD(HD(TL(e))) == (list)AND_OP) {
 
     list x = TL(HD(TL(e)));
@@ -577,7 +591,7 @@ static list rest(list c) {
 static list subtract(list x, list y) {
   list z = NIL;
 
-  while (!(x == y)) {
+  while (x != y) {
     z = cons(HD(x), z), x = TL(x);
   }
 
@@ -659,11 +673,11 @@ list equation() {
         code = append(code, expcode);
       }
 
-      if (!(HD(TOKENS) == EOFTOKEN)) {
+      if (HD(TOKENS) != EOFTOKEN) {
         check(EOL);
       }
 
-      if (!(ERRORFLAG)) {
+      if (!ERRORFLAG) {
         LASTLHS = lhs;
       }
 
@@ -1060,7 +1074,7 @@ static list formal() {
 
     check((token)']');
 
-    while (!(plist == NIL)) {
+    while (plist != NIL) {
       p = cons((token)COLON_OP, cons(HD(plist), p));
       plist = TL(plist);
     }

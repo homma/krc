@@ -54,7 +54,7 @@ keep it simple and small.
 - remove old comments
 - add comments
 - implement test cases
-- remove `(!(`
+- change `(!( x == y ))` to `( x != y )` when there are only one condition
 - replace linenoise with its unicode supported version
 - reduce macros in order to apply source code formatter properly
 
