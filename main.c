@@ -728,14 +728,16 @@ static void command() {
     SIGNOFF = true;
 
   } else if (have((token)'/')) {
+    // commands
 
     if (have(EOL)) {
 
       displayall(false);
-      // if ( have((token)'@') && have(EOL) ) listpm(); else
-      // for debugging the system
 
     } else {
+
+      // if ( have((token)'@') && have(EOL) ) { listpm(); }
+      // for debugging the system
 
       list p = COMMANDS;
 
@@ -745,10 +747,11 @@ static void command() {
         // THE_ID = mkatom(scaseconv(NAME(THE_ID)));
 
         // change it to upper-case
+        // always accept commands in either case
         set_the_id(mkatom(scaseconv(NAME(the_id()))));
 
-        // always accept commands in either case
       } else {
+
         p = NIL;
       }
 
@@ -778,14 +781,17 @@ static void command() {
     displaycom();
 
   } else if (COMMENTFLAG > 0) {
+    // comment
 
     comment();
 
   } else if (EQNFLAG) {
+    // equation
 
     newequation();
 
   } else {
+    // expression
 
     evaluation();
   }
@@ -798,7 +804,7 @@ static void command() {
 static bool startdisplaycom() {
 
   list hold = TOKENS;
-  word r = haveid() && (have(EOL) || have((token)DOTDOT_SY));
+  bool r = haveid() && (have(EOL) || have((token)DOTDOT_SY));
   TOKENS = hold;
   return r;
 }
@@ -834,7 +840,7 @@ static void displaycom() {
         x = extract(a, b);
       }
 
-      while (!(x == NIL)) {
+      while (x != NIL) {
         display((atom)HD(x), false, false);
         x = TL(x);
       }
@@ -857,7 +863,7 @@ static void displayall(bool doublespacing) {
     bcpl_writes("Script=empty\n");
   }
 
-  while (!(p == NIL)) {
+  while (p != NIL) {
 
     // don't display builtin fns (relevant only in /openlib)
     if (!(primitive((atom)HD(p)))) {
