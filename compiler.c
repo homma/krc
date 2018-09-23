@@ -85,7 +85,11 @@ void init_codev() {
   CODEV = NIL;
 }
 
+// check x is an operator
 static bool isop(list x) {
+
+  // check if x is in operator enum - see compiler.h
+  // distinct check for ALPHA and INDIR since they are minus value
   return x == (list)ALPHA || x == (list)INDIR ||
          ((list)QUOTE <= x && x <= (list)QUOTE_OP);
 }
