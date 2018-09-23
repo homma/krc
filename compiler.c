@@ -113,7 +113,7 @@ static bool isinfix(list x) { return (list)COLON_OP <= x && x <= (list)DOT_OP; }
 // check if x is a relational operator
 static bool isrelop(list x) { return (list)GR_OP <= x && x <= (list)LS_OP; }
 
-// return the priority of an operator from its index in INFIX*
+// return the priority of an operator from its index in infix_pri
 static word diprio(operator op) { return op == -1 ? -1 : infix_pri[op]; }
 
 // make infix operator
