@@ -72,13 +72,13 @@ typedef enum {
   ALPHA = -2,
   INDIR = -1,
   QUOTE = 0,
-  // infix operators
+  // infix operators ( COLON_OP .. DOT_OP )
   COLON_OP = 1,
   APPEND_OP = 2,
   LISTDIFF_OP = 3,
   OR_OP = 4,
   AND_OP = 5,
-  // subgroup: relational operators
+  // subgroup: relational operators ( GR_OP .. LS_OP )
   GR_OP = 6,
   GE_OP = 7,
   NE_OP = 8,
@@ -189,6 +189,43 @@ typedef enum {
 //      #
 // Notes - "%" is remainder operator, "." is functional composition and "#"
 // takes the length of lists
+//
+
+//
+// needs to be confirmed
+//
+// precedences came from INFIXPRIOVEC
+//
+// op name         symbol     symbol name     assoc   precedence   comment
+// ALPHA                                      -                    quasi op
+// INDIA                                      -                    quasi op
+// QUOTE                                      -                    quasi op
+// COLON_OP        ":"                        right   0            infix
+// APPEND_OP       "++"       PLUSPLUS_SY     right   0            infix
+// LISTDIFF_OP     "--"       DASHDASH_SY     right   0            infix
+// OR_OP           "|"                        right   1            infix
+// AND_OP          "&"                        right   2            infix
+// GR_OP           ">"                        none    3            infix,rel
+// GE_OP           ">="       GE_SY           none    3            infix,rel
+// NE_OP           "\=","~="  NE_SY           none    3            infix,rel
+// EQ_OP           "=="       EQ_SY           none    3            infix,rel
+// LE_OP           "<="       LE_SY           none    3            infix,rel
+// LS_OP           "<"                        none    3            infix,rel
+// PLUS_OP         "+"                        left    4            infix
+// MINUS_OP        "-"                        left    4            infix
+// TIMES_OP        "*"                        left    5            infix
+// DIV_OP          "/"                        left    5            infix
+// REM_OP          "%"                        left    5            infix
+// EXP_OP          "**"       STARSTAR_SY     right   6            infix
+// DOT_OP          "."                        left    6            infix
+// DOTDOT_OP       ".."       DOTDOT_SY       -
+// COMMADOTDOT_OP  "_,_.."    COMMADOTDOT_SY  -
+// ZF_OP                                                           internal op
+// GENERATOR       "<-"       BACKARROW_SY    -
+// LENGTH_OP       "#"                        -                    prefix
+// NEG_OP          "-"                        -                    prefix
+// NOT_OP          "\", "~"                   -                    prefix
+// QUOTE_OP        "'"                        -
 //
 
 //// compiler globals

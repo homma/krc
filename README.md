@@ -58,3 +58,6 @@ keep it simple and small.
 - replace linenoise with its unicode supported version
 - reduce macros in order to apply source code formatter properly
 
+## To be fixed
+- `write "foo.txt" "foo"?` does not work
+- `'#'?`, `#!` causes segmentation fault
