@@ -323,12 +323,16 @@ void GC3(jmp_buf *envp, list *stackend) {
 #endif
   hold_interrupts();
   NOGCS = NOGCS + 1;
+
   if (ATGC) {
     bcpl_writes("<gc called>\n");
   }
+
   CONSP = OTHERBASE;
+
   // user's static variables etc.
   bases(copy);
+
   SHOW("bases");
   {
     for (word i = 0; i < 128; i++) {

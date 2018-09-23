@@ -682,7 +682,10 @@ static void helpcom() {
     return;
   }
 
-  topic = haveid() ? NAME(THE_ID) : NULL;
+  // avoid global variables
+  // topic = haveid() ? NAME(THE_ID) : NULL;
+
+  topic = haveid() ? NAME(the_id()) : NULL;
 
   if (!(topic && have(EOL))) {
     bcpl_writes("/h What? `/h' for options\n");
@@ -737,13 +740,25 @@ static void command() {
       list p = COMMANDS;
 
       if (haveid()) {
-        THE_ID = mkatom(scaseconv(NAME(THE_ID)));
+
+        // avoid global variables
+        // THE_ID = mkatom(scaseconv(NAME(THE_ID)));
+
+        // change it to upper-case
+        set_the_id(mkatom(scaseconv(NAME(the_id()))));
+
         // always accept commands in either case
       } else {
         p = NIL;
       }
 
-      while (!(p == NIL || THE_ID == (atom)HD(HD(p)))) {
+      // avoid global variables
+      // while (!(p == NIL || THE_ID == (atom)HD(HD(p)))) {
+      //   p = TL(p);
+      // }
+
+      atom id = the_id();
+      while (!(p == NIL || id == (atom)HD(HD(p)))) {
         p = TL(p);
       }
 
@@ -794,15 +809,25 @@ static void displaycom() {
 
     if (have(EOL)) {
 
-      display(THE_ID, true, false);
+      // avoid global variables
+      // display(THE_ID, true, false);
+
+      display(the_id(), true, false);
 
     } else if (have((token)DOTDOT_SY)) {
 
-      atom a = THE_ID;
+      // avoid global variables
+      // atom a = THE_ID;
+
+      atom a = the_id();
       list x = NIL;
 
-      // BUG?
-      atom b = have(EOL) ? (atom)EOL : haveid() && have(EOL) ? THE_ID : 0;
+      // avoid global variables
+      // atom b = have(EOL) ? (atom)EOL : haveid() && have(EOL) ? THE_ID : 0;
+
+      // bug?
+      atom b = have(EOL) ? (atom)EOL : haveid() && have(EOL) ? the_id() : 0;
+
       if (b == 0) {
         syntax();
       } else {
@@ -941,7 +966,11 @@ static void savecom() {
       switch (fork()) {
       case 0:
         // child process
-        execlp("mv", "mv", "T#SCRIPT", NAME(THE_ID), (char *)0);
+
+        // avoid global variables
+        // execlp("mv", "mv", "T#SCRIPT", NAME(THE_ID), (char *)0);
+
+        execlp("mv", "mv", "T#SCRIPT", NAME(the_id()), (char *)0);
       default:
         // parent process
         wait(&status);
@@ -962,19 +991,37 @@ static void savecom() {
 static void filename() {
 
   if (have(EOL)) {
+
     if (LASTFILE == 0) {
+
       bcpl_writes("(No file set)\n");
       syntax();
+
     } else {
-      THE_ID = LASTFILE;
+
+      // avoid global variables
+      // THE_ID = LASTFILE;
+
+      set_the_id(LASTFILE);
     }
+
   } else if (haveid() && have(EOL)) {
-    LASTFILE = THE_ID;
+
+    // avoid global variables
+    // LASTFILE = THE_ID;
+
+    LASTFILE = the_id();
+
   } else {
-    if (haveconst() && have(EOL) && !isnum(THE_CONST)) {
+
+    // avoid global variables
+    // if (haveconst() && have(EOL) && !isnum(THE_CONST)) {
+
+    if (haveconst() && have(EOL) && !isnum(the_const())) {
       bcpl_writes("(Warning - quotation marks no longer expected around "
                   "filenames in file commands - DT, Nov 81)\n");
     }
+
     syntax();
   }
 }
@@ -1015,7 +1062,10 @@ static void getcom() {
   SCRIPT = NIL;
   GET_HITS = NIL;
 
-  getfile(NAME(THE_ID));
+  // avoid global variables
+  // getfile(NAME(THE_ID));
+
+  getfile(NAME(the_id()));
   check_hits();
 
   SCRIPT = append(HOLDSCRIPT, SCRIPT), SAVED = clean, HOLDSCRIPT = NIL;
@@ -1092,7 +1142,12 @@ static void listcom() {
   }
 
   {
-    char *fname = NAME(THE_ID);
+
+    // avoid global variables
+    // char *fname = NAME(THE_ID);
+
+    char *fname = NAME(the_id());
+
     FILE *in = bcpl_findinput(fname);
 
     if (!(okfile(in, fname))) {
@@ -1248,13 +1303,21 @@ static void renamecom() {
   list z = NIL;
 
   while (haveid()) {
-    x = cons((list)THE_ID, x);
+
+    // avoid global variables
+    // x = cons((list)THE_ID, x);
+
+    x = cons((list)the_id(), x);
   }
 
   check((token)',');
 
   while (haveid()) {
-    y = cons((list)THE_ID, y);
+
+    // avoid global variables
+    // y = cons((list)THE_ID, y);
+
+    y = cons((list)the_id(), y);
   }
 
   check(EOL);
@@ -1403,7 +1466,12 @@ static void newequation() {
   word eqno = -1;
 
   if (havenum()) {
-    eqno = 100 * THE_NUM;
+
+    // avoid global variables
+    // eqno = 100 * THE_NUM;
+
+    eqno = 100 * the_num();
+
     check((token)')');
   }
 
@@ -1667,14 +1735,29 @@ static void reordercom() {
 
   if (isid(HD(TOKENS)) &&
       (isid(HD(TL(TOKENS))) || HD(TL(TOKENS)) == (list)DOTDOT_SY)) {
+
     scriptreorder();
+
   } else if (haveid() && HD(TOKENS) != EOL) {
+
     list nos = NIL;
-    word max = no_of_eqns(THE_ID);
+
+    // avoid global variables
+    // word max = no_of_eqns(THE_ID);
+
+    word max = no_of_eqns(the_id());
 
     while (havenum()) {
-      word a = THE_NUM;
-      word b = have(DOTDOT_SY) ? havenum() ? THE_NUM : max : a;
+
+      // avoid global variables
+      // word a = THE_NUM;
+
+      word a = the_num();
+
+      // avoid global variables
+      // word b = have(DOTDOT_SY) ? havenum() ? THE_NUM : max : a;
+
+      word b = have(DOTDOT_SY) ? havenum() ? the_num() : max : a;
 
       for (word i = a; i <= b; i++) {
         if (!member(nos, (list)i) && 1 <= i && i <= max) {
@@ -1689,12 +1772,23 @@ static void reordercom() {
       return;
     }
 
-    if (VAL(THE_ID) == NIL) {
-      display(THE_ID, false, false);
+    // avoid global variables
+    // if (VAL(THE_ID) == NIL) {
+    //   display(THE_ID, false, false);
+    //   return;
+    // }
+    //
+    // if (protected(THE_ID)) {
+    //   return;
+    // }
+
+    atom id = the_id();
+    if (VAL(id) == NIL) {
+      display(id, false, false);
       return;
     }
 
-    if (protected(THE_ID)) {
+    if (protected(id)) {
       return;
     }
 
@@ -1710,8 +1804,14 @@ static void reordercom() {
     // note that "nos" are in reverse order
     {
       list new = NIL;
-      list eqns = TL(VAL(THE_ID));
+
+      // avoid global variables
+      // list eqns = TL(VAL(THE_ID));
+
+      list eqns = TL(VAL(id));
+
       while (!(nos == NIL)) {
+
         list eqn = elem(eqns, (word)HD(nos));
         removelineno(eqn);
         new = cons(eqn, new);
@@ -1719,8 +1819,13 @@ static void reordercom() {
       }
 
       // note that the eqns in "new" are now in the correct order
-      TL(VAL(THE_ID)) = new;
-      display(THE_ID, true, false);
+
+      // avoid global variables
+      // TL(VAL(THE_ID)) = new;
+      // display(THE_ID, true, false);
+
+      TL(VAL(id)) = new;
+      display(id, true, false);
       SAVED = false;
       clearmemory();
     }
@@ -1735,12 +1840,20 @@ static void scriptreorder() {
   while ((haveid())) {
 
     if (have(DOTDOT_SY)) {
-      atom a = THE_ID;
+
+      // avoid global variables;
+      // atom a = THE_ID;
+
+      atom a = the_id();
       atom b = 0;
       list x = NIL;
 
       if (haveid()) {
-        b = THE_ID;
+
+        // avoid global vairables
+        // b = THE_ID;
+
+        b = the_id();
       } else if (HD(TOKENS) == EOL) {
         b = (atom)EOL;
       }
@@ -1757,13 +1870,22 @@ static void scriptreorder() {
 
       r = shunt(x, r);
 
-    } else if (member(SCRIPT, (list)THE_ID)) {
+      // avoid global variables
+      // } else if (member(SCRIPT, (list)THE_ID)) {
+      //
+      //   r = cons((list)THE_ID, r);
 
-      r = cons((list)THE_ID, r);
+    } else if (member(SCRIPT, (list)the_id())) {
+
+      r = cons((list)the_id(), r);
 
     } else {
 
-      fprintf(bcpl_OUTPUT, "\"%s\" not in script\n", NAME(THE_ID));
+      // avoid global variables
+      // fprintf(bcpl_OUTPUT, "\"%s\" not in script\n", NAME(THE_ID));
+
+      fprintf(bcpl_OUTPUT, "\"%s\" not in script\n", NAME(the_id()));
+
       syntax();
     }
   }
@@ -1855,28 +1977,54 @@ static void deletecom() {
   while (haveid()) {
 
     if (have(DOTDOT_SY)) {
-      atom a = THE_ID;
+
+      // avoid global variables
+      // atom a = THE_ID;
+
+      atom a = the_id();
       atom b = (atom)EOL;
+
       if (haveid()) {
-        b = THE_ID;
+
+        // avoid global variables
+        // b = THE_ID;
+
+        b = the_id();
+
       } else if (!(HD(TOKENS) == EOL)) {
+
         syntax();
       }
+
       dlist = cons(cons((list)a, (list)b), dlist);
+
     } else {
-      word max = no_of_eqns(THE_ID);
+
+      // avoid global variables
+      // word max = no_of_eqns(THE_ID);
+
+      word max = no_of_eqns(the_id());
+
       list nlist = NIL;
 
       while (havenum()) {
-        word a = THE_NUM;
-        word b = have(DOTDOT_SY) ? havenum() ? THE_NUM : max : a;
+
+        // avoid global variables
+        // word a = THE_NUM;
+        // word b = have(DOTDOT_SY) ? havenum() ? THE_NUM : max : a;
+
+        word a = the_num();
+        word b = have(DOTDOT_SY) ? havenum() ? the_num() : max : a;
 
         for (word i = a; i <= b; i++) {
           nlist = cons((list)i, nlist);
         }
       }
 
-      dlist = cons(cons((list)THE_ID, nlist), dlist);
+      // avoid global variables
+      // dlist = cons(cons((list)THE_ID, nlist), dlist);
+
+      dlist = cons(cons((list)the_id(), nlist), dlist);
     }
   }
 

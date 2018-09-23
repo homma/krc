@@ -85,13 +85,14 @@ void init_codev() {
   CODEV = NIL;
 }
 
-// check x is an operator
+// check if x is an operator
 static bool isop(list x) {
 
+  // return x == (list)ALPHA || x == (list)INDIR ||
+  //        ((list)QUOTE <= x && x <= (list)QUOTE_OP);
+
   // check if x is in operator enum - see compiler.h
-  // distinct check for ALPHA and INDIR since they are minus value
-  return x == (list)ALPHA || x == (list)INDIR ||
-         ((list)QUOTE <= x && x <= (list)QUOTE_OP);
+  return (list)ALPHA <= x && x <= (list)QUOTE_OP;
 }
 
 static bool isinfix(list x) { return (list)COLON_OP <= x && x <= (list)DOT_OP; }
@@ -632,8 +633,12 @@ list equation() {
 
   if (haveid()) {
 
-    subject = (list)THE_ID;
-    lhs = (list)THE_ID;
+    // avoid global variables
+    // subject = (list)THE_ID;
+    // lhs = (list)THE_ID;
+
+    subject = (list)the_id();
+    lhs = (list)the_id();
 
     while (startformal(HD(TOKENS))) {
 
@@ -786,11 +791,17 @@ static void simple() {
 
   if (haveid()) {
 
-    compilename(THE_ID);
+    // avoid global variables
+    // compilename(THE_ID);
+
+    compilename(the_id());
 
   } else if (haveconst()) {
 
-    plant1(LOAD_C, (list)internalise(THE_CONST));
+    // avoid global variables
+    // plant1(LOAD_C, (list)internalise(THE_CONST));
+
+    plant1(LOAD_C, (list)internalise(the_const()));
 
   } else if (have((token)'(')) {
 
@@ -933,8 +944,14 @@ static word qualifier() {
 
     do {
       haveid();
-      plant1(LOAD_C, (list)THE_ID);
+
+      // avoid global variables
+      // plant1(LOAD_C, (list)THE_ID;
+
+      plant1(LOAD_C, (list)the_id());
+
       n = n + 1;
+
     } while (have((token)','));
 
     check(BACKARROW_SY);
@@ -1056,14 +1073,27 @@ static void conv1(list t, list var, list var1) {
 static list formal() {
 
   if (haveid()) {
-    return (list)THE_ID;
+
+    // avoid global variables
+    // return (list)THE_ID;
+
+    return (list)the_id();
+
   } else if (haveconst()) {
-    return internalise(THE_CONST);
+
+    // avoid global variables
+    // return internalise(THE_CONST);
+
+    return internalise(the_const());
+
   } else if (have((token)'(')) {
+
     list p = pattern();
     check((token)')');
     return p;
+
   } else if (have((token)'[')) {
+
     list plist = NIL;
     list p = NIL;
 
@@ -1085,10 +1115,18 @@ static list formal() {
     // now they are in correct order
 
     return p;
+
   } else if (have((token)'-') && havenum()) {
-    THE_NUM = -THE_NUM;
-    return stonum(THE_NUM);
+
+    // avoid global variables
+    // THE_NUM = -THE_NUM;
+    // return stonum(THE_NUM);
+
+    negate_the_num();
+    return stonum(the_num());
+
   } else {
+
     // MISSING identifier|constant|(|[
     syntax();
     return NIL;

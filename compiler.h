@@ -35,10 +35,12 @@
 // lex analyser globals
 
 // bases
-extern list TOKENS, THE_CONST;
+extern list TOKENS;
+extern list THE_CONST;
 extern atom THE_ID;
 
-extern word THE_NUM;
+// avoid global variables
+// extern word THE_NUM;
 
 extern word EXPFLAG, ERRORFLAG, EQNFLAG;
 extern token MISSEDTOK;
@@ -195,10 +197,15 @@ typedef enum {
 extern void readline(void);
 extern bool have(token);
 extern word haveid(void);
+extern atom the_id(void);
+extern void set_the_id(atom);
 extern void syntax(void);
 extern void check(token);
 extern word haveconst(void);
+extern list the_const(void);
 extern word havenum(void);
+extern word the_num(void);
+extern void negate_the_num(void);
 extern void syntax_error(char *);
 
 // defined in compiler.c

@@ -608,6 +608,13 @@ word haveid() {
   return true;
 }
 
+// returns the atom in THE_ID
+// encupsulate the access to THE_ID and avoid global reference
+atom the_id() { return THE_ID; }
+
+// set THE_ID
+void set_the_id(atom id) { THE_ID = id; }
+
 // examine one token from TOKENS
 // if it is not a constant, return false
 // if it is a constant, set it to THE_CONST
@@ -630,6 +637,10 @@ word haveconst() {
   return true;
 }
 
+// returns the const in THE_CONST
+// encupsulate the access to THE_CONST and avoid global reference
+list the_const() { return THE_CONST; }
+
 // examine one token from TOKENS
 // if it is not a number, return false
 // if it is a number, set it to THE_NUM
@@ -651,6 +662,13 @@ word havenum() {
 
   return true;
 }
+
+// returns the number in THE_NUM
+// encupsulate the access to THE_NUM and avoid global reference
+word the_num() { return THE_NUM; }
+
+// change the sign of THE_NUM
+void negate_the_num() { THE_NUM = -THE_NUM; }
 
 // syntax error diagnosis (needs refining)
 void syntax_error(char *message) {
