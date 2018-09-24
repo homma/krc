@@ -1384,6 +1384,7 @@ static list internalise(list val) {
     return FALSITY;
 
   } else if (isatom(val)) {
+    // (QUOTE . atom)
 
     return cons((list)QUOTE, val);
 
