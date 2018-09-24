@@ -56,6 +56,9 @@ extern list isokcons(list);
 // (_ . next_token)
 #define next(e) TL(e)
 
+// // (token . next_token)
+// #define gettoken(e) HD(e)
+
 // (cons . next_token)
 #define getcons(e) HD(e)
 
