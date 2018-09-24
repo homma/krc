@@ -276,8 +276,8 @@ void printexp(list e, word n) {
 
           printexp(gettoken(next(e)), 0);
 
-          // first time : [ next , next_next ]
-          // after that : [ e , next , next_next ]
+          // first time : [ next , next_next
+          // after that : [ e , next , next_next
           if (next(next(e)) != NIL) {
             wrch(',');
           }
