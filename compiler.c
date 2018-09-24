@@ -202,15 +202,15 @@ void printexp(list e, word n) {
 
         printexp(op, 7);
         wrch(' ');
-        printexp(TL(e), 8);
+        printexp(next(e), 8);
 
       } else if (op == (list)QUOTE) {
 
-        printatom((atom)TL(e), true);
+        printatom((atom)getval(e), true);
 
       } else if (op == (list)INDIR || op == (list)ALPHA) {
 
-        printexp(TL(e), n);
+        printexp(next(e), n);
 
       } else if (op == (list)DOTDOT_OP || op == (list)COMMADOTDOT_OP) {
 

@@ -76,6 +76,7 @@ extern list isokcons(list);
 // (IDENT . val)
 // (CONST . val)
 // (CONST . (FULLWORD . num)) => (FULLWORD . num)
+// (QUOTE . atom)
 #define getval(e) TL(e)
 
 // (op . _)
