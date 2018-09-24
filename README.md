@@ -4,6 +4,11 @@ This is a modified copy of Kent Recursive Calculator distributed at http://krc-l
 
 ## ChangeLog
 
+### 2018.09.25
+- added list prcessing helper macros
+  - `next`, `getcons`, `getatom`, `getint`, `kind`, `getval`, `getop`
+  - to be used instead of `(HD(TL(HD(TL(HD(TL` ...
+
 ### 2018.09.22
 - changed BCPL string to C string
 - downcased `LIST`, `ATOM` and `TOKEN`
