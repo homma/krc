@@ -157,10 +157,12 @@ int main(int argc, char **argv) {
   // avoid this by upping the soft stack limit to the hard maximum.
   {
     struct rlimit rlim;
+
     if (getrlimit(RLIMIT_STACK, &rlim) == 0) {
       rlim.rlim_cur = rlim.rlim_max;
       setrlimit(RLIMIT_STACK, &rlim);
     }
+
     // it says that this can also affect stack growth
     if (getrlimit(RLIMIT_AS, &rlim) == 0) {
       rlim.rlim_cur = rlim.rlim_max;
@@ -204,18 +206,25 @@ int main(int argc, char **argv) {
   // by doing a graph copy from one space to the other
   ATOMSPACE = DICMAX / atomsize;
   CONSBASE = (list)malloc(SPACE * sizeof(*CONSBASE));
+
   if (CONSBASE == (void *)-1) {
     space_error("Not enough memory");
   }
-  CONSP = CONSBASE, CONSLIMIT = CONSBASE + SPACE;
+
+  CONSP = CONSBASE;
+  CONSLIMIT = CONSBASE + SPACE;
   OTHERBASE = (list)malloc(SPACE * sizeof(*CONSBASE));
+
   if (OTHERBASE == (void *)-1) {
     space_error("Not enough memory");
   }
+
   ATOMBASE = (atom)malloc(ATOMSPACE * sizeof(*ATOMBASE));
+
   if (ATOMBASE == (void *)-1) {
     space_error("Not enough memory");
   }
+
   ATOMP = ATOMBASE;
   ATOMLIMIT = ATOMBASE + ATOMSPACE;
 
@@ -250,7 +259,7 @@ word haveparam(word ch) {
 }
 ***/
 
-// creates a list cell with X and Y for its fields
+// creates a list cell with x and y for its fields in CONSBASE
 list cons(list x, list y) {
 
   if (CONSP >= (CONSLIMIT - 1)) {
@@ -450,10 +459,12 @@ static void copy(list *p) {
   //         wrch('\n')  $) <>
 
   while (CONSBASE <= *p && *p < CONSLIMIT) {
+
     if (HD(*p) == GONETO) {
       *p = TL(*p);
       return;
     }
+
     list x = HD(*p);
     list y = TL(*p);
     list z = CONSP;
@@ -463,9 +474,11 @@ static void copy(list *p) {
     HD(z) = x;
     TL(z) = y;
     CONSP = CONSP + 1;
+
     if (x == FULLWORD) {
       return;
     }
+
     p = &(TL(z));
   }
 }
@@ -797,6 +810,7 @@ list elem(list x, word n) {
 }
 
 // prints an arbitrary list object x
+//
 // renamed from printob
 void printobj(list x) {
   // list x or atom
@@ -822,6 +836,7 @@ void printobj(list x) {
       wrch('.');
       x = TL(x);
     }
+
     printobj(x);
     wrch(')');
 
@@ -843,6 +858,7 @@ list isokcons(list p) {
   }
 
   if (CONSBASE <= p && p < CONSLIMIT) {
+
     // (only even addresses in listspace count)
     if (((char *)p - (char *)CONSBASE) % sizeof(struct list) == 0) {
       return p;
