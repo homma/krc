@@ -78,7 +78,9 @@ extern list isokcons(list);
 // (CONST . (FULLWORD . num)) => (FULLWORD . num)
 #define getval(e) TL(e)
 
-// (ALPHA . _)
+// (op . _)
+//
+// ex. (ALPHA . _)
 #define getop(e) HD(e)
 
 /* an element in atom space */
