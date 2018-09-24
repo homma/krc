@@ -67,18 +67,22 @@ extern void writetoken(token t);
 //
 
 // operator values:
+//
+// quasi operators ( ALPHA .. QUOTE )
+// infix operators ( COLON_OP .. DOT_OP )
+// relational operators ( GR_OP .. LS_OP )
+// other operators ( DOTDOT_OP .. QUOTE_OP )
+// QUOTE_OP is used to convert an infix into a function
+//
 typedef enum {
-  // quasi operators
   ALPHA = -2,
   INDIR = -1,
   QUOTE = 0,
-  // infix operators ( COLON_OP .. DOT_OP )
   COLON_OP = 1,
   APPEND_OP = 2,
   LISTDIFF_OP = 3,
   OR_OP = 4,
   AND_OP = 5,
-  // subgroup: relational operators ( GR_OP .. LS_OP )
   GR_OP = 6,
   GE_OP = 7,
   NE_OP = 8,
@@ -92,7 +96,6 @@ typedef enum {
   REM_OP = 16,
   EXP_OP = 17,
   DOT_OP = 18,
-  // other operators
   DOTDOT_OP = 19,
   COMMADOTDOT_OP = 20,
   ZF_OP = 21,
@@ -101,7 +104,6 @@ typedef enum {
   NEG_OP = 24,
   NOT_OP = 25,
   QUOTE_OP = 26
-  // used to convert an infix into a function
 }
 operator;
 
@@ -157,7 +159,7 @@ typedef enum {
   CALL_C = 11,
   CONTINUE_INFIX_C = 12,
   FORMZF_C = 13,
-  CONT_GENERATOR_C = 14,
+  CONT_GENERATOR_C = 14
 } instruction;
 
 //
