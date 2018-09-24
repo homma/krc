@@ -50,7 +50,7 @@ extern list isokcons(list);
 #define TL(p) ((p)->tl)
 #endif
 
-//// list macros for easier understandings
+// list processing macros for easier understandings
 
 // (_ . next_token)
 #define next(e) TL(e)
