@@ -9,7 +9,7 @@
 #include "common.h"
 #include "iolib.h"
 
-// include code to check validity of pointers handed to HD() and TL
+// include code to check validity of pointers handed to HD() and TL()
 // #define INSTRUMENT_KRC_GC
 
 /* an element in list space */
@@ -20,15 +20,26 @@ typedef struct list {
 
 // hd can contain:
 // - the memory address of another cell in the CONS space
+//   (cons . next_cell)
+//   (cons . nil)
+//
 // - the memory address of a cell in the atom space
+//   (atom . next_cell)
+//   (atom . nil)
+//
 // - improbable pointer values of HD() for special values:
-//   FULLWORD (see above) or GONETO (see listlib.c)
+//
+//   FULLWORD or GONETO (see listlib.c)
+//   (FULLWORD . number)
+//   (GONETO . _)
 
 // this causes problems
 // #define NIL ((list)0)
 
 // from oldbcpl/listhdr, may need changing
 #define NIL ((list)0x40000000)
+
+// list operations
 
 #ifdef INSTRUMENT_KRC_GC
 extern list isokcons(list);
@@ -39,6 +50,32 @@ extern list isokcons(list);
 #define TL(p) ((p)->tl)
 #endif
 
+//// list macros for easier understandings
+
+// (_ . next_token)
+#define next(e) TL(e)
+
+// (cons . next_token)
+#define getcons(e) HD(e)
+
+// (atom . next_token)
+#define getatom(e) HD(e)
+
+// (FULLWORD . num)
+#define getint(e) TL(e)
+
+// (IDENT . _)
+// (CONST . _)
+#define kind(e) HD(e)
+
+// (IDENT . val)
+// (CONST . val)
+// (CONST . (FULLWORD . num)) => (FULLWORD . num)
+#define getval(e) TL(e)
+
+// (ALPHA . _)
+#define getop(e) HD(e)
+
 /* an element in atom space */
 typedef struct atom {
   struct atom *link;
@@ -47,6 +84,8 @@ typedef struct atom {
   char name[];
 } * atom;
 
+// atom operations
+//
 // LINK points to the next item in the linked list of values,
 //      or has value 0 if it is the end of this list.
 // VAL  points to the item's value in the CONS space.

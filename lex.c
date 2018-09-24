@@ -95,6 +95,7 @@ void readline() {
       *p = cons((list)t, NIL);
 
       // p = tail(t:[])
+      // TL is a place for next token
       p = &(TL(*p));
 
     } while (
@@ -105,8 +106,8 @@ void readline() {
     // tokens = [ "#", "!", "/" ]
     // "#" == hd tokens & list (tl tokens) & "!" == (hd (tl tokens))?
     //
-    if (HD(TOKENS) == (list)'#' && iscons(TL(TOKENS)) &&
-        HD(TL(TOKENS)) == (list)'!') {
+    if (getcons(TOKENS) == (list)'#' && iscons(next(TOKENS)) &&
+        getcons(next(TOKENS)) == (list)'!') {
       continue;
     }
 
@@ -185,8 +186,8 @@ static token readtoken(void) {
       list x = (list)packbuffer();
 
       // if token is a FILECOMMAND
-      if (TOKENS != NIL && HD(TOKENS) == (token)'/' && TL(TOKENS) == NIL &&
-          member(FILECOMMANDS, x)) {
+      if (TOKENS != NIL && getcons(TOKENS) == (token)'/' &&
+          next(TOKENS) == NIL && member(FILECOMMANDS, x)) {
         EXPECTFILE = true;
       }
 
@@ -224,7 +225,8 @@ static token readtoken(void) {
     // avoid globals
     // return cons((token)CONST, stonum(THE_NUM));
 
-    // make constant
+    // make constant number
+    // (CONST . (FULLWORD . n))
     return cons((token)CONST, stonum(n));
   }
 
@@ -312,6 +314,7 @@ static token readtoken(void) {
     } else {
 
       // make a constant
+      // (CONST . a)
       return cons(CONST, (list)a);
     }
   }
@@ -322,10 +325,10 @@ static token readtoken(void) {
 
     // comment found
     // :-
-    if (ch == ':' && ch2 == '-' && TOKENS != NIL && iscons(HD(TOKENS)) &&
-        HD(HD(TOKENS)) == IDENT && TL(TOKENS) == NIL) {
+    if (ch == ':' && ch2 == '-' && TOKENS != NIL && iscons(getcons(TOKENS)) &&
+        kind(getcons(TOKENS)) == IDENT && next(TOKENS) == NIL) {
       list c = NIL;
-      list subject = TL(HD(TOKENS));
+      list subject = getval(getcons(TOKENS));
       COMMENTFLAG = 1;
 
       ch = rdch();
@@ -526,25 +529,26 @@ void writetoken(token t) {
       bcpl_writes("..");
       break;
     default:
-      if (!(iscons(t) && (HD(t) == IDENT || HD(t) == CONST))) {
+      if (!(iscons(t) && (kind(t) == IDENT || kind(t) == CONST))) {
 
         // unknown token
         fprintf(bcpl_OUTPUT, "<UNKNOWN TOKEN<%p>>", t);
 
-      } else if (HD(t) == IDENT) {
+      } else if (kind(t) == IDENT) {
 
         // identifier
-        bcpl_writes(NAME((atom)(
-            iscons(TL(t)) && HD(TL(t)) == (list)ALPHA ? TL(TL(t)) : TL(t))));
+        bcpl_writes(NAME((atom)(iscons(next(t)) && getop(next(t)) == (list)ALPHA
+                                    ? next(next(t))
+                                    : next(t))));
 
-      } else if (isnum(TL(t))) {
+      } else if (isnum(next(t))) {
 
         // number
-        bcpl_writen(getnum(TL(t)));
+        bcpl_writen(getnum(next(t)));
 
       } else {
 
-        fprintf(bcpl_OUTPUT, "\"%s\"", NAME((atom)TL(t)));
+        fprintf(bcpl_OUTPUT, "\"%s\"", NAME((atom)next(t)));
       }
     }
   }
@@ -559,12 +563,12 @@ void writetoken(token t) {
 // have t (x:xs) = x == t
 bool have(token t) {
 
-  if (TOKENS == NIL || HD(TOKENS) != t) {
+  if (TOKENS == NIL || getcons(TOKENS) != t) {
     return false;
   }
 
   // go to next token
-  TOKENS = TL(TOKENS);
+  TOKENS = next(TOKENS);
 
   return true;
 }
@@ -593,17 +597,15 @@ void syntax() { ERRORFLAG = true; }
 // haveid (x:xs) = list x & hd x == "IDENT"
 word haveid() {
 
-  if (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == IDENT)) {
+  if (!(iscons(getcons(TOKENS)) && kind(getcons(TOKENS)) == IDENT)) {
     return false;
   }
 
   // set the identifier to share it to the caller
-  // it would be better to avoid using global variables
-  // and return this value as return val
-  THE_ID = (atom)TL(HD(TOKENS));
+  THE_ID = (atom)getval(getcons(TOKENS));
 
   // go to next token
-  TOKENS = TL(TOKENS);
+  TOKENS = next(TOKENS);
 
   return true;
 }
@@ -624,15 +626,15 @@ void set_the_id(atom id) { THE_ID = id; }
 // haveconst (x:xs) = list x & hd x == "CONST"
 word haveconst() {
 
-  if (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST)) {
+  if (!(iscons(getcons(TOKENS)) && kind(getcons(TOKENS)) == CONST)) {
     return false;
   }
 
   // set the constant to share it to the caller
-  THE_CONST = TL(HD(TOKENS));
+  THE_CONST = getval(getcons(TOKENS));
 
   // go to next token
-  TOKENS = TL(TOKENS);
+  TOKENS = next(TOKENS);
 
   return true;
 }
@@ -646,19 +648,19 @@ list the_const() { return THE_CONST; }
 // if it is a number, set it to THE_NUM
 // then set TOKENS the next token
 //
-// TOKENS = (("CONST" . number))
+// TOKENS = ((CONST . (FULLWORD . num)))
 word havenum() {
 
-  if (!(iscons(HD(TOKENS)) && HD(HD(TOKENS)) == CONST &&
-        isnum(TL(HD(TOKENS))))) {
+  if (!(iscons(getcons(TOKENS)) && kind(getcons(TOKENS)) == CONST &&
+        isnum(getval(getcons(TOKENS))))) {
     return false;
   }
 
   // set the number to share it to the caller
-  THE_NUM = getnum(TL(HD(TOKENS)));
+  THE_NUM = getnum(getval(getcons(TOKENS)));
 
   // go to next token
-  TOKENS = TL(TOKENS);
+  TOKENS = next(TOKENS);
 
   return true;
 }
@@ -674,8 +676,10 @@ void negate_the_num() { THE_NUM = -THE_NUM; }
 void syntax_error(char *message) {
 
   // unclosed string quotes
-  if (iscons(TOKENS) && HD(TOKENS) != BADTOKEN) {
-    bcpl_writes("**unexpected `"), writetoken(HD(TOKENS)), wrch('\'');
+  if (iscons(TOKENS) && getcons(TOKENS) != BADTOKEN) {
+
+    bcpl_writes("**unexpected `"), writetoken(getcons(TOKENS)), wrch('\'');
+
     if (MISSING && MISSING != EOL && MISSING != (token)';' &&
         MISSING != (token)'\'') {
 
@@ -685,6 +689,7 @@ void syntax_error(char *message) {
         bcpl_writes(" or `!'");
       }
     }
+
     wrch('\n');
   }
   bcpl_writes(message);

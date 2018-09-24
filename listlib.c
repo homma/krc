@@ -537,7 +537,8 @@ word isnum(list x)
 // - take care not to leave them on the stack.
 
 // GCC warning expected
-list stonum(word n) { return cons(FULLWORD, (list)n); }
+// (FULLWORD . num)
+list stonum(word num) { return cons(FULLWORD, (list)num); }
 
 // GCC warning expected
 word getnum(list x) { return (word)(TL(x)); }
