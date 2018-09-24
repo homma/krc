@@ -1367,10 +1367,30 @@ static list formal() {
 
 static list internalise(list val) {
 
-  return val == TL(TRUTH)
-             ? TRUTH
-             : val == TL(FALSITY) ? FALSITY
-                                  : isatom(val) ? cons((list)QUOTE, val) : val;
+  // return val == TL(TRUTH)
+  //            ? TRUTH
+  //            : val == TL(FALSITY) ? FALSITY
+  //                                 : isatom(val) ? cons((list)QUOTE, val) :
+  //                                 val;
+
+  if (val == getval(TRUTH)) {
+    // TRUTH = (QUOTE . "TRUE")
+
+    return TRUTH;
+
+  } else if (val == getval(FALSITY)) {
+    // FALSITY = (QUOTE . "FALSE")
+
+    return FALSITY;
+
+  } else if (isatom(val)) {
+
+    return cons((list)QUOTE, val);
+
+  } else {
+
+    return val;
+  }
 }
 
 static list pattern() {

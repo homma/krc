@@ -76,12 +76,10 @@ extern list isokcons(list);
 // (IDENT . val)
 // (CONST . val)
 // (CONST . (FULLWORD . num)) => (FULLWORD . num)
-// (QUOTE . atom)
+// (QUOTE . atom) : ex. (QUOTE . "TRUE")
 #define getval(e) TL(e)
 
-// (op . _)
-//
-// ex. (ALPHA . _)
+// (op . _) : ex. (ALPHA . _)
 #define getop(e) HD(e)
 
 /* an element in atom space */
