@@ -324,9 +324,11 @@ static token readtoken(void) {
     word ch2 = rdch();
 
     // comment found
-    // :-
+    //
+    // subject :- ...
     if (ch == ':' && ch2 == '-' && TOKENS != NIL && iscons(getcons(TOKENS)) &&
         kind(getcons(TOKENS)) == IDENT && next(TOKENS) == NIL) {
+
       list c = NIL;
       list subject = getval(getcons(TOKENS));
       COMMENTFLAG = 1;
@@ -350,18 +352,24 @@ static token readtoken(void) {
         return NIL;
       }
 
+      // comment ends with no content
       if (ch == ';') {
         return NIL;
       }
 
+      // get comment text
       while (!(ch == ';' || ch == EOF)) {
         if (ch == '\n') {
+
+          // store
           c = cons((list)packbuffer(), c);
+
+          // ignore blank lines
           do {
             COMMENTFLAG++;
             ch = rdch();
           } while (ch == '\n');
-          // ignore blank lines
+
         } else {
           bufch(ch);
           ch = rdch();
