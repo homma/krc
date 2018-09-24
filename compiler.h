@@ -135,6 +135,8 @@ operator;
 //             CALL_C BCPL_FN
 //
 
+// _C == "code"
+
 // instruction codes
 //
 // the lineno command has no effect at execution time, it is used

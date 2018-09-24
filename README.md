@@ -67,3 +67,12 @@ keep it simple and small.
 ## To be fixed
 - `write "foo.txt" "foo"?` does not work
 - `'#'?`, `'#'!` causes segmentation fault
+
+## To be investigated
+- what is INDIR?
+  - it is used in primitive functions
+- what is `+ 1` in leftprec, rightprec
+  - how does it work?
+- what is diprio stands for?
+  - `di` priority
+
