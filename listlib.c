@@ -260,6 +260,7 @@ word haveparam(word ch) {
 ***/
 
 // creates a list cell with x and y for its fields in CONSBASE
+// returns the address of the cell
 list cons(list x, list y) {
 
   if (CONSP >= (CONSLIMIT - 1)) {
