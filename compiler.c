@@ -134,6 +134,7 @@ static operator mkinfix(token t) {
     i++;
   }
 
+  // not found
   if (i > DOT_OP) {
     return -1;
   }
@@ -195,7 +196,7 @@ void printexp(list e, word n) {
     {
       // maybe could be operator
 
-      list op = HD(e);
+      list op = getop(e);
 
       if (!isop(op) && n <= 7) {
 
@@ -214,19 +215,19 @@ void printexp(list e, word n) {
       } else if (op == (list)DOTDOT_OP || op == (list)COMMADOTDOT_OP) {
 
         wrch('[');
-        e = TL(e);
-        printexp(HD(e), 0);
+        e = next(e);
+        printexp(gettoken(e), 0);
 
         if (op == (list)COMMADOTDOT_OP) {
           wrch(',');
-          e = TL(e);
-          printexp(HD(e), 0);
+          e = next(e);
+          printexp(gettoken(e), 0);
         }
 
         bcpl_writes("..");
 
-        if (TL(e) != INFINITY) {
-          printexp(TL(e), 0);
+        if (next(e) != INFINITY) {
+          printexp(next(e), 0);
         }
 
         wrch(']');
@@ -234,34 +235,35 @@ void printexp(list e, word n) {
       } else if (op == (list)ZF_OP) {
 
         wrch('{');
-        printzf_exp(TL(e));
+        printzf_exp(next(e));
         wrch('}');
 
       } else if (op == (list)NOT_OP && n <= 3) {
 
         wrch('\\');
-        printexp(TL(e), 3);
+        printexp(next(e), 3);
 
       } else if (op == (list)NEG_OP && n <= 5) {
 
         wrch('-');
-        printexp(TL(e), 5);
+        printexp(next(e), 5);
 
       } else if (op == (list)LENGTH_OP && n <= 7) {
 
         wrch('#');
-        printexp(TL(e), 7);
+        printexp(next(e), 7);
 
       } else if (op == (list)QUOTE_OP) {
+        // '#', '\', 'op'
 
         wrch('\'');
 
-        if (TL(e) == (list)LENGTH_OP) {
+        if (next(e) == (list)LENGTH_OP) {
           wrch('#');
-        } else if (TL(e) == (list)NOT_OP) {
+        } else if (next(e) == (list)NOT_OP) {
           wrch('\\');
         } else {
-          writetoken(infix_names[(word)TL(e)]);
+          writetoken(infix_names[(word)next(e)]);
         }
 
         wrch('\'');
@@ -271,17 +273,22 @@ void printexp(list e, word n) {
         wrch('[');
 
         while (e != NIL) {
-          printexp(HD(TL(e)), 0);
-          if (TL(TL(e)) != NIL) {
+
+          printexp(gettoken(next(e)), 0);
+
+          // first time : [ next , next_next ]
+          // after that : [ e , next , next_next ]
+          if (next(next(e)) != NIL) {
             wrch(',');
           }
-          e = TL(TL(e));
+
+          e = next(next(e));
         }
 
         wrch(']');
 
       } else if (op == (list)AND_OP && n <= 3 && rotate(e) &&
-                 isrelation(HD(TL(e))) &&
+                 isrelation(getop(next(e))) &&
                  isrelation_beginning(TL(TL(HD(TL(e)))), TL(TL(e)))) {
 
         // continued relations
