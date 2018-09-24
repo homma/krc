@@ -25,7 +25,7 @@
 ##
 
 DATE=`date '+%Y/%m/%d %H:%M'`
-MESSAGE="a minor update on ${DATE}."
+MESSAGE="a minor update on ${DATE}"
 
 if [ $# -eq 1 ]; then MESSAGE=$1; fi
 
