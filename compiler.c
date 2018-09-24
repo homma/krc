@@ -385,11 +385,11 @@ static void printzf_exp(list x) {
 // check if e is a list expression
 static bool islistexp(list e) {
 
-  while (iscons(e) && HD(e) == (list)COLON_OP) {
+  while (iscons(e) && getop(e) == (list)COLON_OP) {
 
     list e1 = TL(TL(e));
 
-    while (iscons(e1) && HD(e1) == (list)INDIR) {
+    while (iscons(e1) && getop(e1) == (list)INDIR) {
       e1 = TL(e1);
     }
 
