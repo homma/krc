@@ -50,6 +50,7 @@ make it looks like a plain C software.
 keep it simple and small.
 
 - remove BCPL dependency completely
+- replace direct LISt Processings such as `HD(TL(HD(TL...` with proper names
 - change CAPITAL LETTER to small letter
 - remove global variables if unnecessary to be exposed
 - separate main() from listlib
@@ -62,7 +63,6 @@ keep it simple and small.
 - change `(!( x == y ))` to `( x != y )` when there are only one condition
 - replace linenoise with its unicode supported version
 - reduce macros in order to apply source code formatter properly
-- put a proper name to list processings such as `HD(TL(HD(TL...` one by one
 
 ## To be fixed
 - `write "foo.txt" "foo"?` does not work
