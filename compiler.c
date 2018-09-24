@@ -210,7 +210,7 @@ void printexp(list e, word n) {
 
       } else if (op == (list)INDIR || op == (list)ALPHA) {
 
-        printexp(next(e), n);
+        printexp(TL(e), n);
 
       } else if (op == (list)DOTDOT_OP || op == (list)COMMADOTDOT_OP) {
 

@@ -565,7 +565,8 @@ static void obey(list eqns, list e) {
         }
 
         ARGP = ARGP + 2;
-        *(ARGP - 1) = HD(TL(*p)), *ARGP = TL(TL(*p));
+        *(ARGP - 1) = HD(TL(*p));
+        *ARGP = TL(TL(*p));
         code = TL(code);
         break;
       }
@@ -574,7 +575,8 @@ static void obey(list eqns, list e) {
         code = TL(code);
         break;
       case STOP_C:
-        HD(e) = (list)INDIR, TL(e) = *ARGP;
+        HD(e) = (list)INDIR;
+        TL(e) = *ARGP;
         return;
       case CALL_C:
         (*(void (*)())code)(e);
@@ -595,12 +597,14 @@ static void obey(list eqns, list e) {
 }
 
 static void prim_functionp(list e) {
+
   *ARG = reduce(*ARG);
   HD(e) = (list)INDIR;
   TL(e) = isfun(*ARG) ? TRUTH : FALSITY;
 }
 
 static void prim_listp(list e) {
+
   *ARG = reduce(*ARG);
   HD(e) = (list)INDIR;
   TL(e) = (*ARG == NIL || (iscons(*ARG) && HD(*ARG) == (list)COLON_OP))
@@ -609,12 +613,14 @@ static void prim_listp(list e) {
 }
 
 static void prim_stringp(list e) {
+
   *ARG = reduce(*ARG);
   HD(e) = (list)INDIR,
   TL(e) = iscons(*ARG) && HD(*ARG) == (list)QUOTE ? TRUTH : FALSITY;
 }
 
 static void prim_numberp(list e) {
+
   *ARG = reduce(*ARG);
   HD(e) = (list)INDIR, TL(e) = isnum(*ARG) ? TRUTH : FALSITY;
 }
@@ -624,8 +630,10 @@ static bool isfun(list x) {
 }
 
 static void prim_char(list e) {
+
   *ARG = reduce(*ARG);
   HD(e) = (list)INDIR;
+
   TL(e) = iscons(*ARG) && HD(*ARG) == (list)QUOTE && LEN((atom)TL(*ARG)) == 1
               ? TRUTH
               : FALSITY;
@@ -640,7 +648,8 @@ static void prim_size(list e) {
   wrch = countch;
   printval(*ARG, false);
   wrch = TRUEWRCH;
-  HD(e) = (list)INDIR, TL(e) = stonum(count);
+  HD(e) = (list)INDIR;
+  TL(e) = stonum(count);
 }
 
 // converts a character to its ascii number
@@ -672,7 +681,8 @@ static void prim_decode(list e) {
   }
 
   bufch((word)TL(*ARG));
-  HD(e) = (list)INDIR, TL(e) = cons((list)QUOTE, (list)packbuffer());
+  HD(e) = (list)INDIR;
+  TL(e) = cons((list)QUOTE, (list)packbuffer());
 }
 
 static void prim_concat(list e) {
@@ -709,7 +719,7 @@ static void prim_concat(list e) {
       a = TL(TL(a));
     }
     a = (list)packbuffer();
-    HD(e) = (list)INDIR,
+    HD(e) = (list)INDIR;
     TL(e) = a == TL(TRUTH) ? TRUTH
                            : a == TL(FALSITY) ? FALSITY : cons((list)QUOTE, a);
   }
@@ -732,7 +742,8 @@ static void prim_explode(list e) {
       x = cons((list)COLON_OP, cons(cons((list)QUOTE, (list)packbuffer()), x));
     }
 
-    HD(e) = (list)INDIR, TL(e) = x;
+    HD(e) = (list)INDIR;
+    TL(e) = x;
   }
 }
 
@@ -775,7 +786,8 @@ static void prim_read(list e) {
 
   FILE *in = (FILE *)TL(e);
   bcpl_INPUT_fp = (in);
-  HD(e) = (list)INDIR, TL(e) = cons((list)READFN, TL(e));
+  HD(e) = (list)INDIR;
+  TL(e) = cons((list)READFN, TL(e));
 
   {
     list *x = &(TL(e));
@@ -924,7 +936,9 @@ static list reduce(list e) {
       case INDIR: {
         list hold = HD(S);
         nargs = nargs - 1;
-        e = TL(S), HD(S) = (list)INDIR, S = hold;
+        e = TL(S);
+        HD(S) = (list)INDIR;
+        S = hold;
         continue;
       }
       case QUOTE_OP:
@@ -936,10 +950,15 @@ static list reduce(list e) {
           list op = TL(S);
           list hold = HD(S);
           nargs = nargs - 2;
-          HD(S) = e, e = S, S = hold;
+          HD(S) = e;
+          e = S;
+          S = hold;
           hold = HD(S);
-          HD(S) = e, e = S, S = hold;
-          TL(S) = cons(TL(e), TL(S)), e = op;
+          HD(S) = e;
+          e = S;
+          S = hold;
+          TL(S) = cons(TL(e), TL(S));
+          e = op;
           continue;
         }
       case LISTDIFF_OP:
@@ -959,7 +978,9 @@ static list reduce(list e) {
           // hides static m
           word m;
 
-          HD(S) = (list)COLON_OP, e = S, S = hold;
+          HD(S) = (list)COLON_OP;
+          e = S;
+          S = hold;
           TL(S) = reduce(TL(S));
 
           if (!(isnum(TL(S)) && (m = getnum(TL(S))) >= LISTBASE)) {
@@ -978,14 +999,18 @@ static list reduce(list e) {
 
           e = HD(TL(e));
           hold = HD(S);
-          HD(S) = (list)INDIR, TL(S) = e, S = hold;
+          HD(S) = (list)INDIR;
+          TL(S) = e;
+          S = hold;
           REDS = REDS + 1;
           continue;
         }
       case ZF_OP: {
         list hold = HD(S);
         nargs = nargs - 1;
-        HD(S) = e, e = S, S = hold;
+        HD(S) = e;
+        e = S;
+        S = hold;
 
         if (TL(TL(e)) == NIL) {
           HD(e) = (list)COLON_OP;
@@ -1003,7 +1028,9 @@ static list reduce(list e) {
             TL(TL(qualifier)) = source;
 
             if (source == NIL) {
-              HD(e) = (list)INDIR, TL(e) = NIL, e = NIL;
+              HD(e) = (list)INDIR;
+              TL(e) = NIL;
+              e = NIL;
             } else if (iscons(source) && HD(source) == (list)COLON_OP) {
 
               HD(e) = cons(
@@ -1033,7 +1060,9 @@ static list reduce(list e) {
             if (qualifier == TRUTH) {
               TL(e) = rest;
             } else if (qualifier == FALSITY) {
-              HD(e) = (list)INDIR, TL(e) = NIL, e = NIL;
+              HD(e) = (list)INDIR;
+              TL(e) = NIL;
+              e = NIL;
             } else {
               badexp(cons((list)GUARD, qualifier));
             }
@@ -1071,7 +1100,9 @@ static list reduce(list e) {
         {
           list hold = HD(S);
           nargs = nargs - 1;
-          HD(S) = (list)INDIR, TL(S) = e, S = hold;
+          HD(S) = (list)INDIR;
+          TL(S) = e;
+          S = hold;
           REDS = REDS + 1;
           continue;
         }
@@ -1317,7 +1348,9 @@ static list reduce(list e) {
         {
           list hold = HD(S);
           nargs = nargs - 1;
-          HD(S) = (list)INDIR, TL(S) = e, S = hold;
+          HD(S) = (list)INDIR;
+          TL(S) = e;
+          S = hold;
         }
       }
     }
