@@ -19,6 +19,7 @@ typedef struct list {
 } * list;
 
 // hd can contain:
+//
 // - the memory address of another cell in the CONS space
 //   (cons . next_cell)
 //   (cons . nil)
