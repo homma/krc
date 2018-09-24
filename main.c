@@ -728,7 +728,7 @@ static void command() {
     SIGNOFF = true;
 
   } else if (have((token)'/')) {
-    // commands
+    // KRC shell commands
 
     if (have(EOL)) {
 
