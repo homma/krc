@@ -954,14 +954,38 @@ static void combn() {
 }
 
 static bool startformal(token t) {
-  return iscons(t) ? (HD(t) == IDENT || HD(t) == (list)CONST)
-                   : t == (token)'(' || t == (token)'[' || t == (token)'-';
+  // return iscons(t) ? (HD(t) == IDENT || HD(t) == (list)CONST)
+  //                  : t == (token)'(' || t == (token)'[' || t == (token)'-';
+
+  if (iscons(t)) {
+
+    // identifier or constant
+    return (HD(t) == IDENT || HD(t) == (list)CONST);
+
+  } else {
+
+    // '(', '[', '-'
+    return t == (token)'(' || t == (token)'[' || t == (token)'-';
+  }
 }
 
 static bool startsimple(token t) {
-  return iscons(t) ? (HD(t) == IDENT || HD(t) == (list)CONST)
-                   : t == (token)'(' || t == (token)'[' || t == (token)'{' ||
-                         t == (token)'\'';
+
+  // return iscons(t) ? (HD(t) == IDENT || HD(t) == (list)CONST)
+  //                  : t == (token)'(' || t == (token)'[' || t == (token)'{' ||
+  //                        t == (token)'\'';
+
+  if (iscons(t)) {
+
+    // identifier or constant
+    return (HD(t) == IDENT || HD(t) == (list)CONST);
+
+  } else {
+
+    // '(', '[', '{', '\''
+    return t == (token)'(' || t == (token)'[' || t == (token)'{' ||
+           t == (token)'\'';
+  }
 }
 
 static void simple() {
@@ -1413,14 +1437,14 @@ static void compileformal(list x, word i) {
 // APPLY_C IF_C STOP_C
 static void plant0(instruction op) {
 
-  // CODEV = (op CODEV)
+  // CODEV = (op . CODEV)
   CODEV = cons((list)op, CODEV);
 }
 
 // everything else
 static void plant1(instruction op, list a) {
 
-  // CODEV = (a op CODEV)
+  // CODEV = (a . (op . CODEV))
   CODEV = cons((list)op, CODEV);
   CODEV = cons(a, CODEV);
 }
@@ -1428,7 +1452,7 @@ static void plant1(instruction op, list a) {
 // MATCH_C MATCHARG_C
 static void plant2(instruction op, list a, list b) {
 
-  // CODEV = (b a op CODEV)
+  // CODEV = (b . (a . (op . CODEV)))
   CODEV = cons((list)op, CODEV);
   CODEV = cons(a, CODEV);
   CODEV = cons(b, CODEV);
