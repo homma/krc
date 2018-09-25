@@ -24,8 +24,14 @@ word LISTBASE = 0;
 
 word ABORTED = false;
 
-static atom ETC, SILLYNESS, GUARD, LISTDIFF, BADFILE, READFN, WRITEFN,
-    INTERLEAVEFN;
+static atom ETC;
+static atom SILLYNESS;
+static atom GUARD;
+static atom LISTDIFF;
+static atom BADFILE;
+static atom READFN;
+static atom WRITEFN;
+static atom INTERLEAVEFN;
 
 // argument stack. ARGP points to the last cell allocated
 static list *ARGSPACE = NULL;
@@ -97,7 +103,7 @@ static void showch(unsigned char c);
 
 static void R(char *str, void (*fun)(list), word num) {
 
-  // ((atom sym) . (c_call . fun))
+  // (atom(str) . (call . fun))
   atom a = mkatom(str);
   list eqn = cons((list)a, cons((list)CALL_C, (list)fun));
 
@@ -105,6 +111,7 @@ static void R(char *str, void (*fun)(list), word num) {
     enterscript(a);
   }
 
+  // a->val = ((num . NIL) . ((atom(str) . (call . fun)) . NIL))
   VAL(a) = cons(cons((list)num, NIL), cons(eqn, NIL));
 }
 
@@ -117,8 +124,13 @@ void setup_primfns_etc(void) {
   ETC = mkatom("... ");
   SILLYNESS = mkatom("<unfounded recursion>");
   GUARD = mkatom("<non truth-value used as guard:>");
+
+  // true value is (QUOTE . "TRUE")
   TRUTH = cons((list)QUOTE, (list)mkatom("TRUE"));
+
+  // false value is (QUOTE . "FALSE")
   FALSITY = cons((list)QUOTE, (list)mkatom("FALSE"));
+
   LISTDIFF = mkatom("listdiff");
   INFINITY = cons((list)QUOTE, (list)-3);
 
@@ -150,7 +162,7 @@ void setup_primfns_etc(void) {
 void fixup_s(void) {
 
   // in case interrupt struck while reduce was dissecting a constant
-  if (!(S == (list)ENDOFSTACK)) {
+  if (S != (list)ENDOFSTACK) {
     HD(S) = (list)QUOTE;
   }
 }
@@ -164,7 +176,8 @@ void fixup_s(void) {
 char *scaseconv(char *s) {
 
   static char t[80 + 1];
-  char *p = s, *q = t;
+  char *p = s;
+  char *q = t;
 
   while (*p) {
     *q++ = caseconv(*p++);

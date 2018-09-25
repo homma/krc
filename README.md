@@ -76,3 +76,6 @@ keep it simple and small.
 - what is diprio stands for?
   - `di` priority
 
+## Other known issues
+- string cannot handle longer than 255 characters
+
